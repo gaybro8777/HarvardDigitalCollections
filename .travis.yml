@@ -35,6 +35,7 @@ matrix:
 
 before_install:
   - gem update --system
+  - gem uninstall bundler
   - yes | rvm @global do gem install bundler -v 1.17.3 || true
   - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
   - bundle --version

@@ -1,0 +1,100 @@
+6.20.0-lts-3 (10/1/2019) PP
+-- Bugfix for Download This Item button after IIIF Manifest update.
+
+6.20.0-lts-2 (7/23/2019) VC
+--DCP-503: Updated CC-BY language in footer
+
+6.20.0-lts-1 (7/11/2019) MC/ED/CV/VC
+--Added date range limit facet for refining search results
+--Added validation for date range limit facet
+--Added language facet for refining search results
+--Added origin place facet link when there's only one place
+--Implemented user account feature to support a signed-in state, allows individual sign-ins, password reminder dispatch, search history review and to search save functionality
+--Added user utility navigation element to global page layout
+--Added sign in link to global footer
+--Added new styles to support signed-in state and related views
+--Removed the "beta" status alert ribbon from global layout
+--Corrected layout rendering issue with IDS download component
+--Improved layout rendering for mobile/smart displays
+--Inserted an "ad" for CURIOSity collections into search results layout
+--Added helper text for users when searches yield no results
+--Corrected JS issue with accordion behavior in results facet rail
+--Cleaned up solr_document.rb to remove unused code and add comments
+--(VC) Updated Gem vulnerabilities devise and updated gems for rails, mysql, blacklight gems
+--(VC) Updated the release number to use the current blacklight version 6.20
+--Added guided tour modal window functionality for PDS served documents
+--Added style refinements for date range facet limiter
+--Revised sign-in behavior so that users are returned to their search results after successful login instead of the homepage
+
+
+
+6.11.2-lts-3 (6/25/2019) PP/MC/ED/CV
+--Added clickable metadata values on item detail page
+--Added IIIF Section at the bottom of the ‘related tools & links’ box for still image content
+--Added Twitter card meta tags
+--Removed altRepGroup attribute value from ‘Subjects’ metadata
+--Removed ‘creator’ roleTerm from ‘creator’ metadata field
+--Fixed duplicate values in ‘Genre’ and ‘Repository’ metadata
+--Search results display alternative title if no primary title has been found
+--Styling improvements to hyperlink in search views, related tools & link box and item detail metadata
+--Added ‘no results page’ when there is no results to display in search view page
+--Visual updates to search results and sign in page
+--Further refinements to IIIF download options
+--Devise gem updated to 4.4.0
+--Fix for nil date nodes
+--Added Google Tag Manager code global layout erb template
+--Fix for empty search errors
+--Added search input validation to handle special characters
+--Added new option to Download feature to account for PDS sequenced objects
+--Description field's "materials/techniques" sub-label enhanced with additional types
+--Added a Feedback component to the Item Detail 
+--Numerous spacing and layout refinements to Item Detail page styles
+--Fixed displayLabel attribute value display
+--Updated options for alternate title displays
+--Enhanced sublabel displays for the Description field 
+
+6.11.2-lts-2 (5/28/2019) PP/MC/ED/CV
+--Updated item detail metadata layout for mobile
+--Fixed masonry icon color when toggled
+--Added truncation of long item titles in search results
+--Updated facets to be collapsed by default on mobile
+--Added permalink to related links box
+--Added download button for still image content
+--Updated metadata fields for archival material items
+--Revised metadata label styles
+--Updated search constraint icon to use Font Awesome
+--Updated design of check elements in facets
+--Removed 'alt' tag in thumbnails so screen reader do not read them
+--Updated wordings to reflect current beta state
+--Replaced Foundation Framework references in markup with Bootstrap
+--Improved mobile device layout rendering
+--Added DCP Google Analytics Tracking ID
+--Added box for Related Links on right side of item detail pages
+--Switched List/Grid/Masonry icons to use Font Awesome
+--Update the metadata for list view to include: Title, Creator/Contributor, Place of Origin, Publisher, Date
+--Added a span with a class around the alternative titles.
+--Updated all item detail fields to render values with line breaks
+--Updated the sequence of the fields on the item detail page
+
+ 6.11.2-lts-1 (04/30/2019) PP/MC/ED
+--Removed customized STLee / Archimedes theme
+--Revised CSS for left hand filter rail on search results
+--Enabled More link for facets counts
+--Updated JS to fix facet modal issues
+--Updated Facet Paginator to support pagination and ordering of facet counts
+--Confirmed/created output left hand filter rail on search results
+--Global styles set up
+--Revised Gemfile to use mysql
+--Added initial set of CSS customizations
+--Revised Gemfile to add jsonpath
+--Added LibraryCloud metadata fields to items
+--Enabled rendering of HTML in fields on item details page
+--Updated thumbnail and raw object logic to fallback to related item
+--Updated raw object rendering to display in viewer
+--Updated single item view template and associated CSS
+--Updated Footer links and added Google Analytics
+--Removed unnecessary div from header that overlapped links.
+--Temporarily removing Add To Collection functionality.
+--Updated homepage-related templates and CSS
+--Revised Gemfile to add blacklight-gallery
+--Enable blacklight-gallery plugin to support different search results views

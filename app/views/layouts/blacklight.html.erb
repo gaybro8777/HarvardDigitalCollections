@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" class="no-js">
   <head>
+    <%= render 'shared/tagmanager' %>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <%=generate_twitter_meta_tags%>
 
     <!-- Mobile viewport optimization h5bp.com/ad -->
     <meta name="HandheldFriendly" content="True">
@@ -23,8 +26,11 @@
     <%= javascript_include_tag "application" %>
     <%= csrf_meta_tags %>
     <%= content_for(:head) %>
+    <link href="//cloud.typenetwork.com/projects/2175/fontface.css/" rel="stylesheet" type="text/css">
   </head>
   <body class="<%= render_body_class %>">
+  <%= render 'shared/tagmanager_noscript' %>
+
   <%= render :partial => 'shared/header_navbar' %>
 
   <%= render partial: 'shared/ajax_modal' %>
@@ -34,7 +40,8 @@
 
     <%= render :partial=>'/flash_msg', layout: 'shared/flash_messages' %>
 
-    <div class="row">
+    <div class="row enclosing-row">
+
       <%= yield %>
     </div>
   </div>

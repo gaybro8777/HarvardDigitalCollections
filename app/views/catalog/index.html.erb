@@ -1,13 +1,6 @@
-<div id="sidebar" class="<%= sidebar_classes %>">
+<div class="col-md-3" id="sidebar">
   <%= render 'search_sidebar' %>
 </div>
-
-<div id="content" class="<%= main_content_classes %>">
-  <% unless has_search_parameters? %>
-    <%# if there are no input/search related params, display the "home" partial -%>
-    <%= render 'home' %>
-    <%= render 'shared/sitelinks_search_box' %>
-  <% else %>
-    <%= render 'search_results' %>
-  <% end %>
+<div class="col-md-9" id="content">
+      <%= render 'search_results' %>
 </div>

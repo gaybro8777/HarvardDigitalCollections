@@ -1,23 +1,35 @@
-<div id="header-navbar" class="navbar navbar-inverse navbar-static-top" role="navigation">
-  <div class="<%= container_classes %>">
-    <div class="navbar-header">
-    <button type="button" class="navbar-toggle btn collapsed" data-toggle="collapse" data-target="#user-util-collapse">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
-    <%= link_to application_name, root_path, class: "navbar-brand" %>
-    </div>
-
-    <div class="collapse navbar-collapse" id="user-util-collapse">
-      <%= render :partial=>'/user_util_links' %>
-    </div>
+<header class="hl__topHeader">
+  <div class="hl__topHeader__left">
+    <ul class="hl__topHeaderNav">
+      <li class="hl__topHeaderTitle__harvard">
+        <a class="hl__topHeader__link" href="https://library.harvard.edu/digital-collections">
+          Harvard <span class="hl__topHeaderTitle__collections hl__topHeader__link">Digital Collections</span>
+        </a>
+      </li>
+    </ul>
   </div>
-</div>
-
-<div id="search-navbar" class="navbar navbar-default navbar-static-top" role="navigation">
-  <div class="<%= container_classes %>">
+  <div class="hl__topHeader__right">
+    <a href="https://library.harvard.edu">
+      <div class="hl__headerLogo">
+        <%= image_tag("hl_header-logo.svg", alt: "Harvard logo") %>
+      </div>
+    </a>
+  </div>
+  <div class="navbar__wrapper">
+    <%if user_signed_in? %>
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#utility-links" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="fa fa-bars"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="utility-links">
+        <%= render :partial=>'/user_util_links' %>
+      </div>
+    <%end%>  
+  </div>
+  <div class="searchbar__wrapper">
     <%= render_search_bar  %>
   </div>
-</div>
+</header>
+

@@ -1,13 +1,40 @@
-# frozen_string_literal: true
-Blacklight::Engine.routes.draw do
-  get "search_history",             :to => "search_history#index",   :as => "search_history"
-  delete "search_history/clear",       :to => "search_history#clear",   :as => "clear_search_history"
-  delete "saved_searches/clear",       :to => "saved_searches#clear",   :as => "clear_saved_searches"
-  get "saved_searches",       :to => "saved_searches#index",   :as => "saved_searches"
-  put "saved_searches/save/:id",    :to => "saved_searches#save",    :as => "save_search"
-  delete "saved_searches/forget/:id",  :to => "saved_searches#forget",  :as => "forget_search"
-  post "saved_searches/forget/:id",  :to => "saved_searches#forget"
-  post "/catalog/:id/track", to: 'catalog#track', as: 'track_search_context', constraints: { id: Blacklight::Engine.config.routes.identifier_constraint }
+Rails.application.routes.draw do
+  
+  concern :range_searchable, BlacklightRangeLimit::Routes::RangeSearchable.new
+  mount Blacklight::Engine => '/'
+  Blacklight::Marc.add_routes(self)
+  root to: "application#home"
+    concern :searchable, Blacklight::Routes::Searchable.new
 
-  resources :suggest, only: :index, defaults: { format: 'json' }
+  resource :catalog, only: [:index], as: 'catalog', path: '/catalog', controller: 'catalog' do
+    concerns :searchable
+    concerns :range_searchable
+
+  end
+
+  devise_for :users
+  concern :exportable, Blacklight::Routes::Exportable.new
+
+  resources :solr_documents, only: [:show], path: '/catalog', controller: 'catalog', constraints: { id: /[^\/]+/ } do
+    concerns :exportable
+  end
+
+  # Add an additional route for the "Track" action which allows IDs to contains periods
+  Blacklight::Engine.routes.draw do
+  concern :range_searchable, BlacklightRangeLimit::Routes::RangeSearchable.new
+    post "/catalog/:id/track", to: 'catalog#track', as: 'track_search_context_override', constraints: { id: /[^\/]+/ }
+
+    resources :suggest, only: :index, defaults: { format: 'json' }
+  end
+
+  match '/catalog/:id/add_to_collection' => 'catalog#add_to_collection', as: 'add_to_collection_catalog', via: [:get, :post]
+
+  resources :bookmarks, constraints: { id: /[^\/]+/ } do
+    concerns :exportable
+    collection do
+      delete 'clear'
+    end
+  end
+
+  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end

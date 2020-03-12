@@ -150,7 +150,7 @@ module Blacklight::FacetsHelperBehavior
       content_tag(:span, facet_display_value(facet_field, item), class: "selected") +
       # remove link
       link_to(remove_href, class: "remove") do
-        content_tag(:span, '', class: "glyphicon glyphicon-remove") +
+        content_tag(:span, '', class: "fa fa-check") +
         content_tag(:span, '[remove]', class: 'sr-only')
       end
     end + render_facet_count(item.hits, :classes => ["selected"])
@@ -166,9 +166,26 @@ module Blacklight::FacetsHelperBehavior
   # @return [String]
   def render_facet_count(num, options = {})
     classes = (options[:classes] || []) << "facet-count"
-    content_tag("span", t('blacklight.search.facets.count', :number => number_with_delimiter(num)), :class => classes)
+    content_tag("span", t('blacklight.search.facets.count', :number => format_facet_count(num)), :class => classes)
   end
-  
+
+  def format_facet_count(num)
+    num = Float(num)
+	
+	if num > 1000000
+		formatted_num = (num / 1000000).round(1).to_s + "M"	
+	else
+		if num > 1000
+			formatted_num = (num / 1000).round(1).to_s + "k"
+		else
+			formatted_num = num.round(0)
+		end
+	end
+
+	formatted_num
+  end
+    
+
   ##
   # Are any facet restrictions for a field in the query parameters?
   # 

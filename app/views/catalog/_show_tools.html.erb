@@ -8,13 +8,10 @@
 
 -%>
 <% if show_doc_actions? %>
-  <div class="panel panel-default show-tools">
-    <div class="panel-heading">
-      <%= t('blacklight.tools.title') %>
-    </div>
-
-    <div class="panel-body">
-      <ul class="nav">
+  <div class="row show-tools">
+    <div class="large-12 columns">
+      <ul class="inline-list">
+        <li><strong><%= t('blacklight.tools.title') %>:</strong></li>
         <%= render_show_doc_actions @document do |config, inner| %>
           <li class="<%= config.key %>">
             <%= inner %>

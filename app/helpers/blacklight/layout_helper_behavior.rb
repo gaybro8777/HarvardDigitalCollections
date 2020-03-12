@@ -22,22 +22,29 @@ module Blacklight
     # Classes used for sizing the main content of a Blacklight page
     # @return [String]
     def main_content_classes
-      'col-md-9 col-sm-8'
+      'col-md-9'
     end
 
     ##
     # Classes used for sizing the sidebar content of a Blacklight page
     # @return [String]
     def sidebar_classes
-      'col-md-3 col-sm-4'
+      'page-sidebar col-md-3'
     end
 
     ##
     # Class used for specifying main layout container classes. Can be
     # overwritten to return 'container-fluid' for Bootstrap full-width layout
-    # @return [String] 
+    # @return [String]
     def container_classes
       'container'
+    end
+
+    ##
+    # Defining the Google Analytics Tracking ID
+    # @return [String]
+    def google_analytics_tracking_id
+      'UA-121403890-2'
     end
   end
 end

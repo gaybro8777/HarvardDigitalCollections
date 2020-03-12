@@ -16,8 +16,9 @@ module Blacklight::UrlHelperBehavior
   # Use the catalog_path RESTful route to create a link to the show page for a specific item.
   # catalog_path accepts a hash. The solr query params are stored in the session,
   # so we only need the +counter+ param here. We also need to know if we are viewing to document as part of search results.
+  # the truncate option allow for the label to be truncated to a specified length. 
   # TODO: move this to the IndexPresenter
-  def link_to_document(doc, field_or_opts = nil, opts={:counter => nil})
+  def link_to_document(doc, field_or_opts = nil, opts={:counter => nil, :truncate => nil })
     if field_or_opts.is_a? Hash
       opts = field_or_opts
     else
@@ -26,7 +27,11 @@ module Blacklight::UrlHelperBehavior
 
     field ||= document_show_link_field(doc)
     label = index_presenter(doc).label field, opts
-    link_to label, url_for_document(doc), document_link_params(doc, opts)
+    if opts[:truncate]
+      # truncate will behave strangely on non utf-8 string. 
+      label = truncate(strip_tags(label.force_encoding('utf-8')), :length => opts[:truncate])
+    end
+    link_to raw(CGI.unescapeHTML(label)), url_for_document(doc), document_link_params(doc, opts)
   end
 
   def document_link_params(doc, opts)

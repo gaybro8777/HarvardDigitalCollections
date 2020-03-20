@@ -1,59 +1,75 @@
-# Blacklight
+# README
 
-[![Build Status](https://travis-ci.org/projectblacklight/blacklight.png?branch=master)](https://travis-ci.org/projectblacklight/blacklight) [![Gem Version](https://badge.fury.io/rb/blacklight.png)](http://badge.fury.io/rb/blacklight) [![Test Coverage](https://api.codeclimate.com/v1/badges/83fd270492c136594e59/test_coverage)](https://codeclimate.com/github/projectblacklight/blacklight/test_coverage)
+This repository contains a Blacklight instance that uses the Harvard LibraryCloud Item API as a backend in place of
+the standard Solr backend. It also allows adding items to the LibraryCloud collections using the 
+Collections API.
 
-Blacklight is an open source Solr user interface discovery platform.
-You can use Blacklight to enable searching and browsing of your collections.
-Blacklight uses the [Apache Solr](http://lucene.apache.org/solr) search engine
-to search full text and/or metadata.  Blacklight has a highly
-configurable Ruby on Rails front-end. Blacklight was originally developed at
-the University of Virginia Library and is made public under an Apache 2.0 license.
+Demo site: http://dcp-dev2.lib.harvard.edu:8080/
 
-## Installation
+# Dependencies
 
-Add Blacklight to your `Gemfile`:
+    Ruby 2.2+
+    Bundler
+    Rails 5.1+
+    mySQL
 
-```ruby
-gem "blacklight"
+# Installation
+
+* Clone the Repository
+
+```sh
+git clone https://github.com/harvard-library/STLee-blacklight.git
 ```
 
-Run the install generator which will copy over some initial templates, migrations, routes, and configuration:
+* Install Gemfile dependencies
 
-```bash
-rails generate blacklight:install
+```sh
+cd STLee-blacklight/
+bundle install
 ```
 
+* Create mysql users and database
+```sh
+mysql;
+mysql> CREATE DATABASE <my-database-name>;
+mysql> CREATE USER '<my-user-name>'@'localhost' IDENTIFIED BY '<my-password>';
+mysql> GRANT ALL PRIVILEGES ON <my-database-name>.* TO '<my-user-name>'@'localhost';
+mysql> FLUSH PRIVILEGES;
+mysql> exit;
+```
 
-## Documentation, Information and Support
+* Configure the database connection
 
-* [Project Homepage](http://projectblacklight.org)
-* [Developer Documentation](https://github.com/projectblacklight/blacklight/wiki)
-* [Quickstart Guide](https://github.com/projectblacklight/blacklight/wiki/Quickstart)
-* [Issue Tracker](https://github.com/projectblacklight/blacklight/issues)
-* [Support](https://github.com/projectblacklight/blacklight/wiki/Support)
+Edit `config/database.yml` with credentials that match the Postgres user and database that you are using. For example, change the 'development' section as follows, to add `username` and `password` configuration keys:
 
-## Dependencies
+```yml
+default: &default
+  adapter: mysql2
+  user: <my-user-name>
+  password: <my-password>
 
-* Ruby 2.2+
-* Bundler
-* Rails 5.1+
+development:
+  <<: *default
+  host: localhost
+  database: <my-database-name>
+```
 
-## Configuring Apache Solr
-You'll also want some information about how Blacklight expects [Apache Solr](http://lucene.apache.org/solr ) to run, which you can find in [README_SOLR](https://github.com/projectblacklight/blacklight/wiki/README_SOLR)
+* Initialize the database
 
-## Building the javascript
-The javascript is built by npm from sources in `app/javascript` into a bundle
-in `app/assets/javascripts/blacklight/blacklight.js`. This file should not be edited
-by hand as any changes would be overwritten.  When any of the javascript
-components in the gem are changed, this bundle should be rebuild with the
-following steps:
-1. [Install npm](https://www.npmjs.com/get-npm)
-1. run `npm install` to download dependencies
-1. run `npm run js-compile-bundle` to build the bundle
-1. run `npm publish` to push the javascript package to https://npmjs.org/package/blacklight-frontend
+```
+bundle exec rake db:migrate
+```
 
-## Using the javascript
-Blacklight ships with Javascript that can be compiled either by Webpacker or by
-Sprockets. To use Webpacker see the directions at https://github.com/projectblacklight/blacklight/wiki/Using-Webpacker-to-compile-javascript-assets
+* Start the application
 
-If you prefer to use Sprockets, simply run the install generator, which will run the assets generator. For details see https://github.com/projectblacklight/blacklight/wiki/Using-Sprockets-to-compile-javascript-assets
+```
+rails server
+```
+
+## Documentation of Code Changes
+
+Custom modifications to Blacklight code are documented in the [code-changes.md](docs/code-changes.md)
+
+## Known Issues
+
+Known issues to the custom modifications are documented in [known-issues.md](docs/known-issues.md)

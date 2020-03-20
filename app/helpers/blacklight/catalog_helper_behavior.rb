@@ -31,49 +31,52 @@ module Blacklight::CatalogHelperBehavior
 
   ##
   # Override the Kaminari page_entries_info helper with our own, blacklight-aware
-  # implementation. Why do we have to do this?
-  #  - We need custom counting information for grouped results
-  #  - We need to provide number_with_delimiter strings to i18n keys
-  # If we didn't have to do either one of these, we could get away with removing
-  # this entirely.
+  # implementation.
+  # Displays the "showing X through Y of N" message.
   #
   # @param [RSolr::Resource] collection (or other Kaminari-compatible objects)
   # @return [String]
-  def page_entries_info(collection, entry_name: nil)
-    entry_name = if entry_name
-                   entry_name.pluralize(collection.size, I18n.locale)
-                 else
-                   collection.entry_name(count: collection.size).to_s.downcase
-                 end
+  def page_entries_info(collection, options = {})
+    return unless show_pagination? collection
+
+    entry_name = if options[:entry_name]
+      options[:entry_name]
+    elsif collection.respond_to? :model  # DataMapper
+      collection.model.model_name.human.downcase
+    elsif collection.respond_to? :model_name and !collection.model_name.nil? # AR, Blacklight::PaginationMethods
+      collection.model_name.human.downcase
+    else
+      t('blacklight.entry_name.default')
+    end
 
     entry_name = entry_name.pluralize unless collection.total_count == 1
 
     # grouped response objects need special handling
-    end_num = if collection.respond_to?(:groups) && render_grouped_response?(collection)
-                collection.groups.length
-              else
-                collection.limit_value
-              end
+    end_num = if collection.respond_to? :groups and render_grouped_response? collection
+      collection.groups.length
+    else
+      collection.limit_value
+    end
 
     end_num = if collection.offset_value + end_num <= collection.total_count
-                collection.offset_value + end_num
-              else
-                collection.total_count
-              end
+      collection.offset_value + end_num
+    else
+      collection.total_count
+    end
 
     case collection.total_count
       when 0
-        t('blacklight.search.pagination_info.no_items_found', entry_name: entry_name).html_safe
+        t('blacklight.search.pagination_info.no_items_found', :entry_name => entry_name ).html_safe
       when 1
-        t('blacklight.search.pagination_info.single_item_found', entry_name: entry_name).html_safe
+        t('blacklight.search.pagination_info.single_item_found', :entry_name => entry_name).html_safe
       else
-        t('blacklight.search.pagination_info.pages', entry_name: entry_name,
-                                                     current_page: collection.current_page,
-                                                     num_pages: collection.total_pages,
-                                                     start_num: number_with_delimiter(collection.offset_value + 1),
-                                                     end_num: number_with_delimiter(end_num),
-                                                     total_num: number_with_delimiter(collection.total_count),
-                                                     count: collection.total_pages).html_safe
+        t('blacklight.search.pagination_info.pages', :entry_name => entry_name,
+                                                     :current_page => collection.current_page,
+                                                     :num_pages => collection.total_pages,
+                                                     :start_num => number_with_delimiter(collection.offset_value + 1),
+                                                     :end_num => number_with_delimiter(end_num),
+                                                     :total_num => number_with_delimiter(collection.total_count),
+                                                     :count => collection.total_pages).html_safe
     end
   end
 
@@ -124,7 +127,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @return [Integer]
   def current_per_page
-    (@response.rows if @response && @response.rows > 0) || params.fetch(:per_page, blacklight_config.default_per_page).to_i
+    (@response.rows if @response && @response.rows > 0) || params.fetch(:per_page, default_per_page).to_i
   end
 
   ##
@@ -132,7 +135,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @return [String]
   def render_document_class(document = @document)
-    types = presenter(document).display_type
+    types = document[blacklight_config.view_config(document_index_view_type).display_type_field]
     return if types.blank?
 
     Array(types).compact.map do |t|
@@ -149,13 +152,8 @@ module Blacklight::CatalogHelperBehavior
   #
   # @param [SolrDocument] document
   # @return [String]
-  def render_document_sidebar_partial(document = nil)
-    unless document
-      Deprecation.warn(self, 'render_document_sidebar_partial expects one argument ' /
-        '(@document) and you passed none. This behavior will be removed in version 8')
-      document = @document
-    end
-    render 'show_sidebar', document: document
+  def render_document_main_content_partial(document = @document)
+    render :partial => 'show_sidebar'
   end
 
   ##
@@ -163,7 +161,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @param [SolrDocument] document
   # @return [String]
-  def render_document_main_content_partial(_document = @document)
+  def render_document_main_content_partial(document = @document)
     render partial: 'show_main_content'
   end
 
@@ -205,7 +203,8 @@ module Blacklight::CatalogHelperBehavior
   # @param [SolrDocument] document
   # @return [Boolean]
   def has_thumbnail? document
-    index_presenter(document).thumbnail.exists?
+    blacklight_config.view_config(document_index_view_type).thumbnail_method.present? or
+      blacklight_config.view_config(document_index_view_type).thumbnail_field && document.has?(blacklight_config.view_config(document_index_view_type).thumbnail_field)
   end
   deprecation_deprecate has_thumbnail?: "use IndexPresenter#thumbnail.exists?"
 
@@ -218,9 +217,56 @@ module Blacklight::CatalogHelperBehavior
   # @param [Hash] url_options to pass to #link_to_document
   # @return [String]
   def render_thumbnail_tag document, image_options = {}, url_options = {}
-    index_presenter(document).thumbnail.thumbnail_tag(image_options, url_options)
+    value = if blacklight_config.view_config(document_index_view_type).thumbnail_method
+      send(blacklight_config.view_config(document_index_view_type).thumbnail_method, document, image_options)
+    elsif blacklight_config.view_config(document_index_view_type).thumbnail_field
+      url = thumbnail_url(document)
+
+      image_tag_wout_alt url, image_options if url.present?
+    end
+
+    if value
+      if url_options == false
+        Deprecation.warn(self, "passing false as the second argument to render_thumbnail_tag is deprecated. Use suppress_link: true instead. This behavior will be removed in Blacklight 7")
+        url_options = { suppress_link: true }
+      end
+      if url_options[:suppress_link]
+        value
+      else
+        link_to_document document, value, url_options
+      end
+    end
   end
   deprecation_deprecate render_thumbnail_tag: "Use IndexPresenter#thumbnail.thumbnail_tag"
+
+  ##
+  # Customized version of rails 5.1.4 'image_tag' function so 
+  # that when no alt tags are specified in the options, the 
+  # alt tag will be left empty instead of having some part of
+  # the image url being jammed in
+  #
+  # see source for details on params. 
+  # source: https://github.com/rails/rails/blob/v5.1.4/actionview/lib/action_view/helpers/asset_tag_helper.rb
+  #
+
+  def image_tag_wout_alt(source, options = {})
+    options = options.symbolize_keys
+    check_for_image_tag_errors(options)
+
+    src = options[:src] = path_to_image(source, skip_pipeline: options.delete(:skip_pipeline))
+
+    # "|| options[:alt] == nil" is the only telement added from the base image_tag function.
+    unless src.start_with?("cid:") || src.start_with?("data:") || src.blank? || options[:alt] == nil
+      options[:alt] = options.fetch(:alt) { image_alt(src) }
+    end
+
+    if options[:alt] == nil 
+      options[:alt] = ' '
+    end
+
+    options[:width], options[:height] = extract_dimensions(options.delete(:size)) if options[:size]
+    tag("img", options)
+  end
 
   ##
   # Get the URL to a document's thumbnail image
@@ -240,7 +286,7 @@ module Blacklight::CatalogHelperBehavior
   # @param [String] view
   # @return [String]
   def render_view_type_group_icon view
-    blacklight_icon(view)
+    content_tag :span, '', class: "fa #{blacklight_config.view[view].icon_class || default_view_type_group_icon_classes(view)}"
   end
 
   ##
@@ -249,22 +295,12 @@ module Blacklight::CatalogHelperBehavior
   # @param [String] view
   # @return [String]
   def default_view_type_group_icon_classes view
-    Deprecation.warn(Blacklight::CatalogHelperBehavior, 'This method has been deprecated, use blacklight_icons helper instead')
-    "glyphicon-#{view.to_s.parameterize} view-icon-#{view.to_s.parameterize}"
+    "fa-#{view.to_s.parameterize} view-icon-#{view.to_s.parameterize}"
   end
 
   def current_bookmarks documents_or_response = nil
-    documents = if documents_or_response.respond_to? :documents
-                  Deprecation.warn(Blacklight::CatalogHelperBehavior, "Passing a response to #current_bookmarks is deprecated; pass response.documents instead")
-                  documents_or_response.documents
-                else
-                  documents_or_response
-                end
-
-    documents ||= [@document] if @document.present?
-    documents ||= @response.documents
-
-    @current_bookmarks ||= current_or_guest_user.bookmarks_for_documents(documents).to_a
+    response ||= @response
+    @current_bookmarks ||= current_or_guest_user.bookmarks_for_documents(response.documents).to_a
   end
 
   ##
@@ -298,10 +334,14 @@ module Blacklight::CatalogHelperBehavior
     end
 
     if params['f'].present?
-      constraints += params['f'].to_unsafe_h.collect { |key, value| render_search_to_page_title_filter(key, Array(value)) }
+      constraints += params['f'].to_unsafe_h.collect { |key, value| render_search_to_page_title_filter(key, value) }
     end
 
     constraints.join(' / ')
+  end
+
+  def bookmarks_enabled?
+    blacklight_config.enable_bookmarks
   end
 
   private

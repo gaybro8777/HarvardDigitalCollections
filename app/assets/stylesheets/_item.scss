@@ -1,0 +1,428 @@
+@import "settings";
+@import "util";
+@import "icons";
+
+.modal-dialog {
+  width: 95%;
+  height: 95%;
+}
+
+.modal-title {
+  display: inline-block;
+}
+
+.close, .modal-button {
+  display: inline-block;
+}
+
+.modal-content {
+  height:100%;
+}
+
+.modal-header, .no-border {
+  border:none;
+}
+
+.modal-body {
+  height: 95%;
+}
+
+#embedded-viewer-tour-presentation {
+  width: 100%;
+  height: 95%;
+}
+
+#previous-next {
+  margin-bottom: 20px;  
+  font-family: $font-family-sans-serif;
+
+  a {
+      border-bottom: 3px solid transparent;
+      color: $breakthrough-blue;
+      font-weight: 500;
+      text-decoration: none;
+      -webkit-transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+      transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+
+      &:hover {
+        border-bottom: 3px solid rgba(5,121,184,0.3);
+      }
+    }
+
+  .page-header-page-links-column {
+    
+    .page_links {
+      float: right;
+    }
+  }
+
+}
+
+@media (max-width: 425px) {
+  #previous-next .page-header-page-links-column .page_links {
+    float: left;
+    text-align: left;
+    margin-top: 6px;
+  }
+}
+
+
+// Only show H1 to screen readers
+body.blacklight-catalog-show #document h1 {
+  @include sr-only();
+}
+
+.original-document-wrapper iframe {
+  width: 100%;
+  height: 540px;
+  border: none;
+  margin-bottom: 50px;
+}
+
+#details {
+  a {
+    border-bottom: 3px solid transparent;
+    color: $breakthrough-blue;
+    text-decoration: none;
+    -webkit-transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+    transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+
+    &:hover {
+      border-bottom: 3px solid rgba(5,121,184,0.3);
+    }
+  }
+
+  br {
+    content: " ";
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  dl {
+      display: grid;
+      grid-template-columns: max-content auto;
+
+    dt {
+      border-bottom: 1px solid #d8d8d8;
+      font-family: $font-family-sans-serif;
+      font-size: 20px;
+      grid-column-start: 1;
+      letter-spacing: 1.5px;
+      margin: 0;
+      padding: 40px 0;
+      position: relative;
+      text-transform: uppercase;
+      width: 240px;
+
+      /* may the developer gods forgive me,
+         but I had no other choice... -ED */
+
+      &:after {
+        content:":";
+        color: $white;
+        position: absolute;
+        transform: translate(-100%, 0);
+        -webkit-text-stroke: 2px $white;
+      }
+    }
+
+    dd {
+      border-bottom: 1px solid #d8d8d8;
+      font-family: $font-family-serif;
+      font-size: 15px;
+      grid-column-start: 2;
+      line-height: 28px;
+      margin: 0 40px 0 0;
+      padding: 40px 0;
+
+      &.blacklight-title_extended {
+        font-size: 24px;
+        font-weight: bold;
+
+        .alternative-title {
+          font-size: 18px;
+          font-weight: normal;
+        }
+      }
+    }
+  }
+}
+
+dl.row {
+  margin-left: 0;
+}
+
+#take-a-tour {
+  margin: -40px 0 40px;
+
+  a {
+    border-bottom: 3px solid transparent;
+    color: $breakthrough-blue;
+    cursor: pointer;
+    font-family: $font-family-sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    -webkit-transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+    transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+
+    &:hover {
+      border-bottom: 3px solid rgba(5,121,184,0.3);
+    }
+  }
+
+  p {
+    text-align: center;
+    margin-bottom: 0;
+  }
+}
+
+#tools, #feedback {
+  border: 1px solid #d8d8d8;
+  font-family: $font-family-serif;
+  font-size: 15px;
+  line-height: 28px;
+  margin: 0;
+  padding: 40px 40px 0;
+  display: block;
+  width: 100%;
+
+  &:after {
+    clear: both;
+  }
+
+  h2 {
+    font-family: $font-family-sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+  }
+
+  dl {
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  dl dt {
+    border-top: 2px dotted #d8d8d8;
+    color: $medium-gray;
+    font-family: $font-family-sans-serif;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    margin: 0;
+    padding: 40px 0 20px;
+    text-transform: uppercase;
+  }
+
+  dd:last-child {
+    padding-bottom: 40px;
+  }
+
+  a, .checkbox.toggle_bookmark label span {
+    border-bottom: 3px solid transparent;
+    color: $breakthrough-blue;
+    font-family: $font-family-sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    -webkit-transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+    transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+
+    &:hover {
+      border-bottom: 3px solid rgba(5,121,184,0.3);
+    }
+  }
+
+  .btn-group.open { 
+
+    .caret {
+      transform: scaleY(-1);
+    }
+
+    .dropdown-menu {
+      opacity: 1.0;
+    }
+  }
+
+  button.btn-dark {
+    margin-top: 20px;
+    font-family: $font-family-sans-serif;
+    font-weight: 600;
+    background-color: $jet;
+    color: $white;
+    letter-spacing: 1.17px;
+    padding: 6px 28px;
+    text-transform: uppercase;
+
+    .caret {
+      margin-left: 6px;
+      margin-top: -2px;
+      -webkit-transition: transform .28s ease-out;
+      transition: transform .28s ease-out;
+    }
+  }
+
+  .dropdown-menu {
+    font-family: $font-family-sans-serif;
+    margin-top: 0;
+    min-width: 258px;
+    padding: 0;
+    opacity: 0;
+    -webkit-transition: opacity 0.28s 0.1s;
+    transition: opacity 0.28s 0.1s;
+
+    a {
+        color: #333;
+        text-decoration: none;
+        padding: 8px 20px 6px;
+        -webkit-transition: background 0.28s ease;
+        transition: background 0.28s ease;
+
+        &:hover {
+          border-color: transparent;
+      }
+    }
+
+    &.sequence-options {
+      padding: 15px;
+
+      input[type=text] {
+        -webkit-border-radius: 4px;
+        border-radius: 4px;
+        border: 1px solid #d8d8d8;
+        margin-top: 10px;
+        padding-left: 4px;
+      }
+
+      #email_text_form {
+        font-weight: 300;
+        line-height: 22px;
+        padding: 10px 0;
+      }
+
+      #email_field {
+        line-height: 28px;
+        width: 100%;
+      }
+
+      #invalid_email_text, #incorrect_page_range {
+        color: $red;
+        line-height: 22px;
+        margin-bottom: 10px;
+      }
+
+      button {
+        background-color: transparent;
+        border: none;
+        color: $breakthrough-blue;
+        margin-top: 10px;
+      }
+    }
+  }
+
+  .btn-group.open {
+
+    .dropdown-menu {
+      -webkit-border-radius: 0 0 4px 4px;
+      border-radius: 0 0 4px 4px;
+      border-top-width: inherit;
+    }
+
+    .btn-dark {
+      -webkit-border-radius: 4px 4px 0 0;
+      border-radius: 4px 4px 0 0;
+    }
+  }
+
+  .dl-appears-in, .dl-more-details {
+    padding-bottom: 0;
+
+    dd {
+      margin-bottom: 18px;
+
+      &:last-child, &:only-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .checkbox.toggle_bookmark {
+    padding-top: 24px;
+
+    label {
+      font-size: 15px;
+      letter-spacing: inherit;
+      padding-top: 0;
+
+      span {
+        margin-left: 3px;
+      }
+    }
+
+    input[type="checkbox"] {
+      margin-top: 0;
+    }
+  }
+
+  form input.toggle_bookmark {
+      height: 28px;
+    }
+
+  .permalink {
+      clear: both;
+      padding: 20px 0 40px;
+  }
+
+  .dl-iiif img {
+    height: 20px;
+    opacity: 0.7;
+  }
+
+}
+
+#feedback {
+  margin-top: 40px;
+
+  p {
+    padding: 20px 0 30px;
+  }
+}
+
+@media (max-width: 992px) {
+  #details dl {
+    display: block;
+
+    dt {
+      border-bottom: none;
+      display: block;
+      padding-bottom: 5px;
+      width: 100%;
+    }
+
+    dd {
+      display: block;
+      padding-top: 5px;
+      width: 100%;
+    }
+  }
+
+  #document .col-lg-4 {
+    padding-right: 0;
+    width: 100%;
+  }
+
+  #tools {
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+
+  #tools dl {    
+    width: 100%;
+  }
+}
+
+@media (max-width: 1200px) {
+  #take-a-tour {
+      display: none;
+  }
+}

@@ -1,13 +1,13 @@
 <% if show_sort_and_per_page? and !blacklight_config.per_page.blank? %>
-<span class="sr-only"><%= t('blacklight.search.per_page.title') %></span>
-<div id="per_page-dropdown" class="per-page-dropdown btn-group">
-  <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-    <%= t(:'blacklight.search.per_page.button_label_html', :count => current_per_page) %> <span class="caret"></span>
-  </button>
-  <div class="dropdown-menu dropdown-menu-right" role="menu">
-    <%- per_page_options_for_select.each do |(label, count)| %>
-      <%= link_to(label, url_for(search_state.params_for_search(per_page: count)), class: 'dropdown-item', role: 'menuitem') %>
-    <%- end -%>
+
+  <span class="sr-only"><%= t('blacklight.search.per_page.title') %></span>
+  <div id="per-page-dropdown" class="dropdown">
+    <a id="displaycount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><%= t(:'blacklight.search.per_page.button_label', :count => current_per_page) %><span class="caret right"></span></a>
+    <ul class="dropdown-menu" aria-labelledby="displaycount" aria-hidden="true" tabindex="-1">
+      <%- per_page_options_for_select.each do |(label, count)| %>
+          <li><%= link_to(label, url_for(search_state.params_for_search(per_page: count))) %></li>
+      <%- end -%>
+    </ul>
   </div>
-</div>
+
 <% end %>

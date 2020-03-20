@@ -1,12 +1,5 @@
-<% if current_search_session %>
-  <div id="appliedParams" class="clearfix constraints-container">
-    <%= render 'start_over' %>
-    <%= link_back_to_catalog class: 'btn btn-outline-secondary' %>
+<div class="col-xs-12">
+  <div class="col-lg-10 col-lg-offset-1" id="content">
+    <%= render_document_main_content_partial %>
   </div>
-<% end %>
-
-<%= render_document_main_content_partial %>
-
-<% content_for(:sidebar) do %>
-  <%= render_document_sidebar_partial @document %>
-<% end %>
+</div>

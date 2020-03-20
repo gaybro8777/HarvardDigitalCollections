@@ -7,13 +7,17 @@
     per_page:      number of items to fetch per page
     remote:        data-remote
 -%>
-<% page_display = number_with_delimiter(page.to_s) %>
-
-<li class="page-item <%= 'active' if page.current? %>">
+<li class="<%= 'active' if page.current? %>">
   <% if page.current? %>
-    <span class="page-link" aria-label="<%= t('views.pagination.aria.current_page', page: page_display) %>" aria-current="true"><%= page_display %></span>
+    <span><%= number_with_delimiter(page.to_s) %></span>
   <% else %>
-    <%= link_to page_display, url, :remote => remote, :rel => page.next? ? 'next' : page.prev? ? 'prev' : nil, class: 'page-link', aria: { label: t('views.pagination.aria.go_to_page', page: page_display) } %>
+    <%
+    link_text = number_with_delimiter(page.to_s)
+    if page.number == @jump_page
+      link_text = '...'
+    end
+    %>
+    <%= link_to link_text, url, opts = {:remote => remote, :rel => page.next? ? 'next' : page.prev? ? 'prev' : nil} %>
   <% end %>
 </li>
 

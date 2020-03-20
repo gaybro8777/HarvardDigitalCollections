@@ -1,14 +1,12 @@
 <h2><%= t 'blacklight.search.zero_results.title' %></h2>
 <div id="documents" class="noresults">
-  <h3><%= t 'blacklight.search.zero_results.modify_search' %></h3>
+  <h2>Try...</h2>
+
   <ul>
-    <li><%= t 'blacklight.search.zero_results.use_fewer_keywords' %></li>
-
-    <%- if params[:q] and params[:search_field] and params[:search_field] != blacklight_config.default_search_field.try(:key) -%>
-      <li><%= t 'blacklight.search.zero_results.search_fields', :search_fields => search_field_label(params) %> -
-      <%= link_to t('blacklight.search.zero_results.search_everything', field: blacklight_config.default_search_field.label), url_for(search_state.params_for_search(search_field: blacklight_config.default_search_field.key)) %>
-      </li>
-    <%- end %>
-
+  	<li>entering your term into a <a href="https://digitalcollections.library.harvard.edu">new search</a> - hyperlinked fields may yield incomplete results.</li>
+  	<li>removing search terms - adding more words limits your results.</li>
+  	<li>searching <a href="https://hollis.harvard.edu">HOLLIS</a> catalog - Harvard affiliates may have access to more items.</li>
+  	<li>removing filters - some filters don't apply to all items.</li>
   </ul>
+
 </div>

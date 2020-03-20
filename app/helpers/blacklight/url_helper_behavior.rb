@@ -2,6 +2,12 @@
 ##
 # URL helper methods
 module Blacklight::UrlHelperBehavior
+  include Blacklight::DeprecatedUrlHelperBehavior
+  
+  ##
+  # Extension point for downstream applications
+  # to provide more interesting routing to
+  # documents
   def url_for_document(doc, options = {})
     search_state.url_for_document(doc, options)
   end
@@ -18,23 +24,20 @@ module Blacklight::UrlHelperBehavior
   #   link_to_document(doc, '<img src="thumbnail.png">', counter: 3) #=> "<a href=\"catalog/123\" data-tracker-href=\"/catalog/123/track?counter=3&search_id=999\"><img src="thumbnail.png"></a>
   # @example With the default document link field
   #   link_to_document(doc, counter: 3) #=> "<a href=\"catalog/123\" data-tracker-href=\"/catalog/123/track?counter=3&search_id=999\">My Title</a>
-  def link_to_document(doc, field_or_opts = nil, opts = { counter: nil })
-    label = case field_or_opts
-            when NilClass
-              index_presenter(doc).heading
-            when Hash
-              opts = field_or_opts
-              index_presenter(doc).heading
-            when Proc, Symbol
-              Deprecation.warn(self, "passing a #{field_or_opts.class} to link_to_document is deprecated and will be removed in Blacklight 8")
-              Deprecation.silence(Blacklight::IndexPresenter) do
-                index_presenter(doc).label field_or_opts, opts
-              end
-            else # String
-              field_or_opts
-            end
+  def link_to_document(doc, field_or_opts = nil, opts={:counter => nil, :truncate => nil })
+    if field_or_opts.is_a? Hash
+      opts = field_or_opts
+    else
+      field = field_or_opts
+    end
 
-    link_to label, url_for_document(doc), document_link_params(doc, opts)
+    field ||= document_show_link_field(doc)
+    label = index_presenter(doc).label field, opts
+    if opts[:truncate]
+      # truncate will behave strangely on non utf-8 string. 
+      label = truncate(strip_tags(label.force_encoding('utf-8')), :length => opts[:truncate])
+    end
+    link_to raw(CGI.unescapeHTML(label)), url_for_document(doc), document_link_params(doc, opts)
   end
 
   def document_link_params(doc, opts)
@@ -66,7 +69,7 @@ module Blacklight::UrlHelperBehavior
   # @param [Integer] counter
   # @example
   #   session_tracking_params(SolrDocument.new(id: 123), 7)
-  #   => { data: { :'context-href' => '/catalog/123/track?counter=7&search_id=999' } }
+  #   => { data: { :'tracker-href' => '/catalog/123/track?counter=7&search_id=999' } }
   def session_tracking_params document, counter
     path = session_tracking_path(document, per_page: params.fetch(:per_page, search_session['per_page']), counter: counter, search_id: current_search_session.try(:id))
 
@@ -81,10 +84,12 @@ module Blacklight::UrlHelperBehavior
   ##
   # Get the URL for tracking search sessions across pages using polymorphic routing
   def session_tracking_path document, params = {}
-    return if document.nil? || !blacklight_config&.track_search_session
+    return if document.nil?
 
-    if main_app.respond_to?(controller_tracking_method)
-      return main_app.public_send(controller_tracking_method, params.merge(id: document))
+    if respond_to?(controller_tracking_method)
+      send(controller_tracking_method, params.merge(id: document))
+    else
+      blacklight.track_search_context_path(params.merge(id: document))
     end
 
     raise "Unable to find #{controller_tracking_method} route helper. " \
@@ -126,7 +131,7 @@ module Blacklight::UrlHelperBehavior
     query_params = search_state.reset(current_search_session.try(:query_params)).to_hash
 
     if search_session['counter']
-      per_page = (search_session['per_page'] || blacklight_config.default_per_page).to_i
+      per_page = (search_session['per_page'] || default_per_page).to_i
       counter = search_session['counter'].to_i
 
       query_params[:per_page] = per_page unless search_session['per_page'].to_i == blacklight_config.default_per_page

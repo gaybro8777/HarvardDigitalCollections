@@ -6,15 +6,10 @@ module Blacklight::FacetsHelperBehavior
   # Check if any of the given fields have values
   #
   # @param [Array<String>] fields
+  # @param [Hash] options
   # @return [Boolean]
-  def has_facet_values? fields = facet_field_names, response = nil
-    unless response
-      Deprecation.warn(self, 'Calling has_facet_values? without passing the ' \
-        'second argument (response) is deprecated and will be removed in Blacklight ' \
-        '8.0.0')
-      response = @response
-    end
-    facets_from_request(fields, response).any? { |display_facet| should_render_facet?(display_facet) }
+  def has_facet_values? fields = facet_field_names, options = {}
+    facets_from_request(fields).any? { |display_facet| !display_facet.items.empty? && should_render_facet?(display_facet) }
   end
 
   ##
@@ -25,22 +20,8 @@ module Blacklight::FacetsHelperBehavior
   # @param [Hash] options
   # @options options [Blacklight::Solr::Response] :response the Solr response object
   # @return String
-  def render_facet_partials fields = nil, options = {}
-    unless fields
-      Deprecation.warn(self, 'Calling render_facet_partials without passing the ' \
-        'first argument (fields) is deprecated and will be removed in Blacklight ' \
-        '8.0.0')
-      fields = facet_field_names
-    end
-
-    response = options.delete(:response)
-    unless response
-      Deprecation.warn(self, 'Calling render_facet_partials without passing the ' \
-        'response keyword is deprecated and will be removed in Blacklight ' \
-        '8.0.0')
-      response = @response
-    end
-    safe_join(facets_from_request(fields, response).map do |display_facet|
+  def render_facet_partials fields = facet_field_names, options = {}
+    safe_join(facets_from_request(fields).map do |display_facet|
       render_facet_limit(display_facet, options)
     end.compact, "\n")
   end
@@ -57,7 +38,6 @@ module Blacklight::FacetsHelperBehavior
   # @option options [Hash] :locals locals to pass to the partial
   # @return [String]
   def render_facet_limit(display_facet, options = {})
-    field_config = facet_configuration_for_field(display_facet.name)
     return unless should_render_facet?(display_facet, field_config)
 
     options = options.dup
@@ -65,8 +45,9 @@ module Blacklight::FacetsHelperBehavior
     options[:layout] ||= "facet_layout" unless options.key?(:layout)
     options[:locals] ||= {}
     options[:locals][:field_name] ||= display_facet.name
-    options[:locals][:facet_field] ||= field_config
-    options[:locals][:display_facet] ||= display_facet
+    options[:locals][:solr_field] ||= display_facet.name # deprecated
+    options[:locals][:facet_field] ||= facet_configuration_for_field(display_facet.name)
+    options[:locals][:display_facet] ||= display_facet 
 
     render(options)
   end
@@ -101,8 +82,9 @@ module Blacklight::FacetsHelperBehavior
     return false if display_facet.items.blank?
 
     # display when show is nil or true
-    facet_config ||= facet_configuration_for_field(display_facet.name)
-    should_render_field?(facet_config, display_facet)
+    facet_config = facet_configuration_for_field(display_facet.name)
+    display = should_render_field?(facet_config, display_facet)
+    display && display_facet.items.present?
   end
 
   ##
@@ -128,7 +110,7 @@ module Blacklight::FacetsHelperBehavior
     config = facet_configuration_for_field(display_facet.name)
     name = config.try(:partial)
     name ||= "facet_pivot" if config.pivot
-    name || "facet_limit"
+    name ||= "facet_limit"
   end
 
   ##
@@ -156,12 +138,12 @@ module Blacklight::FacetsHelperBehavior
   # @param [Blacklight::Solr::Response::Facets::FacetField] facet_field
   # @param [String] item
   # @return [String]
-  def path_for_facet(facet_field, item, path_options = {})
+  def path_for_facet(facet_field, item)
     facet_config = facet_configuration_for_field(facet_field)
     if facet_config.url_method
       send(facet_config.url_method, facet_field, item)
     else
-      search_action_path(search_state.add_facet_params_and_redirect(facet_field, item).merge(path_options))
+      search_action_path(search_state.add_facet_params_and_redirect(facet_field, item))
     end
   end
 
@@ -176,7 +158,7 @@ module Blacklight::FacetsHelperBehavior
       content_tag(:span, facet_display_value(facet_field, item), class: "selected") +
       # remove link
       link_to(remove_href, class: "remove") do
-        content_tag(:span, '✖', class: "remove-icon") +
+        content_tag(:span, '', class: "fa fa-check") +
         content_tag(:span, '[remove]', class: 'sr-only')
       end
     end + render_facet_count(item.hits, classes: ["selected"])
@@ -192,7 +174,23 @@ module Blacklight::FacetsHelperBehavior
   # @return [String]
   def render_facet_count(num, options = {})
     classes = (options[:classes] || []) << "facet-count"
-    content_tag("span", t('blacklight.search.facets.count', number: number_with_delimiter(num)), class: classes)
+    content_tag("span", t('blacklight.search.facets.count', :number => format_facet_count(num)), :class => classes)
+  end
+
+  def format_facet_count(num)
+    num = Float(num)
+	
+    if num > 1000000
+      formatted_num = (num / 1000000).round(1).to_s + "M"	
+    else
+      if num > 1000
+        formatted_num = (num / 1000).round(1).to_s + "k"
+      else
+        formatted_num = num.round(0)
+      end
+    end
+
+    formatted_num
   end
 
   ##
@@ -201,7 +199,7 @@ module Blacklight::FacetsHelperBehavior
   # @param [String] field
   # @return [Boolean]
   def facet_field_in_params? field
-    facet_params(field).present?
+    !facet_params(field).blank?
   end
 
   ##
@@ -246,7 +244,7 @@ module Blacklight::FacetsHelperBehavior
       facet_config.query[value][:label]
     elsif facet_config.date
       localization_options = facet_config.date == true ? {} : facet_config.date
-      l(Time.zone.parse(value), localization_options)
+      l(value.to_datetime, localization_options)
     else
       value
     end

@@ -64,7 +64,9 @@ module Blacklight
     end
 
     def last_page?
-      limit.nil? || total_count <= limit
+      puts "total_count=" + total_count.to_s + " limit=" + limit.to_s
+	   
+      limit.nil? || @offset.nil? || total_count <= limit + @offset
     end
 
     def first_page?
@@ -106,7 +108,11 @@ module Blacklight
     # setting limit to nil implies no limit
     # @return an array of facets on the page
     def items_for_limit(values)
-      limit.nil? ? values : values.take(limit)
+      puts "sort=" + @sort
+      if @sort == "index"
+        values = values.sort_by{|item| item.value}
+      end
+      limit.nil? ? values : values.drop(@offset).take(limit)
     end
   end
 end

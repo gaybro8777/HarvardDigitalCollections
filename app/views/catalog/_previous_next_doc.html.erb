@@ -1,12 +1,27 @@
-<% if @search_context[:prev] || @search_context[:next] %>
-  <div class='pagination-search-widgets'>
-  
-    <div class="page-links">
-      <%= link_to_previous_document @search_context[:prev] %> |
+<% #Using the Bootstrap Pagination class  -%>
+<% #DEPRECATED - using id="previousNextDocument" as a selector is deprecated and will be removed in Blacklight 6.0 %>
+<div id="previous-next" class="row">
 
-      <%= item_page_entry_info %> |
-
-      <%= link_to_next_document @search_context[:next] %>
-    </div>
+  <div class="col-sm-6">
+    <% if current_search_session %>
+        <div class="search-widgets">
+          <%= link_back_to_catalog %>
+        </div>
+    <% end %>
   </div>
-<% end %>
+  <div class="col-sm-6 page-header-page-links-column">
+    <% if item_page_entry_info &&  (@previous_document || @next_document) %>
+        <div class="page_links">
+          <% if @previous_document %>      
+            <%= link_to_previous_document @previous_document %> |
+          <% end %>
+          
+          <%= item_page_entry_info %> 
+          
+          <% if @next_document %>
+            | <%= link_to_next_document @next_document %>
+          <% end %>
+        </div>
+    <% end %>
+  </div>
+</div>

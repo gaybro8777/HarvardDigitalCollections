@@ -4,7 +4,7 @@ class CatalogController < ApplicationController
   include BlacklightRangeLimit::ControllerOverride
 
   include Blacklight::Catalog
-  # include Blacklight::Marc::Catalog
+  include Blacklight::Marc::Catalog
   include Harvard::LibraryCloud::Collections
 
 

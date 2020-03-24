@@ -2,6 +2,7 @@ module Harvard::LibraryCloud
 
   require 'faraday'
   require 'json'
+  require 'pry'
 
   class API
 

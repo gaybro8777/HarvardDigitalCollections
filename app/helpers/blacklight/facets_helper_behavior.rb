@@ -38,7 +38,7 @@ module Blacklight::FacetsHelperBehavior
   # @option options [Hash] :locals locals to pass to the partial
   # @return [String]
   def render_facet_limit(display_facet, options = {})
-    return unless should_render_facet?(display_facet, field_config)
+    return unless should_render_facet?(display_facet)
 
     options = options.dup
     options[:partial] ||= facet_partial_name(display_facet)

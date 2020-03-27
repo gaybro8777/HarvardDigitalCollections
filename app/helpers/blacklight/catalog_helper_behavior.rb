@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 module Blacklight::CatalogHelperBehavior
+  # FROM CORE BLACKLIGHT
   extend Deprecation
   self.deprecation_horizon = 'blacklight 8.0'
 
@@ -7,9 +8,10 @@ module Blacklight::CatalogHelperBehavior
   include Blacklight::ComponentHelperBehavior
   include Blacklight::FacetsHelperBehavior
   include Blacklight::RenderConstraintsHelperBehavior
-  include Blacklight::RenderPartialsHelperBehavior
+  # include Blacklight::RenderPartialsHelperBehavior
   include Blacklight::SearchHistoryConstraintsHelperBehavior
   include Blacklight::SuggestHelperBehavior
+  # FROM CORE BLACKLIGHT
 
   # @param [Hash] options
   # @option options :route_set the route scope to use when constructing the link
@@ -102,16 +104,16 @@ module Blacklight::CatalogHelperBehavior
   # @see #page_entries_info
   # @return [String]
   def item_page_entry_info
-    t('blacklight.search.entry_pagination_info.other', current: number_with_delimiter(search_session['counter']),
-                                                       total: number_with_delimiter(search_session['total']),
-                                                       count: search_session['total'].to_i).html_safe
+    t('blacklight.search.entry_pagination_info.other', :current => number_with_delimiter(search_session['counter']),
+                                                       :total => number_with_delimiter(search_session['total']),
+                                                       :count => search_session['total'].to_i).html_safe
   end
 
   ##
   # Look up search field user-displayable label
   # based on params[:qt] and blacklight_configuration.
   def search_field_label(params)
-    h(label_for_search_field(params[:search_field]))
+    h( label_for_search_field(params[:search_field]) )
   end
 
   ##
@@ -119,7 +121,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @return [Blacklight::Configuration::SortField]
   def current_sort_field
-    (blacklight_config.sort_fields.values.find { |f| f.sort == @response.sort } if @response && @response.sort.present?) || blacklight_config.sort_fields[params[:sort]] || default_sort_field
+    (blacklight_config.sort_fields.values.find {|f| f.sort == @response.sort} if @response and @response.sort.present?) || blacklight_config.sort_fields[params[:sort]] || default_sort_field
   end
 
   ##
@@ -127,7 +129,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @return [Integer]
   def current_per_page
-    (@response.rows if @response && @response.rows > 0) || params.fetch(:per_page, default_per_page).to_i
+    (@response.rows if @response and @response.rows > 0) || params.fetch(:per_page, default_per_page).to_i
   end
 
   ##
@@ -136,6 +138,7 @@ module Blacklight::CatalogHelperBehavior
   # @return [String]
   def render_document_class(document = @document)
     types = document[blacklight_config.view_config(document_index_view_type).display_type_field]
+
     return if types.blank?
 
     Array(types).compact.map do |t|
@@ -152,7 +155,7 @@ module Blacklight::CatalogHelperBehavior
   #
   # @param [SolrDocument] document
   # @return [String]
-  def render_document_main_content_partial(document = @document)
+  def render_document_sidebar_partial(document = @document)
     render :partial => 'show_sidebar'
   end
 
@@ -191,11 +194,10 @@ module Blacklight::CatalogHelperBehavior
   #
   # @return [Boolean]
   def should_autofocus_on_search_box?
-    controller.is_a?(Blacklight::Catalog) &&
-      action_name == "index" &&
+    controller.is_a? Blacklight::Catalog and
+      action_name == "index" and
       !has_search_parameters?
   end
-  deprecation_deprecate should_autofocus_on_search_box?: "use SearchBarPresenter#autofocus?"
 
   ##
   # Does the document have a thumbnail to render?
@@ -206,7 +208,6 @@ module Blacklight::CatalogHelperBehavior
     blacklight_config.view_config(document_index_view_type).thumbnail_method.present? or
       blacklight_config.view_config(document_index_view_type).thumbnail_field && document.has?(blacklight_config.view_config(document_index_view_type).thumbnail_field)
   end
-  deprecation_deprecate has_thumbnail?: "use IndexPresenter#thumbnail.exists?"
 
   ##
   # Render the thumbnail, if available, for a document and
@@ -237,36 +238,35 @@ module Blacklight::CatalogHelperBehavior
       end
     end
   end
-  deprecation_deprecate render_thumbnail_tag: "Use IndexPresenter#thumbnail.thumbnail_tag"
 
-  ##
-  # Customized version of rails 5.1.4 'image_tag' function so 
-  # that when no alt tags are specified in the options, the 
-  # alt tag will be left empty instead of having some part of
-  # the image url being jammed in
-  #
-  # see source for details on params. 
-  # source: https://github.com/rails/rails/blob/v5.1.4/actionview/lib/action_view/helpers/asset_tag_helper.rb
-  #
+##
+# Customized version of rails 5.1.4 'image_tag' function so 
+# that when no alt tags are specified in the options, the 
+# alt tag will be left empty instead of having some part of
+# the image url being jammed in
+#
+# see source for details on params. 
+# source: https://github.com/rails/rails/blob/v5.1.4/actionview/lib/action_view/helpers/asset_tag_helper.rb
+#
 
-  def image_tag_wout_alt(source, options = {})
-    options = options.symbolize_keys
-    check_for_image_tag_errors(options)
+def image_tag_wout_alt(source, options = {})
+  options = options.symbolize_keys
+  check_for_image_tag_errors(options)
 
-    src = options[:src] = path_to_image(source, skip_pipeline: options.delete(:skip_pipeline))
+  src = options[:src] = path_to_image(source, skip_pipeline: options.delete(:skip_pipeline))
 
-    # "|| options[:alt] == nil" is the only telement added from the base image_tag function.
-    unless src.start_with?("cid:") || src.start_with?("data:") || src.blank? || options[:alt] == nil
-      options[:alt] = options.fetch(:alt) { image_alt(src) }
-    end
-
-    if options[:alt] == nil 
-      options[:alt] = ' '
-    end
-
-    options[:width], options[:height] = extract_dimensions(options.delete(:size)) if options[:size]
-    tag("img", options)
+  # "|| options[:alt] == nil" is the only telement added from the base image_tag function.
+  unless src.start_with?("cid:") || src.start_with?("data:") || src.blank? || options[:alt] == nil
+    options[:alt] = options.fetch(:alt) { image_alt(src) }
   end
+
+  if options[:alt] == nil 
+    options[:alt] = ' '
+  end
+
+  options[:width], options[:height] = extract_dimensions(options.delete(:size)) if options[:size]
+  tag("img", options)
+end
 
   ##
   # Get the URL to a document's thumbnail image
@@ -278,7 +278,6 @@ module Blacklight::CatalogHelperBehavior
       document.first(blacklight_config.view_config(document_index_view_type).thumbnail_field)
     end
   end
-  deprecation_deprecate thumbnail_url: "this method will be removed without replacement"
 
   ##
   # Render the view type icon for the results view picker
@@ -298,7 +297,7 @@ module Blacklight::CatalogHelperBehavior
     "fa-#{view.to_s.parameterize} view-icon-#{view.to_s.parameterize}"
   end
 
-  def current_bookmarks documents_or_response = nil
+  def current_bookmarks response = nil
     response ||= @response
     @current_bookmarks ||= current_or_guest_user.bookmarks_for_documents(response.documents).to_a
   end
@@ -306,17 +305,17 @@ module Blacklight::CatalogHelperBehavior
   ##
   # Check if the document is in the user's bookmarks
   def bookmarked? document
-    current_bookmarks.any? { |x| x.document_id == document.id && x.document_type == document.class }
+    current_bookmarks.any? { |x| x.document_id == document.id and x.document_type == document.class }
   end
 
   def render_search_to_page_title_filter(facet, values)
     facet_config = facet_configuration_for_field(facet)
     filter_label = facet_field_label(facet_config.key)
     filter_value = if values.size < 3
-                     values.map { |value| facet_display_value(facet, value) }.to_sentence
-                   else
-                     t('blacklight.search.page_title.many_constraint_values', values: values.size)
-                   end
+      values.map {|value| facet_display_value(facet, value)}.to_sentence
+    else
+      t('blacklight.search.page_title.many_constraint_values', values: values.size)
+    end
     t('blacklight.search.page_title.constraint', label: filter_label, value: filter_value)
   end
 
@@ -339,18 +338,19 @@ module Blacklight::CatalogHelperBehavior
 
     constraints.join(' / ')
   end
-
+    
   def bookmarks_enabled?
     blacklight_config.enable_bookmarks
   end
 
   private
 
-  # @param [String] format
-  # @param [Hash] options
-  # @option options :route_set the route scope to use when constructing the link
-  def feed_link_url(format, options = {})
-    scope = options.delete(:route_set) || self
-    scope.url_for search_state.to_h.merge(format: format)
-  end
+    # @param [String] format
+    # @param [Hash] options
+    # @option options :route_set the route scope to use when constructing the link
+    def feed_link_url(format, options = {})
+      scope = options.delete(:route_set) || self
+      scope.url_for search_state.to_h.merge(format: format)
+    end
+
 end

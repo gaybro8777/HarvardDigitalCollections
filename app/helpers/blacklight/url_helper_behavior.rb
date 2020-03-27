@@ -91,9 +91,6 @@ module Blacklight::UrlHelperBehavior
     else
       blacklight.track_search_context_path(params.merge(id: document))
     end
-
-    raise "Unable to find #{controller_tracking_method} route helper. " \
-    "Did you add `concerns :searchable` routing mixin to your `config/routes.rb`?"
   end
 
   def controller_tracking_method

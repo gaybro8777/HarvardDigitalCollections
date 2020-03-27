@@ -9,6 +9,7 @@ end
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem "rails", '>= 5.1', '< 7'
 gem 'mysql2'
+gem 'pry'
 # Use sqlite3 as the database for Active Record
 # gem 'sqlite3'
 # gem 'pg', '~> 0.20'
@@ -56,7 +57,7 @@ end
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
-gem 'blacklight', '~> 6.20'
+gem 'blacklight', '6.20.0'
 group :development, :test do
   gem 'solr_wrapper', '>= 0.3'
 end
@@ -124,3 +125,12 @@ gem 'jsonpath', '1.0.1'
 # # END ENGINE_CART BLOCK
 
 # eval_gemfile File.expand_path("spec/test_app_templates/Gemfile.extra", File.dirname(__FILE__))
+
+group :development, :test do
+end
+
+# gem 'rsolr', '>= 1.0', '< 3'
+group :development, :test do
+end
+
+# gem 'rsolr', '>= 1.0', '< 3'

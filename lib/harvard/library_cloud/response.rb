@@ -14,7 +14,6 @@ module Harvard::LibraryCloud
     end
 
     def documents
-      binding.pry
       @documents ||= (response || []).collect{|doc| document_model.new(doc, self) }
     end
     alias_method :docs, :documents

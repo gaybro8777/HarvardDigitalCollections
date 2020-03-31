@@ -3,7 +3,7 @@
 # URL helper methods
 module Blacklight::UrlHelperBehavior
   include Blacklight::DeprecatedUrlHelperBehavior
-  
+
   ##
   # Extension point for downstream applications
   # to provide more interesting routing to
@@ -12,18 +12,12 @@ module Blacklight::UrlHelperBehavior
     search_state.url_for_document(doc, options)
   end
 
-  # Uses the catalog_path route to create a link to the show page for an item.
+  # link_to_document(doc, 'VIEW', :counter => 3)
+  # Use the catalog_path RESTful route to create a link to the show page for a specific item.
   # catalog_path accepts a hash. The solr query params are stored in the session,
   # so we only need the +counter+ param here. We also need to know if we are viewing to document as part of search results.
+  # the truncate option allow for the label to be truncated to a specified length. 
   # TODO: move this to the IndexPresenter
-  # @param doc [SolrDocument] the document
-  # @param field_or_opts [Hash, String] either a string to render as the link text or options
-  # @param opts [Hash] the options to create the link with
-  # @option opts [Number] :counter (nil) the count to set in the session (for paging through a query result)
-  # @example Passing in an image
-  #   link_to_document(doc, '<img src="thumbnail.png">', counter: 3) #=> "<a href=\"catalog/123\" data-tracker-href=\"/catalog/123/track?counter=3&search_id=999\"><img src="thumbnail.png"></a>
-  # @example With the default document link field
-  #   link_to_document(doc, counter: 3) #=> "<a href=\"catalog/123\" data-tracker-href=\"/catalog/123/track?counter=3&search_id=999\">My Title</a>
   def link_to_document(doc, field_or_opts = nil, opts={:counter => nil, :truncate => nil })
     if field_or_opts.is_a? Hash
       opts = field_or_opts
@@ -43,23 +37,23 @@ module Blacklight::UrlHelperBehavior
   def document_link_params(doc, opts)
     session_tracking_params(doc, opts[:counter]).deep_merge(opts.except(:label, :counter))
   end
-  private :document_link_params
+  protected :document_link_params
 
   ##
   # Link to the previous document in the current search context
   def link_to_previous_document(previous_document)
-    link_opts = session_tracking_params(previous_document, search_session['counter'].to_i - 1).merge(class: "previous", rel: 'prev')
+    link_opts = session_tracking_params(previous_document, search_session['counter'].to_i - 1).merge(:class => "previous", :rel => 'prev')
     link_to_unless previous_document.nil?, raw(t('views.pagination.previous')), url_for_document(previous_document), link_opts do
-      content_tag :span, raw(t('views.pagination.previous')), class: 'previous'
+      content_tag :span, raw(t('views.pagination.previous')), :class => 'previous'
     end
   end
 
   ##
   # Link to the next document in the current search context
   def link_to_next_document(next_document)
-    link_opts = session_tracking_params(next_document, search_session['counter'].to_i + 1).merge(class: "next", rel: 'next')
+    link_opts = session_tracking_params(next_document, search_session['counter'].to_i + 1).merge(:class => "next", :rel => 'next')
     link_to_unless next_document.nil?, raw(t('views.pagination.next')), url_for_document(next_document), link_opts do
-      content_tag :span, raw(t('views.pagination.next')), class: 'next'
+      content_tag :span, raw(t('views.pagination.next')), :class => 'next'
     end
   end
 
@@ -77,9 +71,9 @@ module Blacklight::UrlHelperBehavior
       return {}
     end
 
-    { data: { 'context-href': path } }
+    { data: {:'context-href' => path } }
   end
-  private :session_tracking_params
+  protected :session_tracking_params
 
   ##
   # Get the URL for tracking search sessions across pages using polymorphic routing
@@ -112,7 +106,7 @@ module Blacklight::UrlHelperBehavior
   # Get the path to the search action with any parameters (e.g. view type)
   # that should be persisted across search sessions.
   def start_over_path query_params = params
-    h = {}
+    h = { }
     current_index_view_type = document_index_view_type(query_params)
     h[:view] = current_index_view_type unless current_index_view_type == default_document_index_view_type
 
@@ -123,7 +117,7 @@ module Blacklight::UrlHelperBehavior
   # @example
   #   link_back_to_catalog(label: 'Back to Search')
   #   link_back_to_catalog(label: 'Back to Search', route_set: my_engine)
-  def link_back_to_catalog(opts = { label: nil })
+  def link_back_to_catalog(opts={:label=>nil})
     scope = opts.delete(:route_set) || self
     query_params = search_state.reset(current_search_session.try(:query_params)).to_hash
 
@@ -131,15 +125,15 @@ module Blacklight::UrlHelperBehavior
       per_page = (search_session['per_page'] || default_per_page).to_i
       counter = search_session['counter'].to_i
 
-      query_params[:per_page] = per_page unless search_session['per_page'].to_i == blacklight_config.default_per_page
-      query_params[:page] = ((counter - 1) / per_page) + 1
+      query_params[:per_page] = per_page unless search_session['per_page'].to_i == default_per_page
+      query_params[:page] = ((counter - 1)/ per_page) + 1
     end
 
     link_url = if query_params.empty?
-                 search_action_path(only_path: true)
-               else
-                 scope.url_for(query_params)
-               end
+      search_action_path(only_path: true)
+    else
+      scope.url_for(query_params)
+    end
     label = opts.delete(:label)
 
     if link_url =~ /bookmarks/
@@ -164,11 +158,11 @@ module Blacklight::UrlHelperBehavior
     search_state.add_facet_params_and_redirect(group.field, group.key)
   end
 
-  # A URL to refworks export, with an embedded callback URL to this app.
-  # the callback URL is to bookmarks#export, which delivers a list of
+  # A URL to refworks export, with an embedded callback URL to this app. 
+  # the callback URL is to bookmarks#export, which delivers a list of 
   # user's bookmarks in 'refworks marc txt' format -- we tell refworks
-  # to expect that format.
+  # to expect that format. 
   def bookmarks_export_url(format, params = {})
-    bookmarks_url(params.merge(format: format, encrypted_user_id: encrypt_user_id(current_or_guest_user.id)))
+    bookmarks_url(params.merge(format: format, encrypted_user_id: encrypt_user_id(current_or_guest_user.id) ))
   end
 end

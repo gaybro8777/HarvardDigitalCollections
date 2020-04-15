@@ -1,5 +1,3 @@
-require 'pry'
-
 module Harvard::LibraryCloud
 
   class Response < Blacklight::Solr::Response

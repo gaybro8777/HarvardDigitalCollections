@@ -2,9 +2,54 @@
 @import "util";
 @import "icons";
 
+
+
+#skip-link-for-raw-text{
+  background-color: $black;
+  color: $white;
+  font-family: $font-family-sans-serif;
+}
+
+.skip {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+
+a.skip:active,
+a.skip:focus,
+a.skip:hover {
+  outline-width: 0;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  margin-top: 15px;
+  display: inline-block;
+  width: auto;
+  height: 40px;
+  line-height: 40px;
+  padding-left:10px;
+  padding-right:10px;
+  background-color: $black;
+  color: $white;
+  font-family: $font-family-mirador-ui;
+  font-size: 20px;
+  overflow: visible;
+}
+
 .modal-dialog {
-  width: 95%;
-  height: 95%;
+    width: 95%;
+    height: 95%;
+    max-height: 900px;
+    margin: 5px 0;
+
+    @media(min-width: 700px) {
+        margin: 10px 0;
+    }
 }
 
 .modal-title {
@@ -17,6 +62,7 @@
 
 .modal-content {
   height:100%;
+  overflow-y: auto;
 }
 
 .modal-header, .no-border {
@@ -24,7 +70,7 @@
 }
 
 .modal-body {
-  height: 95%;
+  height: auto;
 }
 
 #embedded-viewer-tour-presentation {
@@ -32,8 +78,14 @@
   height: 95%;
 }
 
+#no-dl-button{
+  display: none;
+  color: $jet;
+  font-family: $font-family-sans-serif;
+}
+
 #previous-next {
-  margin-bottom: 20px;  
+  margin-bottom: 20px;
   font-family: $font-family-sans-serif;
 
   a {
@@ -50,7 +102,7 @@
     }
 
   .page-header-page-links-column {
-    
+
     .page_links {
       float: right;
     }
@@ -113,17 +165,6 @@ body.blacklight-catalog-show #document h1 {
       position: relative;
       text-transform: uppercase;
       width: 240px;
-
-      /* may the developer gods forgive me,
-         but I had no other choice... -ED */
-
-      &:after {
-        content:":";
-        color: $white;
-        position: absolute;
-        transform: translate(-100%, 0);
-        -webkit-text-stroke: 2px $white;
-      }
     }
 
     dd {
@@ -146,10 +187,6 @@ body.blacklight-catalog-show #document h1 {
       }
     }
   }
-}
-
-dl.row {
-  margin-left: 0;
 }
 
 #take-a-tour {
@@ -182,7 +219,7 @@ dl.row {
   font-size: 15px;
   line-height: 28px;
   margin: 0;
-  padding: 40px 40px 0;
+  padding: 40px;
   display: block;
   width: 100%;
 
@@ -211,12 +248,12 @@ dl.row {
     font-size: 14px;
     letter-spacing: 1.5px;
     margin: 0;
-    padding: 40px 0 20px;
+    padding: 30px 0 20px;
     text-transform: uppercase;
   }
 
   dd:last-child {
-    padding-bottom: 40px;
+    padding-bottom: 0px;
   }
 
   a, .checkbox.toggle_bookmark label span {
@@ -233,7 +270,7 @@ dl.row {
     }
   }
 
-  .btn-group.open { 
+  .btn-group.open {
 
     .caret {
       transform: scaleY(-1);
@@ -256,7 +293,7 @@ dl.row {
 
     .caret {
       margin-left: 6px;
-      margin-top: -2px;
+      margin-top: -7px;
       -webkit-transition: transform .28s ease-out;
       transition: transform .28s ease-out;
     }
@@ -336,6 +373,7 @@ dl.row {
 
   .dl-appears-in, .dl-more-details {
     padding-bottom: 0;
+    margin-top: 30px;
 
     dd {
       margin-bottom: 18px;
@@ -369,8 +407,17 @@ dl.row {
     }
 
   .permalink {
-      clear: both;
-      padding: 20px 0 40px;
+    clear: both;
+    padding: 20px 0 0px;
+  }
+
+  .fulltext {
+    clear: both;
+    padding: 20px 0 0px;
+
+    span.fa {
+      padding: 0 8px 0 1px;
+    }
   }
 
   .dl-iiif img {
@@ -384,40 +431,179 @@ dl.row {
   margin-top: 40px;
 
   p {
-    padding: 20px 0 30px;
+    padding: 20px 0 0px;
   }
+
 }
 
 @media (max-width: 992px) {
   #details dl {
     display: block;
+    border-bottom: 1px solid #d8d8d8;
+    padding-bottom: 20px;
+    margin-bottom: 40px;
 
     dt {
+      border-top: 1px solid #d8d8d8;
       border-bottom: none;
       display: block;
       padding-bottom: 5px;
       width: 100%;
+      padding-top: 20px;
+      margin-top: 15px;
+
+      &:first-child {
+        border-top: 0;
+        padding-top: 0px;
+        margin-top: 0px;
+      }
+
+      &:after {
+        display: none;
+      }
+
+      .field-heading {
+        display: none;
+      }
+
+      &:first-child {
+        .field-heading {
+          display: block;
+        }
+      }
+
+      .field-toggle {
+        border: none;
+        background: transparent;
+        padding: 0 0px 0 0px;
+        text-transform: uppercase;
+        font-size: 16px;
+
+        .fa {
+          color: $medium-gray;
+          font-size: 16px;
+          display: inline;
+          position: relative;
+          padding-left: 20px;
+
+          &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+        }
+      }
     }
 
     dd {
+      border-bottom: none;
       display: block;
-      padding-top: 5px;
+      padding: 5px 0;
+      margin-left: 20px;
       width: 100%;
+
+      &.collapse {
+        display: none;
+
+        &.in {
+          display: block;
+        }
+
+      }
+
+      &.blacklight-title_extended {
+        margin-left: 0px;
+      }
+
+      .toggle-minimize-field {
+        display: none;
+      }
     }
   }
-
+  
   #document .col-lg-4 {
-    padding-right: 0;
     width: 100%;
   }
 
-  #tools {
+  #tools, #feedback {
     margin-left: -15px;
     margin-right: -15px;
+    width: auto;
   }
 
-  #tools dl {    
+  #tools dl {
     width: 100%;
+  }
+
+}
+
+
+@media (min-width: 993px) {
+  #details dl {
+    &.row {
+      margin-left: 0;
+    }
+
+    dt {
+      .field-toggle {
+        display: none;
+      }
+    }
+
+    dd {
+      &.collapse {
+        display: block;
+        height: auto !important;
+        visibility: visible;
+      }
+
+      .minimize-field {
+        overflow: hidden;
+        max-height: 85px;
+        /*transition: max-height 1.5s linear;*/
+        margin-bottom: 24px;
+
+        &.expanded {
+          max-height: 99999px;
+        }
+      }
+
+      .toggle-minimize-field {
+        display: inline-block;
+        background: transparent;
+        border: none;
+        color: $oil;
+        text-transform: uppercase;
+        font-family: $font-family-sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 0 16px 0 0;
+        position: relative;
+        letter-spacing: 1px;
+
+        .fa {
+          color: $red;
+          position: absolute;
+          right: 0;
+          top: 6px;
+        }
+
+        .less-text {
+          display: none;
+        }
+
+
+        &[aria-expanded="true"] {
+          .less-text {
+            display: inline;
+          }
+
+          .more-text {
+            display: none;
+          }
+        }
+      }
+    }
   }
 }
 

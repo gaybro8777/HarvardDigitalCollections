@@ -12,7 +12,7 @@
           <% if should_render_show_field? document, field %>
             <%
               truncate_field = false
-
+            
               if field_name == "subjects" || field_name == "notes"
                 field_body = CGI.unescapeHTML(doc_presenter.field_value field_name)
 
@@ -33,7 +33,7 @@
               <% end -%>
             </dt>
             <dd id="field-<%= field_name.parameterize %>" class="blacklight-<%= field_name.parameterize %> <%=field_index > 1 ? "collapse" : ""%>"><%
-              if truncate_field
+                if truncate_field
                 %><div class="minimize-field"><%
                 end
               %><%=raw CGI.unescapeHTML doc_presenter.field_value field_name %><%
@@ -302,3 +302,37 @@
     </div>
   </div>
 </div>
+
+<%if !@related_documents.nil? -%>
+  <%
+  related_doc_counter = @start
+  number_of_items_rendered = 0
+  %>
+  <div class="related-items row">
+    <h2>More From Your Search</h2>
+    <%@related_documents.each do |related_doc| -%>
+      <%if related_doc[:id] != document[:id] -%>
+        <%if number_of_items_rendered < @number_of_related_items -%>
+          <div class="document col-xs-12 col-md-3">
+            <div class="thumbnail">
+              <%=render_thumbnail_tag(related_doc, {}, :counter => document_counter_with_offset(related_doc_counter)) %>
+              <div class="caption">
+                <div class="documentHeader">
+                  <h3 class="index_title document-title-heading">
+                    <%= link_to_document(related_doc, document_show_link_field(related_doc), counter: document_counter_with_offset(related_doc_counter), truncate: 50)%> 
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+          <%
+            number_of_items_rendered += 1
+          %>
+        <%end -%>
+        <%
+         related_doc_counter += 1
+        %>
+      <%end -%>
+    <%end -%>
+  </div>
+<%end -%>

@@ -2,7 +2,7 @@
 
   <span class="sr-only"><%= t('blacklight.search.per_page.title') %></span>
   <div id="per-page-dropdown" class="dropdown">
-    <a id="displaycount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><%= t(:'blacklight.search.per_page.button_label', :count => current_per_page) %><span class="caret right"></span></a>
+    <button id="displaycount" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><%= t(:'blacklight.search.per_page.button_label', :count => current_per_page) %><span class="caret right"></span></button>
     <ul class="dropdown-menu" aria-labelledby="displaycount" aria-hidden="true" tabindex="-1">
       <%- per_page_options_for_select.each do |(label, count)| %>
           <li><%= link_to(label, url_for(search_state.params_for_search(per_page: count))) %></li>

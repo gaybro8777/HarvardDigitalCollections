@@ -1,0 +1,22 @@
+default: &default
+  adapter: mysql2
+  user: user_name
+  port: 3306
+  
+development:
+  <<: *default
+  database: database_name
+  password: some_password
+  host: host_name_or_mysql_docker_container_name_if_local_setup
+
+test:
+  <<: *default
+  database: database_name
+  password: some_password
+  host: test_host_url
+
+production: 
+  <<: *default
+  database: database_name
+  password: some_password
+  host: prod_host_url

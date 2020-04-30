@@ -1,0 +1,30 @@
+# Configs
+config/
+*.env*
+*.pem
+
+# Logs
+*.log
+
+# IDEs and editors
+.project
+.classpath
+*.launch
+.settings/
+.travis.yml
+
+#Tests
+spec/
+
+#Solr
+solr/
+
+#tmp
+tmp/
+
+#Db
+db/
+
+# System Files
+.DS_Store
+Thumbs.db

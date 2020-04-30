@@ -1,6 +1,7 @@
 ### Local development only ###
 
-FROM ruby:2.6-alpine
+#FROM ruby:2.6-alpine
+FROM ruby:2.5.1-alpine
 #RUN \
 #      wget -qO- https://deb.nodesource.com/setup_9.x | bash - && \
 #      wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \

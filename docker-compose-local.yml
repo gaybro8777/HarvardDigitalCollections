@@ -12,8 +12,7 @@ services:
    stdin_open: true
    tty: true
    volumes:
-     - .:/home/hdc/
-     - ./config:/home/hdc/app/config
+     - ./config:/home/hdc/config
    depends_on:
      - mysql
    ports:

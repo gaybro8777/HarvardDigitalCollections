@@ -22,8 +22,10 @@ solr/
 #tmp
 tmp/
 
-#Db
-db/
+#deploy
+deploy/
+
+Gemfile.lock
 
 # System Files
 .DS_Store

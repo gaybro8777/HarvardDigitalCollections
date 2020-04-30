@@ -291,6 +291,10 @@ body.blacklight-catalog-show #document h1 {
     padding: 6px 28px;
     text-transform: uppercase;
 
+    &:focus {
+        outline: 1px solid rgb(229, 151, 0);
+    }
+
     .caret {
       margin-left: 6px;
       margin-top: -7px;

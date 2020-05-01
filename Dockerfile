@@ -10,3 +10,5 @@ RUN \
 RUN gem install bundler
 RUN mkdir /app
 WORKDIR /app
+
+EXPOSE 3000

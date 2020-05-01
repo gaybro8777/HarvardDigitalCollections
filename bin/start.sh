@@ -7,5 +7,5 @@
 
 bundle install
 bundle exec rake db:migrate
-rails s -b localhost
+rails s -b 0.0.0.0 -p 3000
 #exec bundle exec rake blacklight:server["-p 3000 -b 0.0.0.0"]

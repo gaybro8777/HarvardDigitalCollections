@@ -1,0 +1,32 @@
+# Configs
+config/
+*.env*
+*.pem
+
+# Logs
+*.log
+
+# IDEs and editors
+.project
+.classpath
+*.launch
+.settings/
+.travis.yml
+
+#Tests
+spec/
+
+#Solr
+solr/
+
+#tmp
+tmp/
+
+#deploy
+deploy/
+
+Gemfile.lock
+
+# System Files
+.DS_Store
+Thumbs.db

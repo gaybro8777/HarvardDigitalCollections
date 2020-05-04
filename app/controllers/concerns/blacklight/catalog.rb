@@ -25,6 +25,13 @@ module Blacklight::Catalog
     # get search results from the solr index
     def index
       (@response, @document_list) = search_results(params)
+	  @search_id = search_session['id']
+	  @search_is_saved = false
+
+	  if user_signed_in?
+		saved_search = Search.where(["id = :search_id and user_id = :user_id", {search_id: @search_id, user_id: current_or_guest_user.id}])
+		@search_is_saved = !saved_search.nil? && !saved_search.empty?
+	  end
 
       respond_to do |format|
         format.html { store_preferred_view }

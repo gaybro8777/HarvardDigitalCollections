@@ -69,10 +69,10 @@ rails server
 ## Running in Docker Locally
 
 Match the following `config/database.yml` values to their corresponding values in `docker-compose.yml`:
-`default: user` = `mysql: environment: MYSQL_USER`
-`default: password` = `mysql: environment: MYSQL_PASSWORD`
-`development: host` = `mysql: container_name`
-`development: database` = `mysql: environment: MYSQL_DATABASE`
+* `default: user` = `mysql: environment: MYSQL_USER`
+* `default: password` = `mysql: environment: MYSQL_PASSWORD`
+* `development: host` = `mysql: container_name`
+* `development: database` = `mysql: environment: MYSQL_DATABASE`
 
 If you have MySQL already running on 3306, stop it. 
 Then run `docker-compose up --build --force-recreate` from the project base directory

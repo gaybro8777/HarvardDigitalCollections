@@ -1,0 +1,20 @@
+<%if !links.nil? %>
+  <%
+    counter = 1
+  %>
+  <div class="breadcrumb">
+    <%links.each do |link| %>
+      <% if counter > 1 %>
+        &raquo;
+      <%end %>
+      <% if counter == links.length %>
+        <span><%=link[:link_text]%></span>
+      <%else %>  
+        <a href="<%=link[:link_url]%>"><%=link[:link_text]%></a>
+      <%end %>
+      <%
+      counter += 1
+      %> 
+    <%end %>  
+  </div> 
+<%end %>    

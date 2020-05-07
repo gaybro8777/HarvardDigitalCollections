@@ -1,0 +1,50 @@
+<% @page_title = t('blacklight.saved_searches.page_title', :application_name => application_name) %>
+<%
+  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'Saved Searches', :link_url => blacklight.saved_searches_path}]
+%>
+<div id="content" class="col-md-9">
+  <div class="my-account-wrapper">
+	<%= render :partial => 'shared/breadcrumbs', locals: {links: @breadcrumb_links} %>
+
+	<h2 class='page-heading'><%= t('blacklight.saved_searches.title') %></h2>
+
+	<%- if current_or_guest_user.blank? -%>
+  
+	  <h3 class='section-heading'><%= t('blacklight.saved_searches.need_login') %></h3>
+  
+	<%- elsif @searches.blank? -%>
+  
+	  <h3 class='section-heading'><%= t('blacklight.saved_searches.no_searches') %></h3>
+  
+	<%- else -%>
+  
+	  <div class="my-account-body">
+		  <div class="clearfix">
+			<button type="button" class="btn btn-danger pull-right" data-toggle="modal" data-target="#delete-modal"><%=t('blacklight.saved_searches.clear.action_title')%></button>
+		  </div>
+		  <table class="table">
+		  <%- @searches.each do |search| -%>
+			<tr>
+			  <td><%= link_to_previous_search(search.query_params) %></td>
+			  <td class="actions"><%= button_to t('blacklight.saved_searches.delete'), blacklight.forget_search_path(search.id), :class => 'btn btn-default' %></td>
+			</tr>
+		  <%- end -%>
+		  </table>
+	  </div>
+	<%- end -%>
+  </div>
+</div>
+<div id="delete-modal" class="reveal-modal modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+		<button type="button" class="delete-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+		<div class="modal-content-inner">
+			<h3>Delete Saved Searches</h3>
+			<p>Are you sure you want to delete all saved searches?<br/>
+				This cannot be undone.
+			</p>
+			<%= link_to 'Yes, Delete', blacklight.clear_saved_searches_path, :method => :delete, :class => 'btn btn-large' %>
+		</div>
+    </div>
+  </div>
+</div>

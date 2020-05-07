@@ -27,12 +27,9 @@ class User < ApplicationRecord
         DEPRECATION
     end
 
-	puts 'update_with_password ' + params[:password] + ' ' + params[:password].blank?.to_s
-
     current_password = params.delete(:current_password)
 
     if params[:password].blank?
-		puts 'NOPASS'
         params.delete(:password)
         params.delete(:password_confirmation) if params[:password_confirmation].blank?
 		self.errors.add(:password, :blank)

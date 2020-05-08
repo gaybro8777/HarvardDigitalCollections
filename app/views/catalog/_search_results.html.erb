@@ -12,9 +12,26 @@
 <% end %>
 
 <%= render 'search_header' %>
-
+<%
+search_saved = false
+save_button_classes = 'save-search-button'
+if user_signed_in?
+  save_button_classes += ' ajax-submit'
+  
+end
+  
+%>
 <h2 class="sr-only"><%= t('blacklight.search.search_results') %></h2>
-
+<div class="search-actions">
+  <%- if user_signed_in? && !@search_id.nil? %>
+    <span class="form-confirmation <%=!@search_is_saved ? "hidden" : "" %>">Search saved</span>  
+    <%- if !@search_is_saved %>
+      <%= button_to 'Save this search', blacklight.save_search_path(@search_id), :method => :put, :class => save_button_classes %>
+    <%- end %>
+  <%- end %>  
+</div>    
+  
+    
 <%- if @response.empty? %>
   <%= render "zero_results" %>
 <%- elsif render_grouped_response? %>

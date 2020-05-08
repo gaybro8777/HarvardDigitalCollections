@@ -1,5 +1,24 @@
 @import "settings";
 
+.search-actions {
+    .form-confirmation {
+        font-size: 15px;
+        font-weight: bold;
+        color: $medium-gray;
+    }
+
+    form input.save-search-button {
+        padding: 0;
+        background: transparent;
+        border: 0;
+        color: $breakthrough-blue;
+        display: inline;
+        cursor: pointer;
+        height: auto;
+        font-size: 15px;
+        font-weight: bold;
+    }
+}
 #documents {
     .documentHeader {
         h3.document-title-heading {

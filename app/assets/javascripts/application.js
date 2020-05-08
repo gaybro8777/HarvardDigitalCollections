@@ -80,6 +80,24 @@ $(document).on('turbolinks:load', function() {
       }
     });
 
+    $('body').on('submit', '.button_to', function (e) {
+        var $form = $(this);
+        if ($form.find('.ajax-submit').length > 0) {
+            e.preventDefault();
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                dataType: 'json',
+                data: $form.serialize(),
+                complete: function (data) {
+                    $form.find('.ajax-submit').addClass('hidden');
+                    $form.siblings('.form-confirmation').removeClass('hidden');
+                },
+                
+            });    
+        }
+    });
+
     $('form.range_limit input.form-control').attr('placeholder', 'YYYY');
 
 });

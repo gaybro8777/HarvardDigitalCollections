@@ -16,4 +16,30 @@ class User < ApplicationRecord
   def to_s
     email
   end
+
+  def update_with_password(params, *options)
+    if options.present?
+        ActiveSupport::Deprecation.warn <<-DEPRECATION.strip_heredoc
+        [Devise] The second argument of `DatabaseAuthenticatable#update_with_password`
+        (`options`) is deprecated and it will be removed in the next major version.
+        It was added to support a feature deprecated in Rails 4, so you can safely remove it
+        from your code.
+        DEPRECATION
+    end
+
+    current_password = params.delete(:current_password)
+
+    if params[:password].blank?
+        params.delete(:password)
+        params.delete(:password_confirmation) if params[:password_confirmation].blank?
+		self.errors.add(:password, :blank)
+		return false
+    end
+
+    result = update(params, *options)
+        
+    clean_up_passwords
+    result
+  end
+
 end

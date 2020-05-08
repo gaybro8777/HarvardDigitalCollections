@@ -12,7 +12,7 @@ Rails.application.routes.draw do
 
   end
 
-  devise_for :users
+  devise_for :users, controllers: { registrations: 'registrations' }
   concern :exportable, Blacklight::Routes::Exportable.new
 
   resources :solr_documents, only: [:show], path: '/catalog', controller: 'catalog', constraints: { id: /[^\/]+/ } do

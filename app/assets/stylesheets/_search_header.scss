@@ -139,9 +139,17 @@
     }
   }
 
-  & > a {
+  & > button {
     color: #222;
     text-decoration: none;
+    background: transparent;
+    border: none;
+    display: inline;
+    padding: 0;
+
+    &:focus {
+        outline: 1px solid $breakthrough-blue;
+    }
 
     span.caret {
       @include fa-icon;

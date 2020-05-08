@@ -40,3 +40,10 @@ en:
         field_show_more: 'More %{field_name}'
         field_show_less: 'Fewer %{field_name}'
     back_to_search: '« Back to Search Results'
+    saved_searches:
+      clear:
+        action_title: 'Delete All Saved Searches'
+    search_history:
+      clear:
+        action_title: 'Delete Search History'
+      forget: 'Saved!'    

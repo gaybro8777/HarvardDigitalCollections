@@ -1,0 +1,12 @@
+# Rails environment
+RAILS_ENV=development
+
+# MYSQL
+DATABASE_NAME=<db_name>
+DATABASE_USER=<user>
+DATABASE_PASSWORD=<pw>
+DATABASE_PORT=3306
+DATABASE_HOST=<host>
+
+# LibraryCloud API
+LIBRARYCLOUD_API_KEY=<key>

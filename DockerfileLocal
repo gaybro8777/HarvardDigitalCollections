@@ -1,32 +1,58 @@
 ### Local development only ###
 
-FROM ruby:2.5.1-alpine
+#https://github.com/phusion/passenger-docker
+FROM phusion/passenger-ruby25
 
-RUN apk add --update --no-cache \
-  bash \
-  build-base \
+# Set correct environment variables.
+ENV DEBIAN_FRONTEND noninteractive
+ENV RAILS_ENV development
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  curl libssl-dev \
   git \
-  libxml2-dev \
+  unzip \
+  zlib1g-dev \
   libxslt-dev \
-  nodejs \
-  mysql \
   mysql-client \
-  mysql-dev  \
+  bash \
   tzdata
+
+
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN gem update --system && \
   gem install bundler && \
   bundle config build.nokogiri --use-system-libraries
 
-# Create working directory
-RUN mkdir -p /home/hdc
+ 
+RUN rm /etc/nginx/sites-enabled/default
+ADD hdcwebapp.conf /etc/nginx/sites-enabled/webapp.conf
+USER app 
 
-# Set working directory
-WORKDIR /home/hdc
+RUN mkdir /home/app/webapp
 
 # Copy code
-COPY . /home/hdc
+#From the docs: The image has an app user with UID 9999 and home directory 
+# /home/app. Your application is supposed to run as this user.
+COPY --chown=app:app . /home/app/webapp
+
+#Make sure the migrations can be run
+RUN chmod +x /home/app/webapp/bin/localdb.sh
+
+# Set working directory
+WORKDIR /home/app/webapp
+
+RUN bundle install
+
+USER root
 
 # Expose ports
 EXPOSE 3000
+
+# Use baseimage-docker's init process.
+CMD ["/sbin/my_init"]
+
 

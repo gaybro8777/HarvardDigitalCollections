@@ -7,6 +7,9 @@ FROM phusion/passenger-ruby25
 ENV DEBIAN_FRONTEND noninteractive
 ENV RAILS_ENV development
 
+#From the docs: The image has an app user with UID 9999 and home directory 
+# /home/app. Your application is supposed to run as this user.
+COPY --chown=app:app . /home/app/webapp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
@@ -17,30 +20,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libxslt-dev \
   mysql-client \
   bash \
-  tzdata
-
-
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN gem update --system && \
+  tzdata && \
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  gem update --system && \
   gem install bundler && \
-  bundle config build.nokogiri --use-system-libraries
+  bundle config build.nokogiri --use-system-libraries && \
+  rm /etc/nginx/sites-enabled/default && \
+  chmod +x /home/app/webapp/bin/localdb.sh
 
- 
-RUN rm /etc/nginx/sites-enabled/default
 ADD hdcwebapp.conf /etc/nginx/sites-enabled/webapp.conf
+
 USER app 
-
-RUN mkdir /home/app/webapp
-
-# Copy code
-#From the docs: The image has an app user with UID 9999 and home directory 
-# /home/app. Your application is supposed to run as this user.
-COPY --chown=app:app . /home/app/webapp
-
-#Make sure the migrations can be run
-RUN chmod +x /home/app/webapp/bin/localdb.sh
 
 # Set working directory
 WORKDIR /home/app/webapp

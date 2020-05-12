@@ -1,1 +1,0 @@
-config.LIBRARYCLOUD_API_KEY = '';

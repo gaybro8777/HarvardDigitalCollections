@@ -27,7 +27,7 @@ module Blacklight::Catalog
       (@response, @document_list) = search_results(params)
 	  @search_id = search_session['id']
 	  @search_is_saved = false
-
+	  @empty_search = (params[:q].nil? || params[:q].to_s().empty?) && params[:f].nil?
 	  if user_signed_in?
 		saved_search = Search.where(["id = :search_id and user_id = :user_id", {search_id: @search_id, user_id: current_or_guest_user.id}])
 		@search_is_saved = !saved_search.nil? && !saved_search.empty?
@@ -46,6 +46,7 @@ module Blacklight::Catalog
         additional_response_formats(format)
         document_export_formats(format)
       end
+	  search_session['id'] = nil
     end
 
     # get a single document from the index
@@ -66,6 +67,7 @@ module Blacklight::Catalog
         format.json { render json: { response: { document: @document } } }
         additional_export_formats(@document, format)
       end
+	  search_session['id'] = nil
     end
 
     # updates the search counter (allows the show view to paginate)

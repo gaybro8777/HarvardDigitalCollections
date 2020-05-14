@@ -2,9 +2,20 @@ class ApplicationController < ActionController::Base
   helper Openseadragon::OpenseadragonHelper
   # Adds a few additional behaviors into the application controller
   include Blacklight::Controller
-  layout 'blacklight'
 
   protect_from_forgery with: :exception
+
+  layout :layout_by_resource
+
+  def layout_by_resource
+	layout_setting = "blacklight"
+    if devise_controller? && resource_name == :user && action_name == 'new'
+      if !request.headers["X-Requested-With"].nil? && request.headers["X-Requested-With"] == "XMLHttpRequest"
+		layout_setting = false
+	  end
+    end
+	layout_setting
+  end
 
   protected
 

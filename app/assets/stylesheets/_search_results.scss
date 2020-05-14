@@ -7,7 +7,7 @@
         color: $medium-gray;
     }
 
-    form input.save-search-button {
+    form input.save-search-button, .sign-in-and-save-search {
         padding: 0;
         background: transparent;
         border: 0;
@@ -19,6 +19,7 @@
         font-weight: bold;
     }
 }
+
 #documents {
     .documentHeader {
         h3.document-title-heading {

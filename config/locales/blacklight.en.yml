@@ -39,7 +39,14 @@ en:
         label: '%{label}'  
         field_show_more: 'More %{field_name}'
         field_show_less: 'Fewer %{field_name}'
+      save_this_search: 'Save this search'  
     back_to_search: '« Back to Search Results'
+    sign_in:
+      title: 'Sign In to My Digital Collections'
+      button: 'Sign In'
+    sign_up:
+      title: 'Sign Up For a Digital Collections Account'
+      button: 'Create My Account'
     saved_searches:
       clear:
         action_title: 'Delete All Saved Searches'

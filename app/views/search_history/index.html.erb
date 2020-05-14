@@ -1,9 +1,6 @@
 <% @page_title = t('blacklight.search_history.page_title', :application_name => application_name) %>
 <%
 welcome_message = "Welcome"
-if user_signed_in? && !current_or_guest_user.nil? && !current_or_guest_user.email.to_s != ''
-	welcome_message += ', ' + current_or_guest_user.email
-end
 
 breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}]
 %>
@@ -43,7 +40,7 @@ breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_
 				  <%- if has_user_authentication_provider? -%>
 					<td class="actions">
 					  <%- if current_or_guest_user && search.saved? -%>
-						<%= button_to t('blacklight.search_history.forget'), blacklight.forget_search_path(search.id), :class => 'btn btn-confirm' %>
+						<span class="confirm">Saved!</span>
 					  <%- else -%>
 						<%= button_to t('blacklight.search_history.save'), blacklight.save_search_path(search.id), :method => :put, :class => 'btn btn-default' %>
 					  <%- end -%>
@@ -56,7 +53,7 @@ breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_
 		</div>
 	</div>
 </div>
-<div id="delete-modal" class="reveal-modal modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+<div id="delete-modal" class="reveal-modal modal my-account-modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
 		<button type="button" class="delete-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>

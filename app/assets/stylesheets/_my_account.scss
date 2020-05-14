@@ -134,11 +134,12 @@
             }
         }
 
-        .btn-confirm {
+        .confirm {
             background: transparent;
             color: $dark-gray;
             border: none;
             padding: 9px 12px;
+            font-family: $font-family-sans-serif;
             font-weight: bold;
             font-size: 12px;
             line-height: 1;
@@ -155,79 +156,6 @@
         line-height: 32px;
         letter-spacing: 1.5px;
         margin-bottom: 50px;
-    }
-
-    .field {
-        label {
-            font-size: 18px;
-            font-weight: 600;
-            text-transform: uppercase;
-            padding-top: 0;
-        }
-
-        input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%;
-        }
-
-        @media(min-width: 700px) {
-            .field_with_errors {
-                display: inline-block;
-            }
-
-            label {
-                display: inline-block;
-                width: 172px;
-                text-transform: none;
-                letter-spacing: 0;
-            }
-
-            input[type="text"], input[type="email"], input[type="password"] {
-                width: 432px;
-                display: inline-block;
-            }
-        }
-    }
-
-    .field {
-        margin-top: 30px;
-    }
-
-    .field i, .field em {
-        font-family: "Trueno", sans-serif;
-        font-weight: 300;
-    }
-
-    .actions {
-        margin-top: 30px;
-
-        input[type="submit"], .btn-large {
-            background-color: #2B77B7;
-            border-color: transparent;
-            color: #ffffff;
-            font-family: "Trueno", sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 1.17px;
-            text-transform: uppercase;
-            padding: 12px 24px;
-            -webkit-transition: all 0.4s ease;
-            transition: all 0.4s ease;
-
-            &:hover {
-                background-color: #2a5280;
-            }
-        }
-    }
-
-    #error_explanation {
-        color: red;
-
-        h2 {
-            font-size: 20px;
-            text-transform: none;
-            color: red;
-            margin-bottom: 12px;
-        }
     }
 
     .delete-account-wrapper {
@@ -381,28 +309,140 @@
     }
 }
 
+.my-account-form, .delete-account-wrapper {
+    .field {
+        label {
+            font-size: 18px;
+            font-weight: 600;
+            padding-top: 0;
+            text-align: left;
+        }
 
-#delete-modal {
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+        }
+
+        @media(min-width: 700px) {
+            .field_with_errors {
+                display: inline-block;
+            }
+
+            label {
+                display: inline-block;
+                width: 172px;
+                text-transform: none;
+                letter-spacing: 0;
+            }
+
+            input[type="text"], input[type="email"], input[type="password"] {
+                width: 400px;
+                display: inline-block;
+            }
+        }
+
+        @media(min-width: 900px) {
+            input[type="text"], input[type="email"], input[type="password"] {
+                width: 432px;
+            }
+        }
+    }
+
+    .field {
+        margin-top: 30px;
+
+        .forgot-password {
+            overflow: hidden;
+            max-width: 604px;
+            margin-top: 20px;
+
+            a {
+                font-family: $font-family-sans-serif;
+                color: $breakthrough-blue;
+                font-weight: bold;
+                float: right;
+            }
+        }
+    }
+
+    .field i, .field em {
+        font-family: "Trueno", sans-serif;
+        font-weight: 300;
+    }
+
+    .actions {
+        margin-top: 30px;
+
+        input[type="submit"], .btn-large {
+            background-color: #2B77B7;
+            border-color: transparent;
+            color: #ffffff;
+            font-family: "Trueno", sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            -webkit-transition: all 0.4s ease;
+            transition: all 0.4s ease;
+            display: inline-block;
+
+            &:hover {
+                background-color: #2a5280;
+            }
+        }
+    }
+
+    .sign-up-cta {
+        max-width: none;
+        text-align: center;
+        font-size: 18px;
+        font-family: $font-family-serif;
+
+        a {
+            font-weight: bold;
+            color: $breakthrough-blue;
+        }
+    }
+
+    #error_explanation {
+        color: red;
+
+        h2 {
+            font-size: 20px;
+            text-transform: none;
+            color: red;
+            margin-bottom: 12px;
+        }
+    }
+}
+
+.my-account-modal {
     z-index: 2000;
     background-color: transparent;
     border: none;
     box-shadow: none;
     font-family: $font-family-sans-serif;
-    margin: 0 auto;
-    overflow: hidden;
+    margin: 0 auto 0 auto;
+    padding-right: 0 !important;
     width: 100%;
+
+    &.modal {
+        overflow-y: auto;
+    }
 
     @media(min-width: 400px) {
         width: 90%;
     }
 
     @media(min-width: 700px) {
+        margin-top: 5%;
         max-width: 1120px;
     }
 
     .modal-dialog {
+        margin: 0;
+        width: 100%;
         height: auto;
-        margin: 15% auto;
     }
 
     .close {
@@ -418,23 +458,40 @@
 
     .modal-content {
         border-radius: 0;
+        overflow-y: auto;
     }
 
     .modal-content-inner {
         text-align: center;
         margin: 80px auto;
+        padding: 0 20px;
 
         h3 {
+            font-family: $font-family-sans-serif;
             font-size: 28px;
             line-height: 30px;
             letter-spacing: 2.1px;
             margin: 0 0 30px 0;
+            text-transform: uppercase;
+            font-weight: 700;
         }
 
         p {
             font-size: 18px;
             font-family: $font-family-serif;
             margin-bottom: 30px;
+
+            &.sign-up-cta {
+                margin: 50px auto 20px auto;
+            }
+        }
+
+        .forgot-password {
+            margin: 20px auto 0 auto;
+        }
+
+        .actions {
+            text-align: center;
         }
 
         .btn-large {
@@ -447,15 +504,58 @@
         }
 
         @media(min-width: 700px) {
-            max-width: 440px;
 
             h3 {
                 margin: 0 0 55px 0;
             }
 
             p {
-                margin-bottom: 50px;
+                &.sign-up-cta {
+                    max-width: none;
+                }
             }
+        }
+    }
+}
+
+.modal-open .modal.my-account-modal {
+    overflow-y: auto;
+}
+
+.sign-up-benefits {
+    background: $search-bg-gray;
+    margin-top: 62px;
+    padding: 0 20px;
+
+    &__content {
+        margin: 0 auto;
+        max-width: 800px;
+        padding: 55px 0 25px 0;
+
+        h3 {
+            text-transform: none;
+            letter-spacing: 0;
+        }
+    }
+
+    &__list {
+        list-style-type: none;
+        margin: 45px 0 0 0;
+        padding: 0;
+
+        @media(min-width: 700px) {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        li {
+            flex-basis: 27%;
+            text-align: center;
+            font-family: $font-family-serif;
+            font-size: 16px;
+            color: $dark-gray;
+            line-height: 19px;
+            margin-bottom: 30px;
         }
     }
 }

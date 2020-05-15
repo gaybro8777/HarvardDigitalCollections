@@ -7,3 +7,6 @@ DATABASE_USER=<dbuser>
 DATABASE_PASSWORD=<password>
 DATABASE_PORT=3306
 DATABASE_HOST=<db_hostname>
+
+# LibraryCloud API
+LC_API_KEY=<key>

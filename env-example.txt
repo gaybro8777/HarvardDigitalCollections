@@ -10,3 +10,4 @@ DATABASE_HOST=<db_hostname>
 
 # LibraryCloud API
 LC_API_KEY=<key>
+LC_ENV=<apienv>

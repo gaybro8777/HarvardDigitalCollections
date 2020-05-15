@@ -1,57 +1,43 @@
-version: "3.7"
+# Build all images and run all containers
+# `docker-compose up --build --force-recreate`
+
+version: '3.7'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    stdin_open: true
-    tty: true
-    volumes:
-      - .:/app
-   # depends_on:
-   #   - solr
-   #   - mysql
-    ports:
-      - "3000:3000"
-   # environment:
-   #   SOLR_URL: "http://solr:8983/solr/blacklight-core"
-   #   DEVELOPMENT_ENVIRONMENT: "docker"
-    entrypoint:
-      - /app/bin/start.sh
+   container_name: hdc
+   build:
+     context: .
+     dockerfile: Dockerfile
+   stdin_open: true
+   tty: true
+   volumes:
+     - ./config:/home/hdc/config
+   depends_on:
+     - mysql
+   ports:
+     - "3000:3000"
+   entrypoint:
+      - /home/hdc/bin/start.sh
 
-  #solr:
-  #  image: solr:7
-  #  volumes:
-  #    - $PWD/lib/generators/blacklight/templates/solr/conf:/opt/solr/conf
-  #  ports:
-  #    - "8983:8983"
-  #  entrypoint:
-  #    - docker-entrypoint.sh
-  #    - solr-precreate
-  #    - blacklight-core
-  #    - /opt/solr/conf
-  #    - "-Xms256m"
-  #    - "-Xmx512m"
-
-  #mysql:
-  #  image: mysql:5.7
-  #  restart: always
-  #  environment:
-  #    MYSQL_DATABASE: 'HarvardDigitalCollections'
-  #    # So you don't have to use root, but you can if you like
-  #    MYSQL_USER: 'HarvardDigitalCollections'
+  mysql:
+    container_name: hdc_mysql
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'hdc'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'hdcadm'
       # You can use whatever password you like
-  #    MYSQL_PASSWORD: 'HarvardDigitalCollections'
-      # Password for root access
-  #    MYSQL_ROOT_PASSWORD: 'HarvardDigitalCollections'
-  #  ports:
-  #    # <Port exposed> : < MySQL Port running inside container>
-  #    - '3306:3306'
-  #    # Where our data will be persisted
-  #  volumes:
-  #    - db-data:/var/lib/mysql
+      MYSQL_PASSWORD: 'hdcadm'
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3306:3306'
+      # Where our data will be persisted
+    volumes:
+      - db-data:/usr/local/var/mysql/
 # Names our volume
-#volumes:
-#  db-data:
-#    driver: local
+volumes:
+  db-data:
+    driver: local

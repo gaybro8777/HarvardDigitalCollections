@@ -1,5 +1,4 @@
 # Configs
-config/
 *.env*
 *.pem
 
@@ -21,6 +20,21 @@ solr/
 
 #tmp
 tmp/
+
+#db/
+
+#Docs
+docs/
+CONTRIBUTING.md
+README.md
+
+#Docker files
+docker-compose*.yml
+Dockerfile*
+
+#package
+package*.json
+
 
 #deploy
 deploy/

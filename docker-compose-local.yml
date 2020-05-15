@@ -1,5 +1,5 @@
 # Build all images and run all containers
-# `docker-compose -f docker-compose-local.yml up --build --force-recreate`
+# `docker-compose -f docker-compose-local.yml up -d --build --force-recreate`
 
 version: '3.7'
 
@@ -9,16 +9,20 @@ services:
    build:
      context: .
      dockerfile: DockerfileLocal
-   stdin_open: true
+   command: passenger start -p 3000 -b '0.0.0.0'
    tty: true
    volumes:
-     - ./config:/home/hdc/config
+     - ./config:/home/app/webapp/config
+   env_file:
+      - './.env'
+   environment:
+      RAILS_ENV: development
    depends_on:
      - mysql
    ports:
      - "3000:3000"
    entrypoint:
-      - /home/hdc/bin/start.sh
+      - /home/app/webapp/bin/localdb.sh
 
   mysql:
     container_name: hdc_mysql
@@ -36,7 +40,8 @@ services:
       - '3306:3306'
       # Where our data will be persisted
     volumes:
-      - db-data:/usr/local/var/mysql/
+      - db-data:/var/lib/mysql
+      
 # Names our volume
 volumes:
   db-data:

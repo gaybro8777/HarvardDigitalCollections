@@ -80,6 +80,7 @@ $(document).on('turbolinks:load', function() {
       }
     });
 
+    //save search ajax submit
     $('body').on('submit', '.button_to', function (e) {
         var $form = $(this);
         if ($form.find('.ajax-submit').length > 0) {
@@ -91,11 +92,112 @@ $(document).on('turbolinks:load', function() {
                 data: $form.serialize(),
                 complete: function (data) {
                     $form.find('.ajax-submit').addClass('hidden');
+                    $form.siblings('.sign-in-and-save-search').addClass('hidden');
                     $form.siblings('.form-confirmation').removeClass('hidden');
+                    
                 },
                 
             });    
         }
+    });
+
+    //sign in form ajax submit
+    $('body').on('submit', '#sign-in-modal form.user-sign-in', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $form.find('.alert').remove()
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                
+                $('#sign-in-link').addClass('hidden');
+                $('#my-account-link').removeClass('hidden');
+                $('#sign-in-modal').modal('hide');
+                $(document).trigger('sign_in');
+            },
+            error: function (data) {
+                var errorMessage = 'Invalid login';
+                if (data.responseJSON !== undefined && data.responseJSON.error !== undefined) {
+                    errorMessage = data.responseJSON.error;
+                }
+                $form.prepend('<div class="alert alert-warning">' + errorMessage + '</div>');
+                $form.find('[type="submit"]').removeAttr('disabled');
+            },
+        });
+    });
+
+    //sign up form ajax submit
+    $('body').on('submit', '#sign-in-modal form.user-sign-up', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $form.find('.alert').remove()
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('#sign-in-link').addClass('hidden');
+                $('#my-account-link').removeClass('hidden');
+                $('#sign-in-modal').modal('hide');
+                $(document).trigger('sign_in');
+            },
+            error: function (data) {
+                var errorMessage = 'There was an error with your submission.';
+                if (data.responseJSON !== undefined && data.responseJSON.errors !== undefined) {
+                    if (data.responseJSON.errors.email !== undefined) {
+                        errorMessage += '<br/>Email ' + data.responseJSON.errors.email.join(',');
+                    }
+                    if (data.responseJSON.errors.password !== undefined) {
+                        errorMessage += '<br/>Password ' + data.responseJSON.errors.password.join(',');
+                    }
+                    if (data.responseJSON.errors.password_confirmation !== undefined) {
+                        errorMessage += '<br/>Password Confirmation ' + data.responseJSON.errors.password_confirmation.join(',');
+                    }
+                }
+                $form.prepend('<div class="alert alert-warning">' + errorMessage + '</div>');
+                $form.find('[type="submit"]').removeAttr('disabled');
+            },
+        });
+    });
+
+    //launch sign-in modal
+    $('body').on('click', '#sign-in-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal').modal('show');
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    //launch sign-up modal
+    $('body').on('click', '#sign-in-modal .sign-up-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    //launch sign-in modal and save search
+    $('body').on('click', '.sign-in-and-save-search', function (e) {
+        e.preventDefault();
+        var $saveSearchForm = $(this).parent().find('form');
+        $('#sign-in-link').trigger('click');
+        
+        $(document).on('sign_in', function (e) {
+            $('.sign-in-and-save-search').addClass('hidden');
+            $saveSearchForm.submit();
+            $(document).off('sign_in');
+        });
     });
 
     $('form.range_limit input.form-control').attr('placeholder', 'YYYY');

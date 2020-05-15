@@ -4,13 +4,10 @@
     <span class="sr-only">Close</span>
   </button>
   <div class="modal-content-inner">
-    <h3>
-      <%= t('blacklight.sign_up.title') %>
-    </h3>
-    <% else %>
-      <h2>
-      <%= t('blacklight.sign_up.title') %>
-    </h2>
+      <h3><%= t('blacklight.sign_up.title') %></h3>
+<% else %>
+   <div id="content" class="col-md-12">
+      <h2><%= t('blacklight.sign_up.title') %></h2>
 <% end %>
 
 <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "my-account-form user-sign-up" }) do |f| %>
@@ -46,17 +43,24 @@
     <h3>With an account you can:</h3>
     <ul class="sign-up-benefits__list">
       <li>
-        Create lists of favorites to save items to study,
-        cite and share later
+        <%=image_tag("icons/icon-favorites.svg", class: "", alt: "")%>
+          <p>Create lists of favorites to save items to study,
+          cite and share later</p>
+        </li>
+      <li>
+        <%=image_tag("icons/icon-manageitems.svg", class: "", alt: "")%>
+        <p>Manage your items from across our repositories in
+        one convenient location</p>
       </li>
       <li>
-        Manage your items from across our repositories in
-        one convenient location
-      </li>
-      <li>
-        Save your searches and pick up your exploration where 
-        you left off
+        <%=image_tag("icons/icon-savedsearch.svg", class: "", alt: "")%>
+          <p>Save your searches and pick up your exploration where
+        you left off</p>
       </li>
     </ul>
   </div>
-</div> 
+</div>
+
+<% if !@is_ajax %>
+  </div>
+<% end %>  

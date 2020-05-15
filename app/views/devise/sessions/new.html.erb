@@ -6,7 +6,8 @@
   <div class="modal-content-inner">
     <h3><%= t('blacklight.sign_in.title') %></h3>
 <% else %>
-    <h2><%= t('blacklight.sign_in.title') %></h2>
+    <div id="content" class="col-md-12">
+      <h2><%= t('blacklight.sign_in.title') %></h2>
 <% end %>
 
 
@@ -35,7 +36,5 @@
 <% end %>
 
 
-<% if @is_ajax %>
-  </div>
-<% end %>
+</div>
  

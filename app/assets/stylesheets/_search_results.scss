@@ -17,6 +17,10 @@
         height: auto;
         font-size: 15px;
         font-weight: bold;
+        &:focus {
+            outline-width: 1px;
+            outline-style: solid;
+        }
     }
 }
 

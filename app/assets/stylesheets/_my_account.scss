@@ -312,7 +312,7 @@
 
 .my-account-form, .delete-account-wrapper {
     .field {
-        label {
+        label, .field-label {
             font-size: 18px;
             font-weight: 600;
             padding-top: 0;
@@ -323,12 +323,25 @@
             width: 100%;
         }
 
+        &.field__with-button {
+            max-width: 760px;
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 40px;
+            overflow: hidden;
+
+            button {
+                margin-top: 12px;
+            }
+        }
+
         @media(min-width: 700px) {
             .field_with_errors {
                 display: inline-block;
             }
 
-            label {
+            label, .field-label {
                 display: inline-block;
                 width: 172px;
                 text-transform: none;
@@ -339,11 +352,39 @@
                 width: 400px;
                 display: inline-block;
             }
+
+            &.field__with-button {
+                display: flex;
+
+                label {
+                    align-self: center;
+                }
+
+                input[type="text"], input[type="email"], input[type="password"] {
+                    width: auto;
+                    flex-basis: 50%;
+                }
+
+                button {
+                    margin-top: 0;
+                    align-self: flex-start;
+
+                    &.btn-update {
+                        align-self: center;
+                    }
+                }
+            }
         }
 
         @media(min-width: 900px) {
             input[type="text"], input[type="email"], input[type="password"] {
                 width: 432px;
+            }
+
+            &.field__with-button {
+                input[type="text"], input[type="email"], input[type="password"] {
+                    width: auto;
+                }
             }
         }
     }
@@ -485,6 +526,13 @@
             &.sign-up-cta {
                 margin: 50px auto 20px auto;
             }
+
+            &.delete-warning {
+                max-width: 320px;
+                margin: 0 0;
+                font-family: $font-family-sans-serif;
+                text-align: left;
+            }
         }
 
         .forgot-password {
@@ -499,6 +547,17 @@
             @include button-large();
         }
 
+        .btn-medium {
+            color: #fff;
+            background: $dark-gray;
+            border: none;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 12px;
+            line-height: 14px;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
 
         @media(min-width: 400px) {
             width: 90%;
@@ -514,151 +573,197 @@
                 &.sign-up-cta {
                     max-width: none;
                 }
+
+                &.delete-warning {
+                    width: auto;
+                    flex-basis: 50%;
+                    text-align: left;
+                }
+            }
+
+            .btn {
+                margin-left: 20px;
+
+                &:first-child {
+                    margin-left: 0px;
+                }
             }
         }
-    }
-}
 
-.modal-open .modal.my-account-modal {
-    overflow-y: auto;
-}
-
-.sign-up-benefits {
-    background: $search-bg-gray;
-    margin-top: 60px;
-    padding: 0 20px;
-
-    &__content {
-        margin: 0 auto;
-        max-width: 800px;
-        padding: 55px 0 25px 0;
-
-        h3 {
-            margin: 0;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 22px;
-            font-weight: 700;
-        }
-    }
-
-    &__list {
-        list-style-type: none;
-        margin: 42px 0 0 0;
-        padding: 0;
-
-        @media(min-width: 700px) {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        li {
-            flex-basis: 27%;
-            text-align: center;
-            margin-bottom: 30px;
+        @media(min-width: 900px) {
 
             p {
-                font-family: $font-family-serif;
-                font-size: 16px;
+                &.delete-warning {
+                    max-width: 432px;
+                }
+            }
+        }
+    }
+}
+
+    .modal-open .modal.my-account-modal {
+        overflow-y: auto;
+    }
+
+    .sign-up-benefits {
+        background: $search-bg-gray;
+        margin-top: 60px;
+        padding: 0 20px;
+
+        &__content {
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 55px 0 25px 0;
+
+            h3 {
+                margin: 0;
+                text-transform: none;
+                letter-spacing: 0;
+                font-size: 22px;
+                font-weight: 700;
+            }
+        }
+
+        &__list {
+            list-style-type: none;
+            margin: 42px 0 0 0;
+            padding: 0;
+
+            @media(min-width: 700px) {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            li {
+                flex-basis: 27%;
+                text-align: center;
+                margin-bottom: 30px;
+
+                p {
+                    font-family: $font-family-serif;
+                    font-size: 16px;
+                    color: $dark-gray;
+                    line-height: 19px;
+                    margin: 36px 0 0 0;
+                }
+            }
+        }
+    }
+
+    .modal-content-inner + .sign-up-benefits {
+        margin-top: -15px;
+    }
+
+    .blacklight-lists {
+        #main-container {
+            .enclosing-row {
+                overflow-x: visible;
+            }
+        }
+    }
+
+    .my-lists {
+        padding: 0;
+        max-width: 990px;
+
+        li {
+            list-style-type: none;
+
+            a {
+                display: flex;
                 color: $dark-gray;
-                line-height: 19px;
-                margin: 36px 0 0 0;
+                padding: 20px 0px;
+                text-decoration: none;
+
+                &:hover {
+                    box-shadow: 0 0 19px 4px rgba(0, 0, 0, 0.25);
+                }
+            }
+
+            .my-lists__thumbnail {
+                width: 196px;
+                text-align: center;
+                margin-right: 32px;
+
+                img {
+                    max-width: 100%;
+                }
+            }
+
+            h4 {
+                font-size: 26px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                line-height: 32px;
+
+                button {
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                }
+
+                .fa {
+                    color: $breakthrough-blue;
+                    font-size: 18px;
+                    transform: translateY(-3px);
+                }
+            }
+
+            p {
+                font-size: 15px;
+                font-family: $font-family-sans-serif;
+                line-height: 24px;
+                font-weight: 400;
+
+                &.my-lists__last-updated {
+                    color: $medium-gray;
+                }
+            }
+        }
+
+        @media(min-width: 700px) {
+            margin-left: -52px;
+            li {
+                a {
+                    padding: 32px 30px;
+
+                    &:hover {
+                        box-shadow: 0 0 19px 4px rgba(0, 0, 0, 0.25);
+                    }
+                }
+
             }
         }
     }
-}
 
-.modal-content-inner + .sign-up-benefits {
-    margin-top: -15px;
-}
+    .create-list-instructions {
+        margin-top: 50px;
+        padding: 64px 0 74px 0;
+        background-repeat: repeat-y;
+        background-image: image-url('dotted-bg.png');
 
-.blacklight-lists {
-    #main-container {
-        .enclosing-row {
-            overflow-x: visible;
-        }
-    }
-}
-
-.my-lists {
-    padding: 0;
-    margin-left: -52px;
-
-    li {
-        list-style-type: none;
-
-        a {
-            display: flex;
-            color: $dark-gray;
-            padding: 32px 30px;
-            text-decoration: none;
-
-            &:hover {
-                box-shadow: 0 0 19px 4px rgba(0, 0, 0, 0.25);
-            }
-        }
-
-        .my-lists__thumbnail {
-            width: 196px;
-            text-align: center;
-            margin-right: 32px;
-
-            img {
-                max-width: 100%;
-            }
-        }
-
-        h4 {
-            font-size: 26px;
-            font-weight: bold;
+        h3 {
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            line-height: 32px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            line-height: 1;
+            letter-spacing: 2.63px;
+            margin-bottom: 32px;
 
             .fa {
-                color: $breakthrough-blue;
-                font-size: 18px;
-                transform: translateY(-3px);
+                font-size: 24px;
+                position: absolute;
+                margin: 2px 0 0 -40px;
+                color: #f8c21c;
             }
         }
 
         p {
-            font-size: 15px;
-            line-height: 24px;
-            font-weight: 400;
-            .my-lists__item-count {
-                color: $medium-gray;
-            }
+            font-family: $font-family-sans-serif;
+            font-size: 19px;
+            line-height: 32px;
+            text-align: center;
         }
     }
-}
-
-.create-list-instructions {
-    margin-top: 50px;
-    padding: 64px 0 74px 0; 
-    background-repeat: repeat-y;
-    background-image: image-url('dotted-bg.png');
-    h3 {
-        text-transform: uppercase;
-        text-align: center;
-        font-size: 32px;
-        font-weight: bold;
-        line-height: 1;
-        letter-spacing: 2.63px;
-        margin-bottom: 32px;
-
-        .fa {
-            font-size: 24px;
-            position: absolute;
-            margin: 2px 0 0 -40px;
-            color: #f8c21c;
-        }
-    }
-
-    p {
-        font-family: $font-family-sans-serif;
-        font-size: 19px;
-        line-height: 32px;
-        text-align: center;
-    }
-}

@@ -60,7 +60,18 @@ module Harvard::LibraryCloud::Collections
     api = API.new
     params = {:limit => 9999, :preserve_original => true}
     response = api.send_and_receive('collections', {:params => params})
-    response.map {|n| [n['title'], n['identifier']]}
+    response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
   end
 
+  def get_collection_by_id(systemId)
+    api = API.new
+    params = {:limit => 9999, :preserve_original => true}
+    response = api.send_and_receive('collections/' + systemId.to_s + '/', {:params => params})
+    if response.length > 0
+		n = response[0]
+		{"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}
+	else
+		nil
+	end
+  end
 end

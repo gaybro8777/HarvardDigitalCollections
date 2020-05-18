@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   resource :catalog, only: [:index], as: 'catalog', path: '/catalog', controller: 'catalog' do
     concerns :searchable
     concerns :range_searchable
-
+	get '/:id/save_search_form', to: 'catalog#save_search_form', as: 'catalog_save_search_form', constraints: { id: /[^\/]+/ }
   end
 
   devise_for :users, controllers: { registrations: 'registrations', sessions: 'sessions' }
@@ -34,6 +34,10 @@ Rails.application.routes.draw do
     collection do
       delete 'clear'
     end
+  end
+
+  resources :lists, constraints: { id: /[^\/]+/ } do
+    concerns :exportable
   end
 
   get '/rawtext/*path', to: 'fulltexts#index'

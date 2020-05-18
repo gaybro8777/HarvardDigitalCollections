@@ -79,7 +79,68 @@ $(document).on('turbolinks:load', function() {
         $(this).children('.fa').removeClass('fa-caret-down').addClass('fa-caret-up');
       }
     });
+    
+    //launch sign-in modal
+    $('body').on('click', '#sign-in-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal').modal('show');
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
 
+    //launch sign-up modal
+    $('body').on('click', '#sign-in-modal .sign-up-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    //launch sign-in modal and save search
+    $('body').on('click', '.sign-in-and-save-search', function (e) {
+        e.preventDefault();
+        $('#sign-in-link').trigger('click');
+        
+        $(document).on('sign_in', function (e) {
+            $.ajax({
+                url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
+                success: function (response) {
+                    $('#save-search-form').html(response);
+                    $('#save-search-form').find('form').submit();
+                    
+                }
+            });
+            
+            $(document).off('sign_in');
+        });
+    });
+
+    //launch list edit modal
+    $('body').on('click', '.edit-list', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).data('url'),
+            success: function (response) {
+                $('#manage-modal').modal('show');
+                $('#manage-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    //show delete list form
+    $('body').on('click', '.btn-delete-list', function (e) {
+        e.preventDefault();
+        $(this).parent().addClass('hidden');
+        $(this).parent().siblings('.hidden').removeClass('hidden');
+    });
+    
     //save search ajax submit
     $('body').on('submit', '.button_to', function (e) {
         var $form = $(this);
@@ -88,17 +149,45 @@ $(document).on('turbolinks:load', function() {
             $.ajax({
                 url: $form.attr('action'),
                 type: $form.attr('method'),
-                dataType: 'json',
+                dataType: 'html',
                 data: $form.serialize(),
-                complete: function (data) {
+                success: function (data) {
                     $form.find('.ajax-submit').addClass('hidden');
                     $form.siblings('.sign-in-and-save-search').addClass('hidden');
                     $form.siblings('.form-confirmation').removeClass('hidden');
-                    
                 },
-                
-            });    
+            });
         }
+    });
+
+    //update list ajax submit
+    $('body').on('submit', '.list-update', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'html',
+            data: $form.serialize(),
+            success: function (data) {
+                window.location.reload();
+            },
+        });
+    });
+
+    //delete list ajax submit
+    $('body').on('submit', '.list-delete', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'html',
+            data: $form.serialize(),
+            success: function (data) {
+                window.location = '/lists';
+            },
+        });
     });
 
     //sign in form ajax submit
@@ -112,7 +201,7 @@ $(document).on('turbolinks:load', function() {
             dataType: 'json',
             data: $form.serialize(),
             success: function (data) {
-                
+
                 $('#sign-in-link').addClass('hidden');
                 $('#my-account-link').removeClass('hidden');
                 $('#sign-in-modal').modal('hide');
@@ -161,42 +250,6 @@ $(document).on('turbolinks:load', function() {
                 $form.prepend('<div class="alert alert-warning">' + errorMessage + '</div>');
                 $form.find('[type="submit"]').removeAttr('disabled');
             },
-        });
-    });
-
-    //launch sign-in modal
-    $('body').on('click', '#sign-in-link', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: $(this).attr('href'),
-            success: function (response) {
-                $('#sign-in-modal').modal('show');
-                $('#sign-in-modal .modal-content').html(response);
-            }
-        });
-    });
-
-    //launch sign-up modal
-    $('body').on('click', '#sign-in-modal .sign-up-link', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: $(this).attr('href'),
-            success: function (response) {
-                $('#sign-in-modal .modal-content').html(response);
-            }
-        });
-    });
-
-    //launch sign-in modal and save search
-    $('body').on('click', '.sign-in-and-save-search', function (e) {
-        e.preventDefault();
-        var $saveSearchForm = $(this).parent().find('form');
-        $('#sign-in-link').trigger('click');
-        
-        $(document).on('sign_in', function (e) {
-            $('.sign-in-and-save-search').addClass('hidden');
-            $saveSearchForm.submit();
-            $(document).off('sign_in');
         });
     });
 

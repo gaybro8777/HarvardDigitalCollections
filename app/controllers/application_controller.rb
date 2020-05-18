@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
 
   def layout_by_resource
 	layout_setting = "blacklight"
-    if devise_controller? && resource_name == :user && action_name == 'new'
+    if (devise_controller? && resource_name == :user && action_name == 'new') || (is_a?(::ListsController) && action_name == 'edit')
       if !request.headers["X-Requested-With"].nil? && request.headers["X-Requested-With"] == "XMLHttpRequest"
 		layout_setting = false
 	  end

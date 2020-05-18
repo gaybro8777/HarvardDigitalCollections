@@ -1,0 +1,23 @@
+<button type="button" class="manage-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+<div class="modal-content-inner">
+	<h3>Manage List</h3>
+  <%= form_tag("/lists/" + @id, :method => :put, :class => "list-update my-account-form") do %>
+    <input type="hidden" name="_method" value="PUT" />
+    <div class="field field__with-button">
+			<label>Edit list name</label>
+			<input type="text" name="title" value="<%=@list['title']%>" required />
+			<button type="submit" class="btn btn-medium btn-update">Update</button>
+		</div>
+	<% end %>
+	<%= form_tag("/lists/" + @id, :method => :delete, :class => "list-delete my-account-form") do %>
+    <div class="field field__with-button">
+      <button type="button" class="btn btn-medium btn-delete-list">Delete this list</button>
+    </div>
+    <div class="field field__with-button hidden">
+			<span class="field-label">Delete this list</span>
+			<p class="delete-warning">Are you sure you want to delete this list, 
+			<strong><%=@list['title']%></strong> which has 0 items?</p>
+			<button type="submit" class="btn btn-medium">Yes, Delete</button>
+		</div>
+  <% end %>
+</div>

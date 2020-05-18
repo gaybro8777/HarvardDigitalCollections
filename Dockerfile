@@ -1,47 +1,55 @@
-### Local development only ###
+### Server ###
 
-#FROM ruby:2.6-alpine
-FROM ruby:2.5.1-alpine
-#RUN \
-#      wget -qO- https://deb.nodesource.com/setup_9.x | bash - && \
-#      wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-#      echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-#      apt-get update -qq && \
-#      apt-get install -y --force-yes --no-install-recommends \
-#      nodejs yarn build-essential libpq-dev default-mysql-client sqlite3 && \
-#      apt-get clean
-#RUN gem install bundler
+#https://github.com/phusion/passenger-docker
+FROM phusion/passenger-ruby25
 
-RUN apk add --update --no-cache \
-  bash \
-  build-base \
+# Set correct environment variables.
+ENV DEBIAN_FRONTEND noninteractive
+ENV RAILS_ENV development
+
+#From the docs: The image has an app user with UID 9999 and home directory 
+# /home/app. Your application is supposed to run as this user.
+COPY --chown=app:app . /home/app/webapp
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  curl libssl-dev \
   git \
-  libxml2-dev \
+  unzip \
+  zlib1g-dev \
   libxslt-dev \
-  nodejs \
-  mysql \
   mysql-client \
-  mysql-dev  \
-  tzdata
-
-RUN gem update --system && \
+  bash \
+  tzdata \
+  openssl && \
+  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+  gem update --system && \
   gem install bundler && \
-  bundle config build.nokogiri --use-system-libraries
+  bundle config build.nokogiri --use-system-libraries && \
+  rm /etc/nginx/sites-enabled/default && \
+  rm /home/app/webapp/db/migrate/* && \
+  chmod +x /home/app/webapp/bin/localdb.sh && \
+  chown app /etc/ssl/certs && \
+  chown app /etc/ssl/openssl.cnf
 
+ADD hdcwebapp.conf /etc/nginx/sites-enabled/webapp.conf
 
-# Install bash
-#RUN apk add --no-cache bash && apk add curl
-
-# Create working directory
-RUN mkdir -p /home/hdc
+USER app 
 
 # Set working directory
-WORKDIR /home/hdc
+WORKDIR /home/app/webapp
 
-# Copy code
-COPY . /home/hdc
+RUN bundle install && \
+    printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
+    openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Massachusetts/L=Cambridge/O=Library Technology Services/CN=*.lib.harvard.edu" -extensions SAN -reqexts SAN -config /etc/ssl/openssl.cnf -keyout /etc/ssl/certs/server.key -out /etc/ssl/certs/server.crt
+
+
+USER root
 
 # Expose ports
-EXPOSE 3000
+EXPOSE 13880:3000
 
-#RUN npm install
+# Use baseimage-docker's init process.
+CMD ["/sbin/my_init"]
+
+

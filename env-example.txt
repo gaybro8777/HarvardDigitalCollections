@@ -5,5 +5,9 @@ RAILS_ENV=<railsenv>
 DATABASE_NAME=<dbname>
 DATABASE_USER=<dbuser>
 DATABASE_PASSWORD=<password>
-DATABASE_PORT=3306
+DATABASE_PORT=3306:3306
 DATABASE_HOST=<db_hostname>
+
+# LibraryCloud API
+LC_API_KEY=<key>
+LC_ENV=<apienv>

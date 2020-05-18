@@ -32,3 +32,5 @@ stlee_dev
 stlee_dev
 /.env
 /env.txt
+/hdcwebapp.conf
+/webapp.conf

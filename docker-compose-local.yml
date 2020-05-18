@@ -9,7 +9,7 @@ services:
    build:
      context: .
      dockerfile: DockerfileLocal
-   command: passenger start -p 3000 -b '0.0.0.0'
+   command: passenger start --ssl --ssl-port 3001 --ssl-certificate /etc/ssl/certs/server.crt --ssl-certificate-key /etc/ssl/certs/server.key
    tty: true
    volumes:
      - ./config:/home/app/webapp/config
@@ -20,7 +20,7 @@ services:
    depends_on:
      - mysql
    ports:
-     - "3000:3000"
+     - "3001:3001"
    entrypoint:
       - /home/app/webapp/bin/localdb.sh
 

@@ -32,8 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
 
-ADD hdcwebapp.conf /etc/nginx/sites-enabled/webapp.conf
-
 USER app 
 
 # Set working directory
@@ -47,7 +45,7 @@ RUN bundle install && \
 USER root
 
 # Expose ports
-EXPOSE 13880:3000
+EXPOSE 13880:3001
 
 # Use baseimage-docker's init process.
 CMD ["/sbin/my_init"]

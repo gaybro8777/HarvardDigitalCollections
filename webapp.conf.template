@@ -1,7 +1,16 @@
 server {
-    listen 3000;
-    #server_name www.webapp.com;
+    # Redirect all HTTP requests to HTTPS with a 301 Moved Permanently response.
+    listen 3000 default_server;
+    listen [::]:3000 default_server;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 3001 ssl;
+    listen [::]:3001 ssl;
+    #server_name digitalcollections-docker-dev.lts.harvard.edu;
     root /home/app/webapp/public;
+
 
     # The following deploys your Ruby app on Passenger.
 
@@ -15,5 +24,8 @@ server {
 
     # For Ruby 2.5
     passenger_ruby /usr/bin/ruby2.5;
+    
+    ssl_certificate     /etc/ssl/certs/server.crt;
+	ssl_certificate_key /etc/ssl/certs/server.key;
     
 }

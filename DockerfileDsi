@@ -32,8 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
 
-ADD hdcwebapp.conf /etc/nginx/sites-enabled/webapp.conf
-
 USER app 
 
 # Set working directory

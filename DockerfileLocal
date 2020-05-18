@@ -47,7 +47,7 @@ RUN bundle install
 USER root
 
 # Expose ports
-EXPOSE 3000
+EXPOSE 3001
 
 # Use baseimage-docker's init process.
 CMD ["/sbin/my_init"]

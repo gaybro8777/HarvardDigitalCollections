@@ -1,5 +1,5 @@
 # Build all images and run all containers
-# `docker-compose up --build --force-recreate`
+# `docker-compose -f docker-compose.yml build`
 
 version: '3.7'
 

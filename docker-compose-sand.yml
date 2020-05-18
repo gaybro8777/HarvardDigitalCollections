@@ -1,0 +1,12 @@
+# Build all images and run all containers
+# `docker-compose -f docker-compose-sand.yml build`
+
+version: '3.7'
+
+services:
+  app:
+   image: registry.lts.harvard.edu/lts/hdc-sand:0.0.1
+   build:
+     context: .
+     dockerfile: DockerfileSand
+

@@ -12,10 +12,17 @@
 			<span class="fa fa-pencil-alt" aria-hidden="true"></span>
 		</button>
 	</h2>
+    
+	<%- if @response.empty? %>
+	  <%= render "zero_results" %>
+	<%- elsif render_grouped_response? %>
+	  <%= render_grouped_document_index %>
+	<%- else %>
+	  <%= render_document_index %>
+	<%- end %>
 
-	<div class="my-account-body">
-		<%=@id %>
-	</div>
+	<%= render partial: 'catalog/results_pagination' %>
+
 
   </div>
 </div>

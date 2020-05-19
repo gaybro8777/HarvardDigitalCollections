@@ -1,8 +1,10 @@
 # frozen_string_literal: true
-describe CatalogController do
+
+RSpec.describe CatalogController, api: true do
   let(:doc_id) { '2007020969' }
   let(:mock_response) { instance_double(Blacklight::Solr::Response) }
-  let(:mock_document) { instance_double(SolrDocument) }
+  let(:mock_document) { instance_double(SolrDocument, export_formats: {}) }
+  let(:search_service) { instance_double(Blacklight::SearchService) }
 
   describe "index action" do
     context "with format :html" do
@@ -23,63 +25,67 @@ describe CatalogController do
       end
 
       # check each user manipulated parameter
-      it "has docs and facets for query with results", :integration => true do
+      it "has docs and facets for query with results", integration: true do
         get :index, params: { q: user_query }
-        expect(assigns(:response).docs).to_not be_empty
+        expect(assigns(:response).docs).not_to be_empty
         assert_facets_have_values(assigns(:response).aggregations)
       end
-      it "has docs and facets for existing facet value", :integration => true do
-        get :index, params: { f: {"format" => 'Book'} }
-        expect(assigns(:response).docs).to_not be_empty
+      it "has docs and facets for existing facet value", integration: true do
+        get :index, params: { f: { "format" => 'Book' } }
+        expect(assigns(:response).docs).not_to be_empty
         assert_facets_have_values(assigns(:response).aggregations)
       end
-      it "has docs and facets for non-default results per page", :integration => true do
+      it "has docs and facets for non-default results per page", integration: true do
         num_per_page = 7
         get :index, params: { per_page: num_per_page }
         expect(assigns(:response).docs).to have(num_per_page).items
         assert_facets_have_values(assigns(:response).aggregations)
       end
 
-      it "has docs and facets for second page", :integration => true do
+      it "has docs and facets for second page", integration: true do
         page = 2
         get :index, params: { page: page }
-        expect(assigns(:response).docs).to_not be_empty
-        expect(assigns(:response).params[:start].to_i).to eq (page-1) * controller.blacklight_config[:default_solr_params][:rows]
+        expect(assigns(:response).docs).not_to be_empty
+        expect(assigns(:response).params[:start].to_i).to eq (page - 1) * controller.blacklight_config[:default_solr_params][:rows]
         assert_facets_have_values(assigns(:response).aggregations)
       end
 
-      it "has no docs or facet values for query without results", :integration => true do
+      it "has no docs or facet values for query without results", integration: true do
         get :index, params: { q: 'sadfdsafasdfsadfsadfsadf' } # query for no results
         expect(assigns(:response).docs).to be_empty
-        assigns(:response).aggregations.each do |key, facet|
+        assigns(:response).aggregations.each do |_key, facet|
           expect(facet.items).to be_empty
         end
       end
 
-      it "shows 0 results when the user asks for an invalid value to a custom facet query", :integration => true do
+      it "shows 0 results when the user asks for an invalid value to a custom facet query", integration: true do
         get :index, params: { f: { example_query_facet_field: 'bogus' } } # bogus custom facet value
         expect(assigns(:response).docs).to be_empty
       end
 
-      it "returns results (possibly 0) when the user asks for a valid value to a custom facet query", :integration => true do
+      it "returns results (possibly 0) when the user asks for a valid value to a custom facet query", integration: true do
         get :index, params: { f: { example_query_facet_field: 'years_25' } } # valid custom facet value with some results
-        expect(assigns(:response).docs).to_not be_empty
-        get :index, params: { f: {example_query_facet_field: 'years_5' } } # valid custom facet value with NO results
+        expect(assigns(:response).docs).not_to be_empty
+      end
+
+      it "returns no results when the users asks for a value that doesn't match any" do
+        get :index, params: { f: { example_query_facet_field: 'years_5' } } # valid custom facet value with NO results
         expect(assigns(:response).docs).to be_empty
       end
 
-      it "has a spelling suggestion for an appropriately poor query", :integration => true do
+      it "has a spelling suggestion for an appropriately poor query", integration: true do
         get :index, params: { q: 'boo' }
-        expect(assigns(:response).spelling.words).to_not be_nil
+        expect(assigns(:response).spelling.words).not_to be_nil
       end
 
       describe "session" do
         before do
           allow(controller).to receive(:search_results)
         end
+
         it "includes search hash with key :q" do
           get :index, params: { q: user_query }
-          expect(session[:search]).to_not be_nil
+          expect(session[:search]).not_to be_nil
           expect(session[:search].keys).to include 'id'
           search = Search.find(session[:search]['id'])
           expect(search.query_params['q']).to eq user_query
@@ -88,11 +94,11 @@ describe CatalogController do
 
       # check with no user manipulation
       describe "for default query" do
-        it "gets documents when no query", :integration => true do
+        it "gets documents when no query", integration: true do
           get :index
-          expect(assigns(:response).docs).to_not be_empty
+          expect(assigns(:response).docs).not_to be_empty
         end
-        it "gets facets when no query", :integration => true do
+        it "gets facets when no query", integration: true do
           get :index
           assert_facets_have_values(assigns(:response).aggregations)
         end
@@ -105,16 +111,16 @@ describe CatalogController do
       end
 
       # NOTE: status code is always 200 in isolation mode ...
-      it "HTTP status code for GET should be 200", :integration => true do
+      it "HTTP status code for GET should be 200", integration: true do
         get :index
-        expect(response).to be_success
+        expect(response).to be_successful
       end
     end
 
     describe "with format :rss" do
-      it "gets the feed", :integration => true do
+      it "gets the feed", integration: true do
         get :index, params: { format: 'rss' }
-        expect(response).to be_success
+        expect(response).to be_successful
       end
     end
 
@@ -122,12 +128,14 @@ describe CatalogController do
       render_views
       before do
         get :index, params: { format: 'json' }
-        expect(response).to be_success
+        expect(response).to be_successful
       end
-      let(:json) { JSON.parse(response.body)['response'] }
-      let(:pages)  { json["pages"]  }
-      let(:docs)   { json["docs"]   }
-      let(:facets) { json["facets"] }
+
+      let(:json) { JSON.parse(response.body) }
+      let(:pages)  { json['meta']['pages'] }
+      let(:docs)   { json['data'] }
+      let(:facets) { json['included'].select { |x| x['type'] == 'facet' } }
+      let(:search_fields) { json['included'].select { |x| x['type'] == 'search_field' } }
 
       it "gets the pages" do
         expect(pages["total_count"]).to eq 30
@@ -137,22 +145,35 @@ describe CatalogController do
 
       it "gets the documents" do
         expect(docs).to have(10).documents
-        expect(docs.first.keys).to match_array(["published_display", "author_display", "lc_callnum_display", "pub_date", "subtitle_display", "format", "material_type_display", "title_display", "id", "subject_topic_facet", "language_facet", "score"])
+        expect(docs.first['attributes'].keys).to match_array(
+          %w[author_tsim format language_ssim lc_callnum_ssim published_ssim title_tsim]
+        )
+        expect(docs.first['links']['self']).to eq solr_document_url(id: docs.first['id'])
       end
 
       it "gets the facets" do
         expect(facets).to have(9).facets
-        expect(facets.first).to eq({"name"=>"format", "label" => "Format", "items"=>[{"value"=>"Book", "hits"=>30, "label"=>"Book"}]})
+
+        format = facets.find { |x| x['id'] == 'format' }
+
+        expect(format['attributes']['items'].map { |x| x['attributes'] }).to match_array([{ "value" => "Book", "hits" => 30, "label" => "Book" }])
+        expect(format['links']['self']).to eq facet_catalog_url(format: :json, id: 'format')
+        expect(format['attributes']['items'].first['links']['self']).to eq search_catalog_url(format: :json, f: { format: ['Book'] })
+      end
+
+      it "gets the search fields" do
+        expect(search_fields).to have(4).fields
+        expect(search_fields.map { |x| x['id'] }).to match_array %w[all_fields author subject title]
+        expect(search_fields.first['links']['self']).to eq search_catalog_url(format: :json, search_field: 'all_fields')
       end
 
       describe "facets" do
-        let(:query_facet_items) { facets.last['items'] }
-        let(:regular_facet_items) { facets.first['items'] }
+        let(:query_facet) { facets.find { |x| x['id'] == 'example_query_facet_field' } }
+        let(:query_facet_items) { query_facet['attributes']['items'].map { |x| x['attributes'] } }
+
         it "has items with labels and values" do
           expect(query_facet_items.first['label']).to eq 'within 25 Years'
           expect(query_facet_items.first['value']).to eq 'years_25'
-          expect(regular_facet_items.first['label']).to eq "Book"
-          expect(regular_facet_items.first['value']).to eq "Book"
         end
       end
     end
@@ -160,7 +181,7 @@ describe CatalogController do
     describe "with additional formats from configuration" do
       let(:blacklight_config) { Blacklight::Configuration.new }
 
-      before :each do
+      before do
         allow(controller).to receive_messages blacklight_config: blacklight_config
         allow(controller).to receive_messages search_results: [double, double]
       end
@@ -184,7 +205,7 @@ describe CatalogController do
       end
 
       it "evaluates a proc" do
-        blacklight_config.index.respond_to.yaml = lambda { render plain: "" }
+        blacklight_config.index.respond_to.yaml = -> { render plain: "" }
         get :index, params: { format: 'yaml' }
         expect(response.body).to be_empty
       end
@@ -242,88 +263,139 @@ describe CatalogController do
     end
   end
 
+  describe '#raw' do
+    context 'when disabled' do
+      it "returns 404" do
+        expect { get :raw, params: { id: doc_id, format: 'json' } }.to raise_error ActionController::RoutingError
+      end
+    end
+
+    context 'when enabled' do
+      before do
+        allow(controller.blacklight_config.raw_endpoint).to receive(:enabled).and_return(true)
+      end
+
+      it "gets the raw solr document" do
+        get :raw, params: { id: doc_id, format: 'json' }
+        expect(response).to be_successful
+        json = JSON.parse response.body
+        expect(json.keys).to match_array(
+          %w[id _version_ author_addl_tsim author_tsim format isbn_ssim
+             language_ssim lc_1letter_ssim lc_alpha_ssim lc_b4cutter_ssim
+             lc_callnum_ssim marc_ss material_type_ssim pub_date_ssim
+             published_ssim subject_addl_ssim subject_geo_ssim subject_ssim
+             subject_tsim subtitle_tsim timestamp title_addl_tsim title_tsim
+             url_suppl_ssim]
+        )
+      end
+    end
+  end
+
   # SHOW ACTION
   describe "show action" do
     describe "with format :html" do
-      it "gets document", :integration => true do
+      it "gets document", integration: true do
         get :show, params: { id: doc_id }
-        expect(assigns[:document]).to_not be_nil
+        expect(assigns[:document]).not_to be_nil
       end
     end
 
     describe "with format :json" do
+      render_views
       it "gets the feed" do
         get :show, params: { id: doc_id, format: 'json' }
-        expect(response).to be_success
+        expect(response).to be_successful
         json = JSON.parse response.body
-        expect(json["response"]["document"].keys).to match_array(["author_t", "opensearch_display", "marc_display", "published_display", "author_display", "lc_callnum_display", "title_t", "pub_date", "pub_date_sort", "subtitle_display", "format", "url_suppl_display", "material_type_display", "title_display", "subject_addl_t", "subject_t", "isbn_t", "id", "title_addl_t", "subject_geo_facet", "subject_topic_facet", "author_addl_t", "language_facet", "subtitle_t", "timestamp"])
+        expect(json["data"]["attributes"].keys).to match_array(
+          %w[author_tsim format isbn_ssim language_ssim lc_callnum_ssim
+             published_ssim subtitle_tsim title_tsim url_suppl_ssim]
+        )
       end
     end
 
     describe "previous/next documents" do
-      let(:search_session) { { :id => current_search.id } }
-      let(:current_search) { Search.create(:query_params => { :q => ""}) }
+      let(:search_session) { { id: current_search.id } }
+      let(:current_search) { Search.create(query_params: { q: "" }) }
+
       before do
-        allow(mock_document).to receive_messages(:export_formats => {})
-        allow(controller).to receive_messages(
-          fetch: [mock_response, mock_document],
-          get_previous_and_next_documents_for_search: [double(:total => 5), [double("a"), mock_document, double("b")]],
-          current_search_session: current_search
-        )
+        allow(mock_document).to receive_messages(export_formats: {})
+        allow(controller).to receive(:search_service).and_return(search_service)
+        expect(search_service).to receive(:fetch).and_return([mock_response, mock_document])
+        allow(controller).to receive(:current_search_session).and_return(current_search)
       end
-      it "sets previous document if counter present in session" do
-        session[:search] = search_session.merge('counter' => 2)
-        get :show, params: { id: doc_id }
-        expect(assigns[:previous_document]).to_not be_nil
+
+      context 'if counter is present in session' do
+        before do
+          session[:search] = search_session.merge('counter' => 2)
+        end
+
+        context 'and no exception is raised' do
+          before do
+            expect(search_service).to receive(:previous_and_next_documents_for_search)
+              .and_return([double(total: 5), [double("a"), mock_document, double("b")]])
+          end
+
+          it "sets previous document" do
+            get :show, params: { id: doc_id }
+            expect(assigns[:search_context][:prev]).not_to be_nil
+          end
+
+          it "sets next document" do
+            get :show, params: { id: doc_id }
+            expect(assigns[:search_context][:next]).not_to be_nil
+          end
+        end
+
+        context 'and an exception is raised' do
+          before do
+            expect(search_service).to receive(:previous_and_next_documents_for_search) {
+              raise Blacklight::Exceptions::InvalidRequest, "Error"
+            }
+          end
+
+          it "does not break" do
+            get :show, params: { id: doc_id }
+            expect(assigns[:search_context]).to be_nil
+          end
+        end
       end
+
       it "does not set previous or next document if session is blank" do
         get :show, params: { id: doc_id }
-        expect(assigns[:previous_document]).to be_nil
-        expect(assigns[:next_document]).to be_nil
+        expect(assigns[:search_context]).to be_nil
       end
+
       it "does not set previous or next document if session[:search]['counter'] is nil" do
         session[:search] = {}
         get :show, params: { id: doc_id }
-        expect(assigns[:previous_document]).to be_nil
-        expect(assigns[:next_document]).to be_nil
-      end
-      it "sets next document if counter present in session" do
-        session[:search] = search_session.merge('counter' => 2)
-        get :show, params: { id: doc_id }
-        expect(assigns[:next_document]).to_not be_nil
-      end
-
-      it "does not break if solr returns an exception" do
-        allow(controller).to receive(:get_previous_and_next_documents_for_search) {
-          raise Blacklight::Exceptions::InvalidRequest.new "Error"
-        }
-        get :show, params: { id: doc_id }
-        expect(assigns[:previous_document]).to be_nil
-        expect(assigns[:next_document]).to be_nil
+        expect(assigns[:search_context]).to be_nil
       end
     end
 
     # NOTE: status code is always 200 in isolation mode ...
-    it "HTTP status code for GET should be 200", :integration => true do
+    it "HTTP status code for GET should be 200", integration: true do
       get :show, params: { id: doc_id }
-      expect(response).to be_success
+      expect(response).to be_successful
     end
 
     it "renders show.html.erb" do
-      allow(mock_document).to receive_messages(:export_formats => {})
-      allow(controller).to receive_messages(fetch: [mock_response, mock_document])
+      allow(controller).to receive(:search_service).and_return(search_service)
+      expect(search_service).to receive(:fetch).and_return([mock_response, mock_document])
+
       get :show, params: { id: doc_id }
       expect(response).to render_template(:show)
     end
 
-    describe "@document" do
+    describe '@document' do
       before do
-        allow(mock_response).to receive_messages(documents: [SolrDocument.new(id: 'my_fake_doc')])
-        allow(controller).to receive_messages(:find => mock_response )
+        allow(controller).to receive(:search_service).and_return(search_service)
+        expect(search_service).to receive(:fetch).and_return([mock_response, mock_document])
+
         get :show, params: { id: doc_id }
       end
-      it "is a SolrDocument" do
-        expect(assigns[:document]).to be_instance_of(SolrDocument)
+
+      it 'is a SolrDocument' do
+        expect(assigns[:document]).to eq mock_document
       end
     end
 
@@ -340,49 +412,75 @@ describe CatalogController do
       end
 
       before do
-        allow(mock_response).to receive_messages(:documents => [SolrDocument.new(id: 'my_fake_doc')])
-        allow(controller).to receive_messages(:find => mock_response,
-                        :get_single_doc_via_search => mock_document)
         Mime::Type.register "application/mock", :mock
         SolrDocument.use_extension(FakeExtension)
-      end
-
-      it "responds to an extension-registered format properly" do
-        get :show, params: { id: doc_id, format: 'mock' }
-        expect(response).to be_success
-        expect(response.body).to match /mock_export/
+        allow(controller).to receive(:search_service).and_return(search_service)
+        expect(search_service).to receive(:fetch).and_return([nil, SolrDocument.new(id: 'my_fake_doc')])
       end
 
       after do
         SolrDocument.registered_extensions.pop # remove the fake extension
       end
+
+      it "responds to an extension-registered format properly" do
+        get :show, params: { id: doc_id, format: 'mock' }
+        expect(response).to be_successful
+        expect(response.body).to match /mock_export/
+      end
     end # dynamic export formats
   end # describe show action
 
   describe "opensearch" do
-    before do
-      allow(mock_response).to receive_messages(documents: [SolrDocument.new(id: 'my_fake_doc'), SolrDocument.new(id: 'my_other_doc')])
-      allow(controller).to receive_messages(find: mock_response)
-    end
     it "returns an opensearch description" do
       get :opensearch, params: { format: 'xml' }
-      expect(response).to be_success
+      expect(response).to be_successful
     end
-    it "returns valid JSON" do
-      get :opensearch, params: { format: 'json', q: 'a' }
-      expect(response).to be_success
+
+    context 'when searching for something' do
+      before do
+        allow(controller).to receive(:search_service).and_return(search_service)
+        expect(search_service).to receive(:opensearch_response)
+          .and_return(['a', [SolrDocument.new(id: 'my_fake_doc'),
+                             SolrDocument.new(id: 'my_other_doc')]])
+      end
+
+      it "returns valid JSON" do
+        get :opensearch, params: { format: 'json', q: 'a' }
+        expect(response).to be_successful
+      end
+    end
+  end
+
+  describe 'GET suggest' do
+    it 'returns JSON' do
+      get :suggest, params: { format: 'json' }
+      expect(response.body).to eq [].to_json
+    end
+    it 'returns suggestions' do
+      get :suggest, params: { format: 'json', q: 'new' }
+      json = JSON.parse(response.body)
+      expect(json.count).to eq 5
+      expect(json.first['term']).to eq 'new jersey'
     end
   end
 
   describe "email/sms" do
     let(:mock_response) { instance_double(Blacklight::Solr::Response, documents: [SolrDocument.new(id: 'my_fake_doc'), SolrDocument.new(id: 'my_other_doc')]) }
+
     before do
-      allow(controller).to receive_messages(find: mock_response)
+      mock_document.extend(Blacklight::Document::Sms)
+      mock_document.extend(Blacklight::Document::Email)
+      allow(mock_document).to receive(:to_semantic_values).and_return({})
+      allow(mock_document).to receive(:to_model).and_return(SolrDocument.new(id: 'my_fake_doc'))
+
+      allow(controller).to receive(:search_service).and_return(search_service)
+      expect(search_service).to receive(:fetch).and_return([mock_response, [mock_document]])
       request.env["HTTP_REFERER"] = "/catalog/#{doc_id}"
-      SolrDocument.use_extension( Blacklight::Document::Email )
-      SolrDocument.use_extension( Blacklight::Document::Sms )
+      SolrDocument.use_extension(Blacklight::Document::Email)
+      SolrDocument.use_extension(Blacklight::Document::Sms)
     end
-    describe "email" do
+
+    describe "email", api: false do
       it "gives error if no TO parameter" do
         post :email, params: { id: doc_id }
         expect(request.flash[:error]).to eq "You must enter a recipient in order to send this message"
@@ -397,7 +495,7 @@ describe CatalogController do
       end
       it "redirects back to the record upon success" do
         allow(RecordMailer).to receive(:email_record)
-          .with(anything, { :to => 'test_email@projectblacklight.org', :message => 'xyz' }, hash_including(:host => 'test.host'))
+          .with(anything, { to: 'test_email@projectblacklight.org', message: 'xyz' }, hash_including(host: 'test.host'))
           .and_return double(deliver: nil)
         post :email, params: { id: doc_id, to: 'test_email@projectblacklight.org', message: 'xyz' }
         expect(request.flash[:error]).to be_nil
@@ -410,7 +508,7 @@ describe CatalogController do
       end
     end
 
-    describe "sms" do
+    describe "sms", api: false do
       it "gives error if no phone number is given" do
         post :sms, params: { id: doc_id, carrier: 'att' }
         expect(request.flash[:error]).to eq "You must enter a recipient's phone number in order to send this message"
@@ -435,8 +533,8 @@ describe CatalogController do
       it "sends to the appropriate carrier email address" do
         expect(RecordMailer)
           .to receive(:sms_record)
-          .with(anything, { to: '5555555555@txt.att.net' }, hash_including(:host => 'test.host'))
-          .and_return double(:deliver => nil)
+          .with(anything, { to: '5555555555@txt.att.net' }, hash_including(host: 'test.host'))
+          .and_return double(deliver: nil)
         post :sms, params: { id: doc_id, to: '5555555555', carrier: 'txt.att.net' }
       end
       it "redirects back to the record upon success" do
@@ -454,38 +552,42 @@ describe CatalogController do
 
   describe "errors" do
     it "returns status 404 for a record that doesn't exist" do
-      allow(controller).to receive_messages(:find => double(documents: []))
-      get :show, params: { id: "987654321" }
-      expect(response.status).to eq 404
-      expect(response.content_type).to eq Mime[:html]
+      allow(controller).to receive_messages(find: double(documents: []))
+      expect do
+        get :show, params: { id: "987654321" }
+      end.to raise_error Blacklight::Exceptions::RecordNotFound
     end
 
-    it "returns status 404 for a record that doesn't exist even for non-html format" do
-      allow(controller).to receive_messages(:find => double(documents: []))
-      get :show, params: { id: "987654321", format: "xml" }
-      expect(response.status).to eq 404
-      expect(response.content_type).to eq Mime[:xml]
+    it "returns status 404 for exportable actions on records that do not exist" do
+      allow(controller).to receive_messages(find: double(documents: []))
+      expect do
+        get :citation, params: { id: "bad-record-identifer" }
+      end.to raise_error Blacklight::Exceptions::RecordNotFound
     end
 
-    it "redirects the user to the root url for a bad search" do
-      fake_error = Blacklight::Exceptions::InvalidRequest.new
-      allow(Rails.env).to receive_messages(:test? => false)
-      allow(controller).to receive(:search_results) { |*args| raise fake_error }
-      expect(controller.logger).to receive(:error).with(fake_error)
-      get :index, params: { q: '+' }
+    context "when there is an invalid search", api: false do
+      let(:service) { instance_double(Blacklight::SearchService) }
+      let(:fake_error) { Blacklight::Exceptions::InvalidRequest.new }
 
-      expect(response.redirect_url).to eq root_url
-      expect(request.flash[:notice]).to eq "Sorry, I don't understand your search."
-      expect(response).to_not be_success
-      expect(response.status).to eq 302
-    end
+      before do
+        allow(controller).to receive(:search_service).and_return(service)
+        allow(service).to receive(:search_results) { |*_args| raise fake_error }
+        allow(Rails.env).to receive_messages(test?: false)
+      end
 
-    it "returns status 500 if the catalog path is raising an exception" do
-      fake_error = Blacklight::Exceptions::InvalidRequest.new
-      allow(controller).to receive(:search_results) { |*args| raise fake_error }
-      allow(controller.flash).to receive(:sweep)
-      allow(controller).to receive(:flash).and_return(:notice => I18n.t('blacklight.search.errors.request_error'))
-      expect { get :index, params: { q: '+' } }.to raise_error Blacklight::Exceptions::InvalidRequest
+      it "redirects the user to the root url for a bad search" do
+        expect(controller.logger).to receive(:error).with(fake_error)
+        get :index, params: { q: '+' }
+        expect(response.redirect_url).to eq root_url
+        expect(request.flash[:notice]).to eq "Sorry, I don't understand your search."
+        expect(response).not_to be_successful
+        expect(response.status).to eq 302
+      end
+
+      it "returns status 500 if the catalog path is raising an exception" do
+        allow(controller).to receive(:flash).and_return(notice: I18n.t('blacklight.search.errors.request_error'))
+        expect { get :index, params: { q: '+' } }.to raise_error Blacklight::Exceptions::InvalidRequest
+      end
     end
   end
 
@@ -493,12 +595,12 @@ describe CatalogController do
     render_views
 
     before do
-      allow(controller).to receive(:has_user_authentication_provider?) { false }
+      allow(controller).to receive(:has_user_authentication_provider?).and_return(false)
     end
 
     it "does not show user util links" do
       get :index
-      expect(response.body).to_not match /Login/
+      expect(response.body).not_to match /Login/
     end
   end
 
@@ -509,6 +611,7 @@ describe CatalogController do
         expect(response).to be_successful
       end
     end
+
     describe "requesting html" do
       it "is successful" do
         get :facet, params: { id: 'format' }
@@ -519,6 +622,7 @@ describe CatalogController do
         expect(assigns[:pagination]).to be_kind_of Blacklight::Solr::FacetPaginator
       end
     end
+
     describe "requesting json" do
       render_views
       it "is successful" do
@@ -549,9 +653,9 @@ describe CatalogController do
 
     context 'when the requested facet is not in the configuration' do
       it 'raises a routing error' do
-        expect {
+        expect do
           get :facet, params: { id: 'fake' }
-        }.to raise_error ActionController::RoutingError, 'Not Found'
+        end.to raise_error ActionController::RoutingError, 'Not Found'
       end
     end
   end
@@ -559,20 +663,20 @@ describe CatalogController do
   describe "#add_to_search_history" do
     it "prepends the current search to the list" do
       session[:history] = []
-      controller.send(:add_to_search_history, double(:id => 1))
+      controller.send(:add_to_search_history, double(id: 1))
       expect(session[:history]).to have(1).item
-      controller.send(:add_to_search_history, double(:id => 2))
+      controller.send(:add_to_search_history, double(id: 2))
       expect(session[:history]).to have(2).items
       expect(session[:history].first).to eq 2
     end
 
     it "removes searches from the list when the list gets too big" do
-      allow(controller).to receive(:blacklight_config).and_return(double(:search_history_window => 5))
+      allow(controller).to receive(:blacklight_config).and_return(double(search_history_window: 5))
       session[:history] = (0..4).to_a.reverse
       expect(session[:history]).to have(5).items
-      controller.send(:add_to_search_history, double(:id => 5))
-      controller.send(:add_to_search_history, double(:id => 6))
-      controller.send(:add_to_search_history, double(:id => 7))
+      controller.send(:add_to_search_history, double(id: 5))
+      controller.send(:add_to_search_history, double(id: 6))
+      controller.send(:add_to_search_history, double(id: 7))
       expect(session[:history]).to include(*(3..7).to_a)
     end
   end
@@ -581,60 +685,66 @@ describe CatalogController do
     let(:parameter_class) { ActionController::Parameters }
 
     it "creates a session if we're on an search action" do
-      allow(controller).to receive_messages(:action_name => "index")
+      allow(controller).to receive_messages(action_name: "index")
       allow(controller).to receive_messages(params: parameter_class.new(q: "x", page: 5))
       session = controller.send(:current_search_session)
-      expect(session.query_params).to include(:q => "x")
-      expect(session.query_params).to_not include(:page => 5)
+      expect(session.query_params).to include(q: "x")
+      expect(session.query_params).not_to include(page: 5)
     end
 
     it "creates a session if a search context was provided" do
-      allow(controller).to receive_messages(params: parameter_class.new(search_context: JSON.dump(:q => "x")))
+      allow(controller).to receive_messages(params: parameter_class.new(search_context: JSON.dump(q: "x")))
       session = controller.send(:current_search_session)
       expect(session.query_params).to include("q" => "x")
     end
 
     it "uses an existing session if a search id was provided" do
-      s = Search.create(:query_params => { :q => "x" })
+      s = Search.create(query_params: { q: "x" })
       session[:history] ||= []
       session[:history] << s.id
       allow(controller).to receive_messages(params: parameter_class.new(search_id: s.id))
       session = controller.send(:current_search_session)
-      expect(session.query_params).to include(:q => "x")
+      expect(session.query_params).to include(q: "x")
       expect(session).to eq(s)
     end
 
     it "uses an existing search session if the search is in the uri" do
-      s = Search.create(:query_params => { :q => "x" })
+      s = Search.create(query_params: { q: "x" })
       session[:search] ||= {}
       session[:search]['id'] = s.id
       session[:history] ||= []
       session[:history] << s.id
       session = controller.send(:current_search_session)
-      expect(session.query_params).to include(:q => "x")
+      expect(session.query_params).to include(q: "x")
       expect(session).to eq(s)
     end
   end
 
   describe "#has_search_parameters?" do
     subject { controller.has_search_parameters? }
+
     describe "none" do
-      before { allow(controller).to receive_messages(params: { }) }
-      it { should be false }
+      before { allow(controller).to receive_messages(params: {}) }
+
+      it { is_expected.to be false }
     end
+
     describe "with a query" do
       before { allow(controller).to receive_messages(params: { q: 'hello' }) }
-      it { should be true }
+
+      it { is_expected.to be true }
     end
+
     describe "with a facet" do
-      before { allow(controller).to receive_messages(params: { f: { "field" => ["value"]} }) }
-      it { should be true }
+      before { allow(controller).to receive_messages(params: { f: { "field" => ["value"] } }) }
+
+      it { is_expected.to be true }
     end
   end
 
-  describe "#add_show_tools_partial" do
+  describe "#add_show_tools_partial", api: false do
     before do
-      described_class.add_show_tools_partial(:like, callback: :perform_like, validator: :validate_like_params)
+      described_class.blacklight_config.add_show_tools_partial(:like, callback: :perform_like, validator: :validate_like_params)
       allow(controller).to receive(:solr_document_url).and_return('catalog/1')
       allow(controller).to receive(:action_documents).and_return(1)
       Rails.application.routes.draw do
@@ -688,13 +798,83 @@ describe CatalogController do
       expect(controller.send(:search_facet_path, id: "some_facet", page: 5)).to eq facet_catalog_path(id: "some_facet")
     end
   end
+
+  describe "facet_limit_for" do
+    let(:blacklight_config) { controller.blacklight_config }
+
+    it "returns specified value for facet_field specified" do
+      expect(controller.facet_limit_for("subject_ssim")).to eq blacklight_config.facet_fields["subject_ssim"].limit
+    end
+
+    it "facet_limit_hash should return hash with key being facet_field and value being configured limit" do
+      # facet_limit_hash has been removed from solrhelper in refactor. should it go back?
+      skip "facet_limit_hash has been removed from solrhelper in refactor. should it go back?"
+      expect(controller.facet_limit_hash).to eq blacklight_config[:facet][:limits]
+    end
+
+    it "handles no facet_limits in config" do
+      blacklight_config.facet_fields = {}
+      expect(controller.facet_limit_for("subject_ssim")).to be_nil
+    end
+
+    describe "for 'true' configured values" do
+      before do
+        allow(controller).to receive(:blacklight_config).and_return(blacklight_config)
+      end
+
+      let(:blacklight_config) do
+        Blacklight::Configuration.new do |config|
+          config.add_facet_field "language_facet", limit: true
+        end
+      end
+
+      it "returns nil if no @response available" do
+        expect(controller.facet_limit_for("some_unknown_field")).to be_nil
+      end
+
+      it "gets from @response facet.limit if available" do
+        response = instance_double(Blacklight::Solr::Response, aggregations: { "language_facet" => double(limit: nil) })
+        controller.instance_variable_set(:@response, response)
+        blacklight_config.facet_fields['language_facet'].limit = 10
+        expect(controller.facet_limit_for("language_facet")).to eq 10
+      end
+
+      it "gets the limit from the facet field in @response" do
+        response = instance_double(Blacklight::Solr::Response, aggregations: { "language_facet" => double(limit: 16) })
+        controller.instance_variable_set(:@response, response)
+        expect(controller.facet_limit_for("language_facet")).to eq 15
+      end
+
+      it "defaults to 10" do
+        expect(controller.facet_limit_for("language_facet")).to eq 10
+      end
+    end
+
+    context 'for facet fields with a key that is different from the field name' do
+      before do
+        allow(controller).to receive(:blacklight_config).and_return(blacklight_config)
+      end
+
+      let(:blacklight_config) do
+        Blacklight::Configuration.new do |config|
+          config.add_facet_field 'some_key', field: 'x', limit: true
+        end
+      end
+
+      it 'gets the limit from the facet field in the @response' do
+        response = instance_double(Blacklight::Solr::Response, aggregations: { 'x' => double(limit: 16) })
+        controller.instance_variable_set(:@response, response)
+        expect(controller.facet_limit_for('some_key')).to eq 15
+      end
+    end
+  end
 end
 
 # there must be at least one facet, and each facet must have at least one value
 def assert_facets_have_values(aggregations)
-  expect(aggregations).to_not be_empty
+  expect(aggregations).not_to be_empty
   # should have at least one value for each facet
-  aggregations.each do |key, facet|
+  aggregations.each do |_key, facet|
     expect(facet.items).to have_at_least(1).item
   end
 end

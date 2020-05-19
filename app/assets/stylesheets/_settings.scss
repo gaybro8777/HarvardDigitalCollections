@@ -91,6 +91,7 @@ $include-html-global-classes: $include-html-classes;
  $font-family-sans-serif-bold: "Trueno", Helvetica, Roboto, Arial, sans-serif;
  $font-family-sans-serif-light: "Trueno", Helvetica, Roboto, Arial, sans-serif;
  $font-family-serif: "Lora", Georgia, Cambria, "Times New Roman", Times, serif;
+ $font-family-mirador-ui: "Open Sans", "Lucida Grande", Verdana, Arial, sans-serif;
 // $font-family-monospace: Consolas, "Liberation Mono", Courier, monospace;
 
 // We use these to define default font weights
@@ -122,17 +123,20 @@ $silver      : #C0C0C0;
 // $steel       : #666666;
 // $charcoal    : #555555;
 // $tuatara     : #444444;
-// $oil         : #333333;
+$oil         : #333333;
 $jet         : #1e1e1e;
-// $black       : #000000;
+$black       : #000000;
 $rouge: #a51c30;
 $red: #EC0B14;
 $background-gray: #f7f7f7;
 $menu-highlight-1: #414141;
+$regular-plain-text-color: #414141;
 $subtle-gray: #FAFAFA;
 $medium-gray: #6C6C6C;
 $dark-gray: #1e1e1e;
 $light-gray: #E0E0E0;
+$border-gray: #AFAFAF;
+$search-bg-gray: #F3F3F3;
 $light-blue: #82BCDC;
 $breakthrough-blue: #0579B8;
 
@@ -160,6 +164,9 @@ $breakthrough-blue: #0579B8;
 // $shiny-edge-size: 0 1px 0;
 // $shiny-edge-color: rgba($white, .5);
 // $shiny-edge-active-color: rgba($black, .2);
+
+// We use these to set transition animations.
+$link-fade: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
 
 // d. Media Query Ranges
 // - - - - - - - - - - - - - - - - - - - - - - - - -

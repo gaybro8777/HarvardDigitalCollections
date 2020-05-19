@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe "catalog/constraints" do
+RSpec.describe "catalog/constraints" do
   let :blacklight_config do
     Blacklight::Configuration.new do |config|
       config.view.xyz
@@ -18,8 +18,7 @@ describe "catalog/constraints" do
     allow(view).to receive_messages(query_has_constraints?: true)
     allow(view).to receive(:blacklight_config).and_return(blacklight_config)
     render partial: "catalog/constraints"
-    expect(rendered).to have_selector("#startOverLink")
-    expect(rendered).to have_link("Start Over", :href => 'http://xyz')
+    expect(rendered).to have_link("Start Over", href: 'http://xyz')
   end
 
   it "renders a start over link with the current view type" do
@@ -28,8 +27,6 @@ describe "catalog/constraints" do
     params[:view] = 'xyz'
     allow(view).to receive(:blacklight_config).and_return(blacklight_config)
     render partial: "catalog/constraints"
-    expect(rendered).to have_selector("#startOverLink")
-    expect(rendered).to have_link("Start Over", :href => 'http://xyz?view=xyz')
+    expect(rendered).to have_link("Start Over", href: 'http://xyz?view=xyz')
   end
-
 end

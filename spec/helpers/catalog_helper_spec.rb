@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-describe CatalogHelper do
+RSpec.describe CatalogHelper do
   include ERB::Util
-  include CatalogHelper
+  include described_class
 
   def mock_response args
     current_page = args[:current_page] || 1
@@ -22,108 +22,102 @@ describe CatalogHelper do
     false
   end
 
-
   describe "page_entries_info" do
     it "with no results" do
-      @response = mock_response :total => 0
+      @response = mock_response total: 0
 
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      html = page_entries_info(@response, entry_name: 'entry_name')
       expect(html).to eq "No entry_names found"
       expect(html).to be_html_safe
     end
 
     it "with no results (and no entry_name provided)" do
-      @response = mock_response :total => 0
+      @response = mock_response total: 0
 
       html = page_entries_info(@response)
       expect(html).to eq "No entries found"
       expect(html).to be_html_safe
     end
 
-    it "with an empty page of results" do
-      @response = double(limit_value: -1)
+    context "when response.entry_name is nil" do
+      it "does not raise an error" do
+        collection = mock_response total: 10
+        allow(collection).to receive(:entry_name).and_return(nil)
 
-      html = page_entries_info(@response)
-      expect(html).to be_blank
+        expect { page_entries_info(collection) }.not_to raise_error
+      end
     end
 
     describe "with a single result" do
       it "uses the provided entry name" do
-        response = mock_response :total => 1
+        response = mock_response total: 1
 
-        html = page_entries_info(response, { :entry_name => 'entry_name' })
+        html = page_entries_info(response, entry_name: 'entry_name')
         expect(html).to eq "<strong>1</strong> entry_name found"
         expect(html).to be_html_safe
       end
 
       it "infers a name" do
-        response = mock_response :total => 1
+        response = mock_response total: 1
 
         html = page_entries_info(response)
         expect(html).to eq "<strong>1</strong> entry found"
         expect(html).to be_html_safe
       end
-
-      it "uses the model_name from the response" do
-        response = mock_response :total => 1
-        allow(response).to receive(:model_name).and_return(double(:human => 'thingy'))
-
-        html = page_entries_info(response)
-        expect(html).to eq "<strong>1</strong> thingy found"
-        expect(html).to be_html_safe
-      end
     end
 
     it "with a single page of results" do
-      response = mock_response :total => 7
+      response = mock_response total: 7
 
-      html = page_entries_info(response, { :entry_name => 'entry_name' })
+      html = page_entries_info(response, entry_name: 'entry_name')
       expect(html).to eq "<strong>1</strong> - <strong>7</strong> of <strong>7</strong>"
       expect(html).to be_html_safe
     end
 
     it "on the first page of multiple pages of results" do
-      @response = mock_response :total => 15, :per_page => 10
+      @response = mock_response total: 15, per_page: 10
 
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      html = page_entries_info(@response, entry_name: 'entry_name')
       expect(html).to eq "<strong>1</strong> - <strong>10</strong> of <strong>15</strong>"
       expect(html).to be_html_safe
     end
 
     it "on the second page of multiple pages of results" do
-      @response = mock_response :total => 47, :per_page => 10, :current_page => 2
+      @response = mock_response total: 47, per_page: 10, current_page: 2
 
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      html = page_entries_info(@response, entry_name: 'entry_name')
       expect(html).to eq "<strong>11</strong> - <strong>20</strong> of <strong>47</strong>"
       expect(html).to be_html_safe
     end
 
     it "on the last page of results" do
-      @response = mock_response :total => 47, :per_page => 10, :current_page => 5
+      @response = mock_response total: 47, per_page: 10, current_page: 5
 
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      html = page_entries_info(@response, entry_name: 'entry_name')
       expect(html).to eq "<strong>41</strong> - <strong>47</strong> of <strong>47</strong>"
       expect(html).to be_html_safe
     end
     it "works with rows the same as per_page" do
-      @response = mock_response :total => 47, :rows => 20, :current_page => 2
+      @response = mock_response total: 47, rows: 20, current_page: 2
 
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      html = page_entries_info(@response, entry_name: 'entry_name')
       expect(html).to eq "<strong>21</strong> - <strong>40</strong> of <strong>47</strong>"
       expect(html).to be_html_safe
     end
 
     it "uses delimiters with large numbers" do
-      @response = mock_response :total => 5000, :rows => 10, :current_page => 101
-      html = page_entries_info(@response, { :entry_name => 'entry_name' })
+      @response = mock_response total: 5000, rows: 10, current_page: 101
+      html = page_entries_info(@response, entry_name: 'entry_name')
 
       expect(html).to eq "<strong>1,001</strong> - <strong>1,010</strong> of <strong>5,000</strong>"
     end
 
     context "with an ActiveRecord collection" do
-      let(:user) { User.create! email: 'xyz@example.com', password: 'xyz12345' }
-      before { 50.times { Bookmark.create!(user: user) } }
       subject { helper.page_entries_info(Bookmark.page(1).per(25)) }
+
+      let(:user) { User.create! email: 'xyz@example.com', password: 'xyz12345' }
+
+      before { 50.times { Bookmark.create!(user: user) } }
 
       it { is_expected.to eq "<strong>1</strong> - <strong>25</strong> of <strong>50</strong>" }
     end
@@ -174,6 +168,10 @@ describe CatalogHelper do
   end
 
   describe "should_autofocus_on_search_box?" do
+    before do
+      expect(Deprecation).to receive(:warn)
+    end
+
     it "is focused if we're on a catalog-like index page without query or facet parameters" do
       allow(helper).to receive_messages(controller: CatalogController.new, action_name: "index", has_search_parameters?: false)
       expect(helper.should_autofocus_on_search_box?).to be true
@@ -196,102 +194,81 @@ describe CatalogHelper do
   end
 
   describe "has_thumbnail?" do
-    let(:document) { instance_double(SolrDocument) }
-    it "has a thumbnail if a thumbnail_method is configured" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_method => :xyz) ))
-      expect(helper.has_thumbnail? document).to be true
+    before do
+      expect(Deprecation).to receive(:warn)
     end
 
-    it "has a thumbnail if a thumbnail_field is configured and it exists in the document" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
-      allow(document).to receive_messages(has?: true)
-      expect(helper.has_thumbnail? document).to be true
+    let(:document) { SolrDocument.new(data) }
+    let(:data) { {} }
+
+    it "has a thumbnail if a thumbnail_method is configured" do
+      allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(thumbnail_method: :xyz, document_presenter_class: Blacklight::IndexPresenter)))
+      expect(helper.has_thumbnail?(document)).to be true
     end
-    
+
+    context "if a thumbnail_field is configured and it exists in the document" do
+      let(:data) { { xyz: 'abc' } }
+
+      it "has a thumbnail" do
+        allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(thumbnail_field: :xyz, document_presenter_class: Blacklight::IndexPresenter)))
+        expect(helper.has_thumbnail?(document)).to be true
+      end
+    end
+
     it "does not have a thumbnail if the thumbnail_field is missing from the document" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
+      allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(thumbnail_field: :xyz, document_presenter_class: Blacklight::IndexPresenter)))
       allow(document).to receive_messages(has?: false)
-      expect(helper.has_thumbnail? document).to be false
+      expect(helper.has_thumbnail?(document)).to be false
     end
 
     it "does not have a thumbnail if none of the fields are configured" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new() ))
-      expect(helper.has_thumbnail? document).to be_falsey
+      allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(document_presenter_class: Blacklight::IndexPresenter)))
+      expect(helper).not_to have_thumbnail(document)
     end
   end
 
   describe "render_thumbnail_tag" do
-    let(:document) { instance_double(SolrDocument) }
-    it "calls the provided thumbnail method" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_method => :xyz) ))
-      expect(helper).to receive_messages(:xyz => "some-thumbnail")
-
-      allow(helper).to receive(:link_to_document).with(document, "some-thumbnail", {})
-      helper.render_thumbnail_tag document
+    let(:index_presenter) do
+      instance_double(Blacklight::IndexPresenter, thumbnail: thumbnail_presenter)
     end
+    let(:thumbnail_presenter) { instance_double(Blacklight::ThumbnailPresenter) }
 
-    it "creates an image tag from the given field" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
-
-      allow(document).to receive(:has?).with(:xyz).and_return(true)
-      allow(document).to receive(:first).with(:xyz).and_return("http://example.com/some.jpg")
-
-      expect(helper).to receive(:link_to_document).with(document, image_tag("http://example.com/some.jpg"), {})
-      helper.render_thumbnail_tag document
-    end
-
-    it "does not link to the document if the url options are false" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_method => :xyz) ))
-      allow(helper).to receive_messages(:xyz => "some-thumbnail")
+    before do
       expect(Deprecation).to receive(:warn)
-      result = helper.render_thumbnail_tag document, {}, false
-      expect(result).to eq "some-thumbnail"
+      allow(helper).to receive(:index_presenter).with(document).and_return(index_presenter)
     end
 
-    it "does not link to the document if the url options have :suppress_link" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_method => :xyz) ))
-      allow(helper).to receive_messages(:xyz => "some-thumbnail")
+    let(:document) { instance_double(SolrDocument) }
 
-      result = helper.render_thumbnail_tag document, {}, suppress_link: true
-      expect(result).to eq "some-thumbnail"
+    it "calls thumbnail presenter with default values" do
+      expect(thumbnail_presenter).to receive(:thumbnail_tag).with({}, {})
+      helper.render_thumbnail_tag document
     end
 
-
-    it "returns nil if no thumbnail is available" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new() ))
-      expect(helper.render_thumbnail_tag document).to be_nil
-    end
-
-    it "returns nil if no thumbnail is returned from the thumbnail method" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_method => :xyz) ))
-      allow(helper).to receive_messages(:xyz => nil)
-
-      expect(helper.render_thumbnail_tag document).to be_nil
-    end
-
-    it "returns nil if no thumbnail is in the document" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
-
-      allow(document).to receive(:has?).with(:xyz).and_return(false)
-
-      expect(helper.render_thumbnail_tag document).to be_nil
+    it "calls thumbnail presenter with provided values" do
+      expect(thumbnail_presenter).to receive(:thumbnail_tag).with({}, suppress_link: true)
+      helper.render_thumbnail_tag document, {}, suppress_link: true
     end
   end
 
   describe "thumbnail_url" do
+    before do
+      expect(Deprecation).to receive(:warn)
+    end
+
     it "pulls the configured thumbnail field out of the document" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
+      allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(thumbnail_field: :xyz)))
       document = instance_double(SolrDocument)
       allow(document).to receive(:has?).with(:xyz).and_return(true)
       allow(document).to receive(:first).with(:xyz).and_return("asdf")
-      expect(helper.thumbnail_url document).to eq("asdf")
+      expect(helper.thumbnail_url(document)).to eq("asdf")
     end
 
     it "returns nil if the thumbnail field doesn't exist" do
-      allow(helper).to receive_messages(:blacklight_config => Blacklight::Configuration.new(:index => Blacklight::OpenStructWithHashAccess.new(:thumbnail_field => :xyz) ))
+      allow(helper).to receive_messages(blacklight_config: Blacklight::Configuration.new(index: Blacklight::OpenStructWithHashAccess.new(thumbnail_field: :xyz)))
       document = instance_double(SolrDocument)
       allow(document).to receive(:has?).with(:xyz).and_return(false)
-      expect(helper.thumbnail_url document).to be_nil
+      expect(helper.thumbnail_url(document)).to be_nil
     end
   end
 
@@ -325,38 +302,37 @@ describe CatalogHelper do
 
     it "pulls data out of a document's field" do
       blacklight_config.index.display_type_field = :type
-      doc = { :type => 'book' }
+      doc = { type: 'book' }
       expect(helper.render_document_class(doc)).to eq "blacklight-book"
     end
 
     it "supports multivalued fields" do
       blacklight_config.index.display_type_field = :type
-      doc = { :type => ['book', 'mss'] }
+      doc = { type: %w[book mss] }
       expect(helper.render_document_class(doc)).to eq "blacklight-book blacklight-mss"
     end
 
     it "supports empty fields" do
       blacklight_config.index.display_type_field = :type
-      doc = { :type => [] }
+      doc = { type: [] }
       expect(helper.render_document_class(doc)).to be_blank
     end
 
     it "supports missing fields" do
       blacklight_config.index.display_type_field = :type
-      doc = { }
+      doc = {}
       expect(helper.render_document_class(doc)).to be_blank
     end
 
     it "supports view-specific field configuration" do
       allow(helper).to receive(:document_index_view_type).and_return(:some_view_type)
       blacklight_config.view.some_view_type.display_type_field = :other_type
-      doc = { other_type: "document"}
+      doc = { other_type: "document" }
       expect(helper.render_document_class(doc)).to eq "blacklight-document"
     end
   end
 
   describe "#bookmarked?" do
-
     let(:bookmark) { Bookmark.new document: bookmarked_document }
     let(:bookmarked_document) { SolrDocument.new(id: 'a') }
 
@@ -387,25 +363,35 @@ describe CatalogHelper do
     end
 
     it "renders a facet with two values" do
-      expect(helper.render_search_to_page_title_filter('foo', ['bar', 'baz'])).to eq "Foo: bar and baz"
+      expect(helper.render_search_to_page_title_filter('foo', %w[bar baz])).to eq "Foo: bar and baz"
     end
 
     it "renders a facet with more than two values" do
-      expect(helper.render_search_to_page_title_filter('foo', ['bar', 'baz', 'foobar'])).to eq "Foo: 3 selected"
+      expect(helper.render_search_to_page_title_filter('foo', %w[bar baz foobar])).to eq "Foo: 3 selected"
     end
   end
 
   describe "#render_search_to_page_title" do
+    subject { helper.render_search_to_page_title(params) }
+
     before do
       allow(helper).to receive(:blacklight_config).and_return(blacklight_config)
-      allow(helper).to receive(:default_search_field).and_return(Blacklight::Configuration::SearchField.new(:key => 'default_search_field', :display_label => 'Default'))
+      allow(helper).to receive(:default_search_field).and_return(Blacklight::Configuration::SearchField.new(key: 'default_search_field', display_label: 'Default'))
       allow(helper).to receive(:label_for_search_field).with(nil).and_return('')
     end
 
     let(:blacklight_config) { Blacklight::Configuration.new }
-    let(:params) { ActionController::Parameters.new(q: 'foobar', f: { format: ["Book"] }) }
-    subject { helper.render_search_to_page_title(params) }
 
-    it { is_expected.to eq "foobar / Format: Book" }
+    context 'when the f param is an array' do
+      let(:params) { ActionController::Parameters.new(q: 'foobar', f: { format: ["Book"] }) }
+
+      it { is_expected.to eq "foobar / Format: Book" }
+    end
+
+    context 'when the f param is not an array' do
+      let(:params) { ActionController::Parameters.new(q: 'foobar', f: { format: 'Book' }) }
+
+      it { is_expected.to eq "foobar / Format: Book" }
+    end
   end
 end

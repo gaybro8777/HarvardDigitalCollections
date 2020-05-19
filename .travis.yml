@@ -1,45 +1,34 @@
-dist: trusty
+dist: bionic
 addons:
   chrome: stable
 language: ruby
-sudo: false
 
 notifications:
   email: false
 
-rvm:
-  - 2.5.0
-
 matrix:
   include:
-    - rvm: 2.5.0
-      env: "RAILS_VERSION=5.2.0"
-    - rvm: 2.4.4
-      env: "RAILS_VERSION=4.2.10"
-    - rvm: 2.2.10
-      env: "RAILS_VESION=5.0.7"
-    - rvm: 2.3.7
-      env: "RAILS_VERSION=5.1.6"
-    - rvm: jruby-9.1.17.0
-      env: "RAILS_VERSION=5.2.0 JRUBY_OPTS=\"-J-Xms512m -J-Xmx1024m\""
+    - rvm: 2.7.0
+      env: "RAILS_VERSION=6.0.2.1"
+    - rvm: 2.6.5
+      env: "RAILS_VERSION=6.0.2.1 ENGINE_CART_RAILS_OPTIONS=\"--skip-webpack-install\""
+    - rvm: 2.6.5
+      env: "RAILS_VERSION=5.2.4.1"
+    - rvm: 2.5.7
+      env: "RAILS_VERSION=5.2.4.1 BLACKLIGHT_API_TEST=true ENGINE_CART_RAILS_OPTIONS=\"--api --skip-git --skip-bundle --skip-listen --skip-spring --skip-yarn --skip-keeps --skip-action-cable --skip-coffee --skip-test\""
+    - rvm: 2.4.9
+      env: "RAILS_VERSION=5.2.4.1"
+    - rvm: jruby-9.2.8.0
+      env: "RAILS_VERSION=5.2.4.1 JRUBY_OPTS=\"-J-Xms512m -J-Xmx1024m\""
   allow_failures:
-    - rvm: jruby-9.1.17.0
-    - rvm: 2.4.4
-      env: "RAILS_VERSION=4.2.10"
-    - rvm: 2.2.10
-      env: "RAILS_VESION=5.0.7"
+    - rvm: jruby-9.2.8.0
   fast_finish: true
 
 before_install:
-  - gem update --system
-  - gem install bundler
-  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-
-before_script:
-  - if [[ "${RAILS_VERSION}" =~ ^4.2.* ]]; then perl -pi -e "s/ActiveRecord::Migration\[[\d\.]+\]/ActiveRecord::Migration/" db/migrate/*; fi
-
-env:
- - "RAILS_VERSION=5.1.1"
+  - docker pull solr:7
+  - docker run -d -p 8983:8983 -v $PWD/lib/generators/blacklight/templates/solr/conf:/myconfig solr:7 solr-create -c blacklight-core -d /myconfig
+  - docker ps -a
+  - google-chrome-stable --headless --disable-gpu --no-sandbox --remote-debugging-port=9222 http://localhost &
 
 notifications:
   irc: "irc.freenode.org#blacklight"
@@ -48,6 +37,14 @@ notifications:
 
 global_env:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
-  - ENGINE_CART_RAILS_OPTIONS='--skip-git --skip-bundle --skip-listen --skip-spring --skip-yarn --skip-keeps --skip-action-cable --skip-coffee --skip-test'
+  - ENGINE_CART_RAILS_OPTIONS='--skip-git --skip-listen --skip-spring --skip-keeps --skip-action-cable --skip-coffee --skip-test'
+  - CC_TEST_REPORTER_ID=5042c7358c96b0b926088a4cda3e132fffe7a66ce8047cdb1dc6f0b4b6676b79
 
-jdk: oraclejdk8
+jdk: openjdk11
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

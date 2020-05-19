@@ -12,7 +12,7 @@ class CatalogController < ApplicationController
     config.view.gallery.partials = [:index_header]
     config.view.masonry.partials = [:index]
     config.view.gallery.icon_class = 'fa-th'
-    config.view.masonry.icon_class = 'fa-th-list'
+    config.view.masonry.icon_class = 'masonry-icon'
 
     config.show.tile_source_field = :content_metadata_image_iiif_info_ssm
     config.show.partials.insert(1, :openseadragon)
@@ -74,9 +74,10 @@ class CatalogController < ApplicationController
 
     # Facets
     config.add_facet_field 'originDate', label: 'Date Range', range: true, maxlength: 4
-    config.add_facet_field 'digitalFormat', label: 'Digital Format', single: true, limit: 10
-    config.add_facet_field 'language', label: 'Languages',  single: true, limit: 10
+    config.add_facet_field 'resourceType', label: 'Type',  single: true, limit: 10, :helper_method => 'get_facet_value_translation_for_type'
+    config.add_facet_field 'language', label: 'Languages',  single: true, limit: 10, :helper_method => 'get_facet_value_translation_for_languages'
     config.add_facet_field 'repository', label: 'Repository',  single: true, limit: 10
+    
     
     # Have BL send all facet field names to Solr, which has been the default
     # previously. Simply remove these lines if you'd rather use Solr request

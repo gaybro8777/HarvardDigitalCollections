@@ -1,37 +1,37 @@
 # frozen_string_literal: true
 
-describe "Facets" do
+RSpec.describe "Facets" do
   it "shows a single facet's values" do
-    visit facet_catalog_path("language_facet")
-    expect(page).to have_selector ".modal-title", :text => "Language"
-    expect(page).to have_selector ".facet_select", :text => "Tibetan"
+    visit facet_catalog_path("language_ssim")
+    expect(page).to have_selector ".modal-title", text: "Language"
+    expect(page).to have_selector ".facet-select", text: "Tibetan"
   end
-  
+
   it "paginates through a facet's values" do
-    visit facet_catalog_path("subject_topic_facet")
+    visit facet_catalog_path("subject_ssim")
     expect(page).to have_selector '.facet-values li:first', text: "Japanese drama"
     expect(page).to have_link "A-Z Sort"
-    expect(page).to have_selector '.sort_options .active', text: "Numerical Sort"
+    expect(page).to have_selector '.sort-options .active', text: "Numerical Sort"
     within ".modal-footer" do
       click_on "Next »"
     end
     expect(page).to have_selector '.facet-values li:first', text: "Jewish law"
     expect(page).to have_link "« Previous"
   end
-  
+
   it "is able to change the facet sort" do
-    visit facet_catalog_path("subject_topic_facet")
+    visit facet_catalog_path("subject_ssim")
     expect(page).to have_selector '.facet-values li:first', text: "Japanese drama"
     within ".modal-footer" do
       click_on "A-Z Sort"
     end
     expect(page).to have_selector '.facet-values li:first', text: "Accident insurance"
     expect(page).to have_link "Numerical Sort"
-    expect(page).to have_selector '.sort_options .active', text: "A-Z Sort"
+    expect(page).to have_selector '.sort-options .active', text: "A-Z Sort"
   end
-  
+
   it "is able to sort more facet window by letter" do
-    visit facet_catalog_path("subject_topic_facet")
+    visit facet_catalog_path("subject_ssim")
     within ".modal-footer" do
       click_on "A-Z Sort"
     end
@@ -43,10 +43,10 @@ describe "Facets" do
     click_on 'T'
     expect(page).to have_selector '.facet-values li:first', text: "Teaching"
     expect(page).to have_css '.facet-values li', count: 4
-    click_on 'Clear Filter'
+    click_on 'All'
     expect(page).to have_selector '.facet-values li:first', text: "Accident insurance"
     expect(page).to have_css '.facet-values li', count: 20
-    find(:css,".facet_pagination.bottom").click_on "Numerical Sort"
+    find(:css, ".facet-pagination.bottom").click_on "Numerical Sort"
     expect(page).to have_selector '.facet-values li:first', text: "Japanese drama"
     expect(page).to have_css '.facet-values li', count: 20
   end
@@ -56,18 +56,39 @@ describe "Facets" do
 
     expect(page).to have_css('#facet-format', visible: false)
 
-    page.find('h3.facet-field-heading a', text: 'Format').click
+    within('#facets .facets-header') do
+      page.find('button.navbar-toggler').click
+    end
+
+    page.find('h3.facet-field-heading button', text: 'Format').click
 
     sleep(1) # let facet animation finish and wait for it to potentially re-collapse
 
     expect(page).to have_css('#facet-format', visible: true) # assert that it didn't re-collapse
   end
 
+  describe 'heading button focus with Firefox' do
+    before do
+      Capybara.current_driver = :selenium_headless
+    end
+
+    after do
+      Capybara.current_driver = :rack_test
+    end
+
+    it 'changes to the button on button click in Firefox' do
+      visit root_path
+      page.find('h3.facet-field-heading button', text: 'Format').click
+      focused_element_data_target = page.evaluate_script("document.activeElement")['data-target']
+      expect(focused_element_data_target).to eq '#facet-format'
+    end
+  end
+
   describe '"More" links' do
     it 'has default more link with sr-only text' do
       visit root_path
-      within '#facet-language_facet' do
-        expect(page).to have_css 'li.more_facets_link', text: 'more Language'
+      within '#facet-language_ssim' do
+        expect(page).to have_css 'li.more_facets', text: 'more Language'
       end
     end
   end

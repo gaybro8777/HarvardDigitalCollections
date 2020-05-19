@@ -1,28 +1,17 @@
 # frozen_string_literal: true
 
-describe Blacklight::SearchBuilder do
+RSpec.describe Blacklight::SearchBuilder, api: true do
+  subject(:builder) { described_class.new processor_chain, scope }
+
   let(:processor_chain) { [] }
   let(:blacklight_config) { Blacklight::Configuration.new }
   let(:scope) { double blacklight_config: blacklight_config }
-  subject { described_class.new processor_chain, scope }
 
   context "with default processor chain" do
-    context "with two arguments" do
-      subject do
-        Deprecation.silence Blacklight::SearchBuilder do
-          described_class.new true, scope
-        end
-      end
-      it "uses the class-level default_processor_chain" do
-        expect(subject.processor_chain).to eq []
-      end
-    end
+    subject { described_class.new scope }
 
-    context "with one arguments" do
-      subject { described_class.new scope }
-      it "uses the class-level default_processor_chain" do
-        expect(subject.processor_chain).to eq []
-      end
+    it "uses the class-level default_processor_chain" do
+      expect(subject.processor_chain).to eq []
     end
   end
 
@@ -44,6 +33,7 @@ describe Blacklight::SearchBuilder do
 
   describe "#processor_chain" do
     let(:processor_chain) { [:a, :b, :c] }
+
     it "is mutable" do
       subject.processor_chain.insert(-1, :d)
       expect(subject.processor_chain).to match_array [:a, :b, :c, :d]
@@ -52,6 +42,7 @@ describe Blacklight::SearchBuilder do
 
   describe "#append" do
     let(:processor_chain) { [:a, :b, :c] }
+
     it "provides a new search builder with the processor chain" do
       builder = subject.append(:d, :e)
       expect(subject.processor_chain).to eq processor_chain
@@ -62,6 +53,7 @@ describe Blacklight::SearchBuilder do
 
   describe "#except" do
     let(:processor_chain) { [:a, :b, :c, :d, :e] }
+
     it "provide a new search builder excepting arguments" do
       builder = subject.except(:b, :d, :does_not_exist)
       expect(builder).not_to equal(subject)
@@ -82,11 +74,13 @@ describe Blacklight::SearchBuilder do
 
   describe "#merge" do
     let(:processor_chain) { [:pass_through] }
+
     before do
       allow(subject).to receive(:pass_through) do |req_params|
         req_params.replace subject.blacklight_params
       end
     end
+
     it "overwrites the processed parameters" do
       actual = subject.with(q: 'abc').merge(q: 'xyz')
       expect(actual[:q]).to eq 'xyz'
@@ -95,6 +89,7 @@ describe Blacklight::SearchBuilder do
 
   describe "#reverse_merge" do
     let(:processor_chain) { [:pass_through] }
+
     before do
       allow(subject).to receive(:pass_through) do |req_params|
         req_params.replace subject.blacklight_params
@@ -176,18 +171,38 @@ describe Blacklight::SearchBuilder do
   end
 
   describe "#sort" do
-    it "passes through the sort parameter" do
-      expect(subject.with(sort: 'x').send(:sort)).to eq 'x'
+    context "when no sort parameter is given" do
+      subject(:sort) { builder.send(:sort) }
+
+      before do
+        blacklight_config.default_sort_field = double(sort: 'x desc')
+      end
+
+      it "uses the default" do
+        expect(sort).to eq 'x desc'
+      end
     end
 
-    it "uses the default if no sort parameter is given" do
-      blacklight_config.default_sort_field = double(sort: 'x desc')
-      expect(subject.send(:sort)).to eq 'x desc'
-    end
+    context "when the user provides an sort parameter" do
+      subject(:sort) { builder_with_param.send(:sort) }
 
-    it "uses the requested sort field" do
-      blacklight_config.add_sort_field 'x', sort: 'x asc'
-      expect(subject.with(sort: 'x').send(:sort)).to eq 'x asc'
+      let(:builder_with_param) { builder.with(sort: 'x') }
+
+      context "that is invalid" do
+        it "removes them" do
+          expect(sort).to be_nil
+        end
+      end
+
+      context "that is valid" do
+        before do
+          blacklight_config.add_sort_field 'x', sort: 'x asc'
+        end
+
+        it "uses the requested sort field" do
+          expect(sort).to eq 'x asc'
+        end
+      end
     end
   end
 

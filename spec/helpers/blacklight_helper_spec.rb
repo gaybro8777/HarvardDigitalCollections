@@ -1,19 +1,45 @@
 # frozen_string_literal: true
-describe BlacklightHelper do
-  before(:each) do
+RSpec.describe BlacklightHelper do
+  before do
     allow(helper).to receive(:current_or_guest_user).and_return(User.new)
     allow(helper).to receive(:search_action_path) do |*args|
       search_catalog_url *args
     end
   end
 
-  describe "#application_name", :test => true do
+  describe "#application_name" do
+    before do
+      allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::NullStore.new)
+    end
+
     it "defaults to 'Blacklight'" do
       expect(application_name).to eq "Blacklight"
     end
-    it "uses the Rails application config application_name if available" do
-      allow(Rails.application).to receive(:config).and_return(double(application_name: "asdf"))
-      expect(application_name).to eq "asdf"
+
+    context "when the language is not english " do
+      around do |example|
+        I18n.locale = :de
+        example.run
+        I18n.locale = :en
+      end
+
+      context "and no translation exists for that language" do
+        it "defaults to 'Blacklight'" do
+          expect(application_name).to eq "Blacklight"
+        end
+      end
+
+      context "and a translation exists for that language" do
+        around do |example|
+          I18n.backend.store_translations(:de, 'blacklight' => { 'application_name' => 'Schwarzlicht' })
+          example.run
+          I18n.backend.reload!
+        end
+
+        it "uses the provided value" do
+          expect(application_name).to eq "Schwarzlicht"
+        end
+      end
     end
   end
 
@@ -34,10 +60,11 @@ describe BlacklightHelper do
   describe "render_link_rel_alternates" do
     let(:document) { instance_double(SolrDocument) }
     let(:result) { double }
-    let(:presenter) { Blacklight::DocumentPresenter.new(document, self) }
+    let(:view_context) { double(blacklight_config: blacklight_config, document_index_view_type: 'index') }
+    let(:presenter) { Blacklight::IndexPresenter.new(document, view_context) }
     let(:blacklight_config) do
       Blacklight::Configuration.new.configure do |config|
-        config.index.title_field = 'title_display'
+        config.index.title_field = 'title_tsim'
         config.index.display_type_field = 'format'
       end
     end
@@ -61,11 +88,11 @@ describe BlacklightHelper do
   describe "with a config" do
     let(:config) do
       Blacklight::Configuration.new.configure do |config|
-        config.index.title_field = 'title_display'
+        config.index.title_field = 'title_tsim'
         config.index.display_type_field = 'format'
       end
     end
-    let(:document) { SolrDocument.new('title_display' => "A Fake Document", 'id'=>'8') }
+    let(:document) { SolrDocument.new('title_tsim' => "A Fake Document", 'id' => '8') }
 
     before do
       config.add_show_tools_partial(:bookmark, partial: 'catalog/bookmark_control')
@@ -78,7 +105,7 @@ describe BlacklightHelper do
     describe "render_nav_actions" do
       it "renders partials" do
         buff = String.new
-        helper.render_nav_actions { |config, item| buff << "<foo>#{item}</foo>" }
+        helper.render_nav_actions { |_config, item| buff << "<foo>#{item}</foo>" }
         expect(buff).to have_selector "foo a#bookmarks_nav[href=\"/bookmarks\"]"
         expect(buff).to have_selector "foo a span[data-role='bookmark-counter']", text: '0'
       end
@@ -88,7 +115,7 @@ describe BlacklightHelper do
       it "renders partials" do
         allow(controller).to receive(:render_bookmarks_control?).and_return(true)
         response = helper.render_index_doc_actions(document)
-        expect(response).to have_selector(".bookmark_toggle")
+        expect(response).to have_selector(".bookmark-toggle")
       end
 
       it "is nil if no partials are renderable" do
@@ -106,7 +133,7 @@ describe BlacklightHelper do
     describe "render_show_doc_actions" do
       it "renders partials" do
         response = helper.render_show_doc_actions(document)
-        expect(response).to have_selector(".bookmark_toggle")
+        expect(response).to have_selector(".bookmark-toggle")
       end
     end
   end
@@ -117,15 +144,18 @@ describe BlacklightHelper do
     end
 
     it "is true" do
+      expect(Deprecation).to receive(:warn)
       expect(helper.should_render_index_field?(double, double)).to be true
     end
 
     it "is false if the document doesn't have a value for the field" do
+      expect(Deprecation).to receive(:warn)
       allow(helper).to receive_messages(document_has_value?: false)
       expect(helper.should_render_index_field?(double, double)).to be false
     end
 
     it "is false if the configuration has the field disabled" do
+      expect(Deprecation).to receive(:warn)
       allow(helper).to receive_messages(should_render_field?: false)
       expect(helper.should_render_index_field?(double, double)).to be false
     end
@@ -137,82 +167,61 @@ describe BlacklightHelper do
     end
 
     it "is true" do
+      expect(Deprecation).to receive(:warn)
       expect(helper.should_render_show_field?(double, double)).to be true
     end
 
     it "is false if the document doesn't have a value for the field" do
+      expect(Deprecation).to receive(:warn)
       allow(helper).to receive_messages(document_has_value?: false)
       expect(helper.should_render_show_field?(double, double)).to be false
     end
 
     it "is false if the configuration has the field disabled" do
+      expect(Deprecation).to receive(:warn)
       allow(helper).to receive_messages(should_render_field?: false)
       expect(helper.should_render_show_field?(double, double)).to be false
     end
   end
 
-  context "render methods" do
-    let(:field) { "some_field" }
-    let(:doc) { instance_double(SolrDocument) }
-    let(:presenter) { instance_double(Blacklight::ShowPresenter) }
-    before do
-      allow(Deprecation).to receive(:warn) # TODO: purge Deprecations
-      allow(helper).to receive(:presenter).with(doc).and_return(presenter)
-    end
-
-    describe "#render_index_field_value" do
-      it "passes the document and field through to the presenter" do
-        expect(presenter).to receive(:field_value).with(field, {})
-        helper.render_index_field_value(doc, field)
-      end
-
-      it "allows the document and field to be passed as hash arguments" do
-        expect(presenter).to receive(:field_value).with(field, {})
-        helper.render_index_field_value(document: doc, field: field)
-      end
-
-      it "allows additional options to be passed to the presenter" do
-        expect(presenter).to receive(:field_value).with(field, x: 1)
-        helper.render_index_field_value(document: doc, field: field, x: 1)
-      end
-    end
-
-    describe "#render_document_show_field_value" do
-      it "passes the document and field through to the presenter" do
-        expect(presenter).to receive(:field_value).with(field, {})
-        helper.render_document_show_field_value(doc, field)
-      end
-
-      it "allows the document and field to be passed as hash arguments" do
-        expect(presenter).to receive(:field_value).with(field, {})
-        helper.render_document_show_field_value(document: doc, field: field)
-      end
-
-      it "allows additional options to be passed to the presenter" do
-        expect(presenter).to receive(:field_value).with(field, x: 1)
-        helper.render_document_show_field_value(document: doc, field: field, x: 1)
-      end
-    end
-  end
-
   describe "#document_has_value?" do
     let(:doc) { double(SolrDocument) }
+
+    before { allow(Deprecation).to receive(:warn) }
+
     it "ifs the document has the field value" do
       allow(doc).to receive(:has?).with('asdf').and_return(true)
-      field_config = double(:field => 'asdf')
+      field_config = double(field: 'asdf')
       expect(helper.document_has_value?(doc, field_config)).to eq true
     end
     it "ifs the document has a highlight field value" do
       allow(doc).to receive(:has?).with('asdf').and_return(false)
       allow(doc).to receive(:has_highlight_field?).with('asdf').and_return(true)
-      field_config = double(:field => 'asdf', :highlight => true)
+      field_config = double(field: 'asdf', highlight: true)
       expect(helper.document_has_value?(doc, field_config)).to eq true
     end
     it "ifs the field has a model accessor" do
       allow(doc).to receive(:has?).with('asdf').and_return(false)
       allow(doc).to receive(:has_highlight_field?).with('asdf').and_return(false)
-      field_config = double(:field => 'asdf', :highlight => true, :accessor => true)
+      field_config = double(field: 'asdf', highlight: true, accessor: true)
       expect(helper.document_has_value?(doc, field_config)).to eq true
+    end
+  end
+
+  describe '#render_index_field_label' do
+    let(:doc) { SolrDocument.new({}) }
+
+    before do
+      allow(helper).to receive_messages(document_index_view_type: :current_view)
+    end
+
+    it 'accepts an explicit field label' do
+      expect(helper.render_index_field_label(doc, field: 'xyz', label: 'some label')).to eq 'some label:'
+    end
+
+    it 'calculates the appropriate field label for a field' do
+      allow(helper).to receive(:blacklight_config).and_return(CatalogController.blacklight_config)
+      expect(helper.render_index_field_label(doc, field: 'xyz')).to eq 'Xyz:'
     end
   end
 
@@ -236,99 +245,28 @@ describe BlacklightHelper do
     before do
       allow(helper).to receive_messages spell_check_max: 5
     end
+
     it "does not show suggestions if there are enough results" do
       response = double(total: 10)
-      expect(helper.should_show_spellcheck_suggestions? response).to be false
+      expect(helper.should_show_spellcheck_suggestions?(response)).to be false
     end
     it "only shows suggestions if there are very few results" do
       response = double(total: 4, spelling: double(words: [1]))
-      expect(helper.should_show_spellcheck_suggestions? response).to be true
+      expect(helper.should_show_spellcheck_suggestions?(response)).to be true
     end
     it "shows suggestions only if there are spelling suggestions available" do
       response = double(total: 4, spelling: double(words: []))
-      expect(helper.should_show_spellcheck_suggestions? response).to be false
+      expect(helper.should_show_spellcheck_suggestions?(response)).to be false
     end
     it "does not show suggestions if spelling is not available" do
       response = double(total: 4, spelling: nil)
-      expect(helper.should_show_spellcheck_suggestions? response).to be false
-    end
-  end
-
-  describe "#render_document_partials" do
-    let(:doc) { double }
-    before do
-      allow(helper).to receive_messages(document_partial_path_templates: [])
-      allow(helper).to receive_messages(document_index_view_type: 'index_header')
-    end
-
-    it "gets the document format from document_partial_name" do
-      allow(helper).to receive(:document_partial_name).with(doc, :xyz)
-      helper.render_document_partial(doc, :xyz)
-    end
-  end
-
-  describe "#document_partial_name" do
-    let(:blacklight_config) { Blacklight::Configuration.new }
-    before do
-      allow(helper).to receive_messages(blacklight_config: blacklight_config)
-    end
-
-    context "with a solr document with empty fields" do
-      let(:document) { SolrDocument.new }
-      it "is the default value" do
-        expect(helper.document_partial_name(document)).to eq 'default'
-      end
-    end
-
-    context "with a solr document with the display type field set" do
-      let(:document) { SolrDocument.new 'my_field' => 'xyz'}
-      before do
-        blacklight_config.show.display_type_field = 'my_field'
-      end
-
-      it "uses the value in the configured display type field" do
-        expect(helper.document_partial_name(document)).to eq 'xyz'
-      end
-      it "uses the value in the configured display type field if the action-specific field is empty" do
-        expect(helper.document_partial_name(document, :some_action)).to eq 'xyz'
-      end
-    end
-
-    context "with a solr doucment with an action-specific field set" do
-      let(:document) { SolrDocument.new 'my_field' => 'xyz', 'other_field' => 'abc' }
-      before do
-        blacklight_config.show.media_display_type_field = 'my_field'
-        blacklight_config.show.metadata_display_type_field = 'other_field'
-      end
-      it "uses the value in the action-specific fields" do
-        expect(helper.document_partial_name(document, :media)).to eq 'xyz'
-        expect(helper.document_partial_name(document, :metadata)).to eq 'abc'
-      end
-    end
-  end
-
-  describe "#type_field_to_partial_name" do
-    let(:document) { double }
-    context "with default value" do
-      subject { helper.type_field_to_partial_name(document, 'default') }
-      it { should eq 'default' }
-    end
-    context "with spaces" do
-      subject { helper.type_field_to_partial_name(document, 'one two three') }
-      it { should eq 'one_two_three' }
-    end
-    context "with hyphens" do
-      subject { helper.type_field_to_partial_name(document, 'one-two-three') }
-      it { should eq 'one_two_three' }
-    end
-    context "an array" do
-      subject { helper.type_field_to_partial_name(document, ['one', 'two', 'three']) }
-      it { should eq 'one_two_three' }
+      expect(helper.should_show_spellcheck_suggestions?(response)).to be false
     end
   end
 
   describe "#opensearch_description_tag" do
     subject { helper.opensearch_description_tag 'title', 'href' }
+
     it "has a search rel" do
       expect(subject).to have_selector "link[rel='search']", visible: false
     end
@@ -353,6 +291,7 @@ describe BlacklightHelper do
 
   describe "#render_document_index_with_view" do
     let(:obj1) { SolrDocument.new }
+
     before do
       allow(helper).to receive(:blacklight_config).and_return(CatalogController.blacklight_config)
       assign(:response, instance_double(Blacklight::Solr::Response, grouped?: false, start: 0))
@@ -413,21 +352,9 @@ describe BlacklightHelper do
   context "related classes" do
     let(:presenter_class) { double }
     let(:blacklight_config) { Blacklight::Configuration.new }
+
     before do
       allow(helper).to receive(:blacklight_config).and_return(blacklight_config)
-    end
-
-    describe "#presenter_class" do
-      it "uses the value defined in the blacklight configuration" do
-        expect(Deprecation).to receive(:warn).exactly(2).times
-        blacklight_config.document_presenter_class = presenter_class
-        expect(helper.presenter_class).to eq presenter_class
-      end
-
-      it "defaults to Blacklight::DocumentPresenter" do
-        expect(Deprecation).to receive(:warn)
-        expect(helper.presenter_class).to eq Blacklight::DocumentPresenter
-      end
     end
 
     describe "#index_presenter_class" do
@@ -455,6 +382,7 @@ describe BlacklightHelper do
 
   describe "#render_document_heading" do
     let(:document) { double }
+
     before do
       allow(helper).to receive(:presenter).and_return(double(heading: "Heading"))
     end
@@ -464,7 +392,7 @@ describe BlacklightHelper do
     end
 
     it "accepts the tag name as an option" do
-      expect(helper.render_document_heading tag: "h1").to have_selector "h1", text: "Heading"
+      expect(helper.render_document_heading(tag: "h1")).to have_selector "h1", text: "Heading"
     end
 
     it "accepts an explicit document argument" do
@@ -475,6 +403,48 @@ describe BlacklightHelper do
     it "accepts the document with a tag option" do
       allow(helper).to receive(:presenter).with(document).and_return(double(heading: "Document Heading"))
       expect(helper.render_document_heading(document, tag: "h3")).to have_selector "h3", text: "Document Heading"
+    end
+  end
+
+  describe "#presenter" do
+    let(:document) { double }
+
+    before do
+      allow(helper).to receive(:index_presenter).and_return(:index_presenter)
+      allow(helper).to receive(:show_presenter).and_return(:show_presenter)
+      allow(helper).to receive(:action_name).and_return(action_name)
+    end
+
+    context "action is show" do
+      let(:action_name) { "show" }
+
+      it "uses the show presenter" do
+        expect(helper.presenter(document)).to eq(:show_presenter)
+      end
+    end
+
+    context "action is citation" do
+      let(:action_name) { "citation" }
+
+      it "uses the show presenter" do
+        expect(helper.presenter(document)).to eq(:show_presenter)
+      end
+    end
+
+    context "action is index" do
+      let(:action_name) { "index" }
+
+      it "uses the index presenter" do
+        expect(helper.presenter(document)).to eq(:index_presenter)
+      end
+    end
+
+    context "action is foo" do
+      let(:action_name) { "foo" }
+
+      it "uses the index presenter (by default)" do
+        expect(helper.presenter(document)).to eq(:index_presenter)
+      end
     end
   end
 end

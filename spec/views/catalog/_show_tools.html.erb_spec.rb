@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-describe "catalog/_show_tools.html.erb" do
-  let(:document) { SolrDocument.new :id => 'xyz', :format => 'a' }
+RSpec.describe "catalog/_show_tools.html.erb" do
+  let(:document) { SolrDocument.new id: 'xyz', format: 'a' }
   let(:blacklight_config) { Blacklight::Configuration.new }
 
   before do
@@ -15,7 +15,7 @@ describe "catalog/_show_tools.html.erb" do
     let(:document_actions) { blacklight_config.show.document_actions }
 
     it "renders a document action" do
-      allow(view).to receive(:some_action_solr_document_path).with(document).and_return "x"
+      allow(view).to receive(:some_action_solr_document_path).with(document, any_args).and_return 'x'
       document_actions[:some_action] = Blacklight::Configuration::ToolConfig.new partial: 'document_action'
       render partial: 'catalog/show_tools'
       expect(rendered).to have_link "Some action", href: "x"
@@ -37,7 +37,7 @@ describe "catalog/_show_tools.html.erb" do
 
     it "evaluates a document action's if configuration with a proc" do
       allow(view).to receive(:some_action_solr_document_path).and_return "x"
-      document_actions[:some_action] = Blacklight::Configuration::ToolConfig.new partial: 'document_action', if: Proc.new { |config, doc| doc.id == "xyz" }
+      document_actions[:some_action] = Blacklight::Configuration::ToolConfig.new partial: 'document_action', if: proc { |_config, doc| doc.id == "xyz" }
       render partial: 'catalog/show_tools'
       expect(rendered).not_to have_selector '.some_action', text: "Some action"
     end
@@ -60,14 +60,26 @@ describe "catalog/_show_tools.html.erb" do
       allow(view).to receive(:some_action_solr_document_path).and_return "x"
       document_actions[:some_action] = Blacklight::Configuration::ToolConfig.new partial: 'document_action'
       render partial: 'catalog/show_tools'
-      expect(rendered).to have_selector '.some_action > a[data-ajax-modal="trigger"]', text: "Some action"
+      expect(rendered).to have_selector '.some_action > a[data-blacklight-modal="trigger"]', text: "Some action"
     end
 
     it "allows configuration to opt out of modal behavior" do
       allow(view).to receive(:some_action_solr_document_path).and_return "x"
       document_actions[:some_action] = Blacklight::Configuration::ToolConfig.new partial: 'document_action', modal: false
       render partial: 'catalog/show_tools'
-      expect(rendered).not_to have_selector '.some_action > a[data-ajax-modal="trigger"]', text: "Some action"
+      expect(rendered).not_to have_selector '.some_action > a[data-blacklight-modal="trigger"]', text: "Some action"
+    end
+
+    context 'without any document actions defined' do
+      before do
+        document_actions.clear
+      end
+
+      it 'does not display the tools' do
+        render partial: 'catalog/show_tools'
+
+        expect(rendered).to be_blank
+      end
     end
 
     context 'without any document actions defined' do

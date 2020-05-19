@@ -1,5 +1,2 @@
-if ENV['RAILS_VERSION'].nil? || ENV['RAILS_VERSION'] =~ /^5\./ || ENV['RAILS_VERSION'] == 'edge'
-  gem 'rails-controller-testing'
-  gem 'thor', '~> 0.20'
-  gem 'deprecation'
-end
+gem 'rails-controller-testing'
+gem 'thor', '~> 0.20'

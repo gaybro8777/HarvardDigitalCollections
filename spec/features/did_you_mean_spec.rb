@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe "Did You Mean" do
+RSpec.describe "Did You Mean" do
   before { visit root_path }
 
   describe "searching all fields" do
@@ -18,6 +18,7 @@ describe "Did You Mean" do
 
   describe "for a title search" do
     before { select 'Title', from: 'search_field' }
+
     it "has suggestions" do
       # yehudiyam is one letter away from a title word
       fill_in "q", with: 'yehudiyam'
@@ -36,6 +37,7 @@ describe "Did You Mean" do
 
   describe "for an author search" do
     before { select 'Author', from: 'search_field' }
+
     it "has suggestions" do
       # shirma is one letter away from an author word
       fill_in "q", with: 'shirma'
@@ -54,6 +56,7 @@ describe "Did You Mean" do
 
   describe "for an subject search" do
     before { select 'Subject', from: 'search_field' }
+
     it "has suggestions" do
       # wome is one letter away from an author word
       fill_in "q", with: 'wome'
@@ -75,7 +78,7 @@ describe "Did You Mean" do
       fill_in "q", with: 'ooofda ooofda'
       click_button 'search'
 
-      expect(page).to_not have_content("Did you mean")
+      expect(page).not_to have_content("Did you mean")
     end
 
     it "has separate suggestions" do
@@ -88,13 +91,13 @@ describe "Did You Mean" do
         expect(page).to have_link('bon')
         expect(page).not_to have_link('policy bon')
       end
-      
+
       click_link 'bon'
       within ("#sortAndPerPage") do
         expect(page).to have_content "1 entry found"
       end
     end
-    
+
     it "ignores repeated terms" do
       fill_in "q", with: 'boo boo'
       click_button 'search'
@@ -118,18 +121,10 @@ describe "Did You Mean" do
     end
   end
 
-  it "does not show suggestions if there are many results" do
-    # histori gives 9 results in 30 record demo index
-    fill_in "q", with: 'histori'
-    click_button 'search'
-    expect(page).to_not have_content("Did you mean")
-  end
-
   it "shows suggestions if at the threshold number" do
     # polit gives 5 results in 30 record demo index - 5 is default cutoff
     fill_in "q", with: 'polit'
     click_button 'search'
     expect(page).to have_content("Did you mean")
   end
-
 end

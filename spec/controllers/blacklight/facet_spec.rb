@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Blacklight::Facet do
+RSpec.describe Blacklight::Facet do
   subject do
     Class.new do
       include Blacklight::Facet
@@ -30,5 +30,4 @@ describe Blacklight::Facet do
       expect(subject.facet_configuration_for_field('b')).to eq blacklight_config.facet_fields['a']
     end
   end
-
 end

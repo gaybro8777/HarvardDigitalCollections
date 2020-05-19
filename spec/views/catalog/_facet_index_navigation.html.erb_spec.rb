@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-describe 'catalog/_facet_index_navigation.html.erb', type: :view do
+RSpec.describe 'catalog/_facet_index_navigation.html.erb', type: :view do
   let(:pagination) { Blacklight::Solr::FacetPaginator.new([]) }
-  let(:facet) { Blacklight::Configuration::FacetField.new({ index_range: '0'..'9' })}
+  let(:facet) { Blacklight::Configuration::FacetField.new(index_range: '0'..'9') }
   let(:blacklight_config) { Blacklight::Configuration.new }
 
   before do
@@ -21,9 +21,9 @@ describe 'catalog/_facet_index_navigation.html.erb', type: :view do
     expect(rendered).to have_link '9'
   end
 
-  it 'renders a "clear filter" button' do
+  it 'renders an "all" button' do
     render
-    expect(rendered).to have_selector '.btn.disabled', text: 'Clear Filter'
+    expect(rendered).to have_selector '.page-link', text: 'All'
   end
 
   context 'with a selected index' do
@@ -35,7 +35,7 @@ describe 'catalog/_facet_index_navigation.html.erb', type: :view do
     end
     it 'enables the clear facets button' do
       render
-      expect(rendered).to have_link 'Clear Filter'
+      expect(rendered).to have_link 'All'
     end
   end
 end

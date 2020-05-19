@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe "Search History Page" do
+RSpec.describe "Search History Page" do
   describe "navigating from the homepage" do
     it "has a link to the history page" do
       visit root_path
@@ -17,10 +17,11 @@ describe "Search History Page" do
       click_button 'search'
       click_link 'History'
     end
+
     it "shows searches" do
       expect(page).to have_content 'Your recent searches'
       expect(page).to have_content 'book'
-      expect(page).to_not have_content 'dang'
+      expect(page).not_to have_content 'dang'
       visit root_path
       fill_in "q", with: 'dang'
       click_button 'search'
@@ -39,37 +40,13 @@ describe "Search History Page" do
       click_button 'search'
       click_link 'History'
     end
+
     it "is able to clear the history" do
       click_link "Clear Search History"
       expect(page).to have_content 'Cleared your search history.'
       expect(page).to have_content 'You have no search history'
-      expect(page).to_not have_content 'book'
-      expect(page).to_not have_content 'dang'
-    end
-  end
-
-  describe "when logged in" do
-    before do
-      sign_in 'user1'
-      fill_in "q", with: 'book'
-      click_button 'search'
-      click_link 'History'
-    end
-
-    it "saves and forget the search" do
-      click_button 'save'
-      expect(page).to have_content 'Successfully saved your search.'
-      click_button 'forget'
-      expect(page).to have_content 'Successfully removed that saved search.'
-      expect(page).to have_button 'save'
-    end
-
-    it "does not show results after logging out" do
-      click_button 'save'
-      expect(page).to have_content 'Successfully saved your search.'
-      click_link 'Log Out'
-      click_link 'History'
-      expect(page).to_not have_content 'book'
+      expect(page).not_to have_content 'book'
+      expect(page).not_to have_content 'dang'
     end
   end
 end

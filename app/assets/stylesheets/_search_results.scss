@@ -13,8 +13,8 @@
                 font-family: $font-family-sans-serif;
                 font-weight: 700;
                 text-decoration: none;
-                -webkit-transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
-                transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+                -webkit-transition: $link-fade;
+                transition: $link-fade;
 
                 &:hover {
                     border-bottom: 3px solid rgba(5,121,184,0.3);
@@ -42,9 +42,13 @@
                 min-height: 100px;
                 padding: 20px 0;
 
-
                 img {
                     max-width: 90%;
+
+                    &.placeholder {
+                        max-width: 50%;
+                        opacity: 0.3;
+                    }
                 }
             }
 
@@ -99,6 +103,12 @@
             }
         }
     }
+
+    .thumbnail a > img.placeholder {
+        min-width: 1px;
+        max-width: 40%;
+        opacity: 0.3;
+    }
 }
 
 @media (min-width: 768px) {
@@ -118,11 +128,27 @@
     min-height: 100px;
 }
 
-.view-type-masonry .fa-th-list {
-    transform: rotate(90deg);
+.fa.fa-th, .fa.fa-list {
+    opacity: 0.8;
 }
 
-.masonry.document .caption {
+.view-type-masonry {
+    .masonry-icon {
+        display: block;
+        background-image: image-url('icons/icon-masonry.svg');
+        height: 15px;
+        width: 14px;
+    }
+
+    &.active {
+        .masonry-icon {
+            background-image: image-url('icons/icon-masonry-white.svg');
+        }
+    }
+}
+
+.masonry.document {
+  .caption {
     line-height: 17px;
     background-color: rgba(255, 255, 255, 0.8);
     color: $jet;
@@ -130,11 +156,18 @@
     text-align: left;
 
     a {
-        color: $jet;
-        font-weight: 400;
-        text-decoration: none;
-        text-shadow: none;
+      color: $jet;
+      font-weight: 400;
+      text-decoration: none;
+      text-shadow: none;
     }
+  }
+
+  a:focus {
+    + .caption {
+      display: block;
+    }
+  }
 }
 
 .dl-horizontal dd:before, 

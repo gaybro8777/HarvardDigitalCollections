@@ -5,14 +5,9 @@
 
 ENV["RAILS_ENV"] ||= 'test'
 
-if ENV["COVERAGE"] or ENV["CI"]
-  require 'simplecov'
-  require 'coveralls'
-
-  SimpleCov.formatter = Coveralls::SimpleCov::Formatter
-  SimpleCov.start do
-    add_filter "/spec/"
-  end
+require 'simplecov'
+SimpleCov.start do
+  add_filter "/spec/"
 end
 
 require 'rsolr'
@@ -27,26 +22,22 @@ require 'rspec/collection_matchers'
 require 'capybara/rspec'
 require 'selenium-webdriver'
 require 'equivalent-xml'
+require 'webdrivers'
 
-Capybara.javascript_driver = :headless_chrome
-
-Capybara.register_driver :headless_chrome do |app|
-  capabilities = Selenium::WebDriver::Remote::Capabilities.chrome(
-    chromeOptions: { args: %w[headless disable-gpu] }
-  )
-
-  Capybara::Selenium::Driver.new(app,
-                                 browser: :chrome,
-                                 desired_capabilities: capabilities)
-end
+Capybara.javascript_driver = :selenium_chrome_headless
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 # Blacklight, again, make sure we're looking in the right place for em.
 # Relative to HERE, NOT to Rails.root, which is off somewhere else.
-Dir[Pathname.new(File.expand_path("../support/**/*.rb", __FILE__))].each {|f| require f}
+Dir[Pathname.new(File.expand_path('support/**/*.rb', __dir__))].each { |f| require f }
 
 RSpec.configure do |config|
+  config.disable_monkey_patching!
+
+  # When we're testing the API, only run the api tests
+  config.filter_run api: true if ENV['BLACKLIGHT_API_TEST']
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
@@ -59,6 +50,7 @@ RSpec.configure do |config|
     config.include Devise::Test::ControllerHelpers, type: :controller
   else
     config.include Devise::TestHelpers, type: :controller
+    config.include Devise::TestHelpers, type: :i18n
   end
 
   config.infer_spec_type_from_file_location!
@@ -68,10 +60,6 @@ RSpec.configure do |config|
 
   config.include(ControllerLevelHelpers, type: :view)
   config.before(:each, type: :view) { initialize_controller_helpers(view) }
-
-  unless Rails.version > '5'
-    config.include BackportTest, type: :controller
-  end
 
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

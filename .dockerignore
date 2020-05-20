@@ -21,8 +21,6 @@ solr/
 #tmp
 tmp/
 
-#db/
-
 #Docs
 docs/
 CONTRIBUTING.md

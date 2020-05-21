@@ -1,10 +1,5 @@
 #!/bin/bash
 #This script forces the db migrate to be run on the local mysql container
+source /home/app/webapp/.env
 
-/home/app/webapp/bin/wait-for-it.sh hdc_mysql:3306
-
-set -e
-
-rake db:migrate
-
-exec "$@"
+RAILS_ENV=production bundle exec rake assets:precompile

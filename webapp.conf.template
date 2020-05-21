@@ -1,7 +1,7 @@
 server {
     listen 3001 ssl;
     listen [::]:3001 ssl;
-    #server_name <server name goes here>;
+    server_name <server name goes here>;
     root /home/app/webapp/public;
 
 

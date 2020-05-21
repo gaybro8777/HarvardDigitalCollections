@@ -47,6 +47,12 @@ class ListsController < ApplicationController
 	  end
 	end
 
+	def create
+		@title = params[:title]
+
+		render plain: "create list=" + @title
+	end
+
 	def update
 		@id = params[:id]
 		@title = params[:title]
@@ -58,5 +64,48 @@ class ListsController < ApplicationController
 		@id = params[:id]
 	
 		render plain: "DELETE ID=" + @id
+	end
+
+	def add_items_form
+		if params[:item_ids].to_s == ""
+			redirect_to '/lists'
+			return
+		end
+		@item_ids = params[:item_ids]
+		@items = @item_ids.split(',')
+		if @items.length == 1
+			@response, @single_item = fetch(@items[0])
+		else
+			@response, @items_found = fetch(@items)
+		end
+
+		if @response[:items].nil?
+			redirect_to '/lists'
+			return
+		end
+		
+		@lists = available_collections()
+		render layout: false
+	end
+
+	def add_items
+	  @item_ids = params[:item_ids]
+	  @list = params[:list]
+	  @lists = available_collections()
+
+	  list_found = false
+	  @lists.each do |x|
+		if x[:id] == @list
+			list_found = true
+			break
+		end
+	  end
+
+	  if !list_found
+	  	redirect_to '/lists'
+		return
+	  end
+
+	  render plain: "item_ids=" + @item_ids + " list=" + @list
 	end
 end

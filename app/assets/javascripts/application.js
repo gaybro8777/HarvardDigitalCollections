@@ -134,6 +134,37 @@ $(document).on('turbolinks:load', function() {
         });
     });
 
+    function launchAddToList(itemId) {
+        $.ajax({
+            url: '/lists/add_items_form?item_ids=' + itemId,
+            headers: {
+                Accept: "text/html; charset=utf-8",
+                "Content-Type": "text/html; charset=utf-8"
+            },
+            success: function (response) {
+                $('#sign-in-modal').modal('show');
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    }
+
+    //launch list edit modal
+    $('body').on('click', '.add-to-list', function (e) {
+        e.preventDefault();
+        launchAddToList($(this).data('itemid'));
+    });
+
+    $('body').on('click', '.signin-and-add-to-list', function (e) {
+        e.preventDefault();
+        var itemId = $(this).data('itemid');
+        $('#sign-in-link').trigger('click');
+
+        $(document).on('sign_in', function (e) {
+            launchAddToList(itemId);
+            $(document).off('sign_in');
+        });
+    });
+
     //show delete list form
     $('body').on('click', '.btn-delete-list', function (e) {
         e.preventDefault();

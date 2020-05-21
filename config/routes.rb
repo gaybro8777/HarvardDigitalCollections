@@ -38,8 +38,12 @@ Rails.application.routes.draw do
 
   resources :lists, constraints: { id: /[^\/]+/ } do
     concerns :exportable
+	collection do
+		get 'add_items_form'
+		post 'add_items'
+	end 
   end
-
+  #get '/add_items_to_list', to: 'lists#add_items_to_list'
   get '/rawtext/*path', to: 'fulltexts#index'
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

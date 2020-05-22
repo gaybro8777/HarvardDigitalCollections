@@ -49,8 +49,8 @@ class ListsController < ApplicationController
 
 	def create
 		@title = params[:title]
-
-		render plain: "create list=" + @title
+        @lc_user_api_key = create_library_cloud_user
+        render json: @lc_user_api_key
 	end
 
 	def update

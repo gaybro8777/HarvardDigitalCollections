@@ -79,13 +79,10 @@ module Harvard::LibraryCloud::Collections
       path = 'collections/users/'
       raw_response = begin
         response = Faraday.post(api.get_base_uri + path,
-        '{"email": "mick@barr.com","userType":1}',
+        '{"email": "weasel@ugexplode.com","userType":1}',
         "Content-Type" => "application/json",
         "X-LibraryCloud-API-Key" => ENV["LC_API_KEY"]
-        ) do |req|
-          #req.body = '[{"api-key": "' + api-key + '"}]'
-          req.body = 'test'
-        end
+        )
         { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
       rescue Errno::ECONNREFUSED, Faraday::Error => e
         raise RSolr::Error::Http.new(connection, e.response)

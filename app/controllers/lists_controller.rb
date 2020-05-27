@@ -5,6 +5,8 @@ class ListsController < ApplicationController
     include Blacklight::TokenBasedUser
 	include Harvard::LibraryCloud::Collections
 
+	require 'json'
+
     def index
 	  @lists = available_collections()
     end
@@ -49,8 +51,11 @@ class ListsController < ApplicationController
 
 	def create
 		@title = params[:title]
-        @lc_user_api_key = create_library_cloud_user
-        render json: @lc_user_api_key
+        @lc_user = create_library_cloud_user
+        @lc_user_object = JSON.parse(@lc_user[:body])
+        @collection = create_collection(@lc_user_object['api-key'], @title)
+        #render json: @lc_user_api_key
+        render json: @collection
 	end
 
 	def update

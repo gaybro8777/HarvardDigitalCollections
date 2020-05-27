@@ -79,7 +79,7 @@ module Harvard::LibraryCloud::Collections
       path = 'collections/users/'
       raw_response = begin
         response = Faraday.post(api.get_base_uri + path,
-        '{"email": "' + current_or_guest_user.email + '","userType":1}',
+        '{"email": "' + current_or_guest_user.email + '","usertype-name":"HDC"}',
         "Content-Type" => "application/json",
         "X-LibraryCloud-API-Key" => ENV["LC_API_KEY"]
         )
@@ -87,5 +87,22 @@ module Harvard::LibraryCloud::Collections
       rescue Errno::ECONNREFUSED, Faraday::Error => e
         raise RSolr::Error::Http.new(connection, e.response)
       end
+  end
+
+  def create_collection (user_key, setName)
+      api = Harvard::LibraryCloud::API.new
+      path = 'collections/'
+      raw_response = begin
+      thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
+        response = Faraday.post(api.get_base_uri + path,
+        '{"setName": "' + setName + '","setDescription": "'+ setName +'","thumbnailUrn": "'+ thumbnailUrn +'"}',
+        "Content-Type" => "application/json",
+        "X-LibraryCloud-API-Key" => user_key
+        )
+        { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      rescue Errno::ECONNREFUSED, Faraday::Error => e
+        raise RSolr::Error::Http.new(connection, e.response)
+      end
+      #{"user_key" => user_key, "setName" => setName}
   end
 end

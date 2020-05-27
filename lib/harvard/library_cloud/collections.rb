@@ -79,7 +79,7 @@ module Harvard::LibraryCloud::Collections
       path = 'collections/users/'
       raw_response = begin
         response = Faraday.post(api.get_base_uri + path,
-        '{"email": "weasel@ugexplode.com","userType":1}',
+        '{"email": "' + current_or_guest_user.email + '","userType":1}',
         "Content-Type" => "application/json",
         "X-LibraryCloud-API-Key" => ENV["LC_API_KEY"]
         )

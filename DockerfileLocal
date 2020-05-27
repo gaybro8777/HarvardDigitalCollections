@@ -1,11 +1,11 @@
 ### Local development only ###
 
 #https://github.com/phusion/passenger-docker
-FROM phusion/passenger-ruby25
+FROM phusion/passenger-ruby26
 
 # Set correct environment variables.
 ENV DEBIAN_FRONTEND noninteractive
-ENV RAILS_ENV development
+
 
 #From the docs: The image has an app user with UID 9999 and home directory 
 # /home/app. Your application is supposed to run as this user.
@@ -13,11 +13,6 @@ COPY --chown=app:app . /home/app/webapp
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
-  curl libssl-dev \
-  git \
-  unzip \
-  zlib1g-dev \
-  libxslt-dev \
   mysql-client \
   bash \
   tzdata \
@@ -25,14 +20,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
   gem update --system && \
   gem install bundler && \
-  bundle config build.nokogiri --use-system-libraries && \
   rm /etc/nginx/sites-enabled/default && \
-  chmod +x /home/app/webapp/bin/localdb.sh && \
+  chmod +x /home/app/webapp/bin/*.sh && \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
-  
-ADD webapp.conf /etc/nginx/sites-enabled/webapp.conf
 
+COPY webapp.conf /etc/nginx/sites-enabled/webapp.conf
+  
 USER app 
 
 RUN printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
@@ -43,6 +37,8 @@ RUN printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >
 WORKDIR /home/app/webapp
 
 RUN bundle install
+
+ENTRYPOINT ["bin/localdb.sh"]
 
 USER root
 

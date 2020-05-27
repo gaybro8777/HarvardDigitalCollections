@@ -12,7 +12,7 @@ services:
    command: passenger start --ssl --ssl-port 3001 --ssl-certificate /etc/ssl/certs/server.crt --ssl-certificate-key /etc/ssl/certs/server.key
    tty: true
    volumes:
-     - ./config:/home/app/webapp/config
+     - './log:/home/app/webapp/log'
    env_file:
       - './.env'
    environment:
@@ -21,8 +21,6 @@ services:
      - mysql
    ports:
      - "3001:3001"
-   entrypoint:
-      - /home/app/webapp/bin/localdb.sh
 
   mysql:
     container_name: hdc_mysql

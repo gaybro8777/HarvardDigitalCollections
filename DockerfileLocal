@@ -6,6 +6,7 @@ FROM phusion/passenger-ruby26
 # Set correct environment variables.
 ENV DEBIAN_FRONTEND noninteractive
 
+
 #From the docs: The image has an app user with UID 9999 and home directory 
 # /home/app. Your application is supposed to run as this user.
 COPY --chown=app:app . /home/app/webapp
@@ -23,9 +24,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   chmod +x /home/app/webapp/bin/*.sh && \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
-  
-ADD webapp.conf /etc/nginx/sites-enabled/webapp.conf
 
+COPY webapp.conf /etc/nginx/sites-enabled/webapp.conf
+  
 USER app 
 
 RUN printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
@@ -36,7 +37,6 @@ RUN printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >
 WORKDIR /home/app/webapp
 
 RUN bundle install
-#  RAILS_ENV=production bundle exec rake assets:precompile
 
 ENTRYPOINT ["bin/localdb.sh"]
 

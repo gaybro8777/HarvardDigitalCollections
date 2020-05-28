@@ -103,24 +103,14 @@ $(document).on('turbolinks:load', function() {
         });
     });
 
-    //launch sign-in modal and save search
-    $('body').on('click', '.sign-in-and-save-search', function (e) {
-        e.preventDefault();
+    function launchSignInWithCallback(callback) {
         $('#sign-in-link').trigger('click');
-        
+        //on sign-in, perform callback
         $(document).on('sign_in', function (e) {
-            $.ajax({
-                url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
-                success: function (response) {
-                    $('#save-search-form').html(response);
-                    $('#save-search-form').find('form').submit();
-                    
-                }
-            });
-            
+            callback();
             $(document).off('sign_in');
         });
-    });
+    }
 
     //launch list edit modal
     $('body').on('click', '.edit-list', function (e) {
@@ -133,13 +123,45 @@ $(document).on('turbolinks:load', function() {
             }
         });
     });
-
-    function launchAddToList(itemId) {
+    
+    //save search ajax submit
+    $('body').on('submit', '#save-search-form .button_to', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        if ($('body').hasClass('signed-out')) {
+            //on sign-in reload the save search form and submit
+            launchSignInWithCallback(function () {
+                $.ajax({
+                    url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
+                    success: function (response) {
+                        $('#save-search-form').html(response);
+                        $('#save-search-form').find('form').submit();
+                    }
+                });
+            });
+        }
+        else {
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                dataType: 'html',
+                data: $form.serialize(),
+                success: function (data) {
+                    $form.addClass('hidden');
+                    $form.siblings('.form-confirmation').removeClass('hidden');
+                },
+            });
+        }
+    });
+    
+    function launchAddToList(itemIds) {
         $.ajax({
-            url: '/lists/add_items_form?item_ids=' + itemId,
+            url: '/lists/add_items_form',
+            method: 'POST',
+            data: { 'item_ids': itemIds },
             headers: {
                 Accept: "text/html; charset=utf-8",
-                "Content-Type": "text/html; charset=utf-8"
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
             },
             success: function (response) {
                 $('#sign-in-modal').modal('show');
@@ -148,23 +170,51 @@ $(document).on('turbolinks:load', function() {
         });
     }
 
+    function launchAddAllToList() {
+        var itemIds = '';
+        $('.add-to-list').each(function () {
+            if (itemIds != '') {
+                itemIds += ',';
+            }
+            itemIds += $(this).data('itemid');
+        });
+        launchAddToList(itemIds);
+    }
+
     //launch list edit modal
+    $('body').on('click', '.add-all-to-list', function (e) {
+        e.preventDefault();
+        if ($('body').hasClass('signed-out')) {
+            launchSignInWithCallback(function () {
+                launchAddAllToList();
+            });
+        } else {
+            launchAddAllToList();
+        }
+    });
+
     $('body').on('click', '.add-to-list', function (e) {
         e.preventDefault();
-        launchAddToList($(this).data('itemid'));
-    });
-
-    $('body').on('click', '.signin-and-add-to-list', function (e) {
-        e.preventDefault();
         var itemId = $(this).data('itemid');
-        $('#sign-in-link').trigger('click');
-
-        $(document).on('sign_in', function (e) {
+        if ($('body').hasClass('signed-out')) {
+            launchSignInWithCallback(function () {
+                launchAddToList(itemId);
+            });
+        } else {
             launchAddToList(itemId);
-            $(document).off('sign_in');
-        });
+        }
     });
 
+    $('body').on('click', '.list-create__add', function (e) {
+        e.preventDefault();
+        $('.list-create__fields,.list-create__close').removeClass('hidden');
+    });
+
+    $('body').on('click', '.list-create__close', function (e) {
+        e.preventDefault();
+        $('.list-create__fields,.list-create__close').addClass('hidden');
+    });
+    
     //show delete list form
     $('body').on('click', '.btn-delete-list', function (e) {
         e.preventDefault();
@@ -172,24 +222,6 @@ $(document).on('turbolinks:load', function() {
         $(this).parent().siblings('.hidden').removeClass('hidden');
     });
     
-    //save search ajax submit
-    $('body').on('submit', '.button_to', function (e) {
-        var $form = $(this);
-        if ($form.find('.ajax-submit').length > 0) {
-            e.preventDefault();
-            $.ajax({
-                url: $form.attr('action'),
-                type: $form.attr('method'),
-                dataType: 'html',
-                data: $form.serialize(),
-                success: function (data) {
-                    $form.find('.ajax-submit').addClass('hidden');
-                    $form.siblings('.sign-in-and-save-search').addClass('hidden');
-                    $form.siblings('.form-confirmation').removeClass('hidden');
-                },
-            });
-        }
-    });
 
     //update list ajax submit
     $('body').on('submit', '.list-update', function (e) {
@@ -221,6 +253,16 @@ $(document).on('turbolinks:load', function() {
         });
     });
 
+    //add items list dropdown collapse
+    $('body').on('click', '.list-selector .list-option', function () {
+        $('.list-add-items [name="list_id"]').val($(this).data('listid'));
+        $('.list-selector-toggle').trigger('click');
+        $('.list-selector-toggle__text').text($(this).text());
+    });
+    $('#details dd.collapse').on('hide.bs.collapse', function () {
+        $(this).prev().find('.field-toggle .fa').removeClass('fa-caret-up').addClass('fa-caret-down');
+    });
+
     //sign in form ajax submit
     $('body').on('submit', '#sign-in-modal form.user-sign-in', function (e) {
         e.preventDefault();
@@ -232,7 +274,7 @@ $(document).on('turbolinks:load', function() {
             dataType: 'json',
             data: $form.serialize(),
             success: function (data) {
-
+                $('body').removeClass('signed-out').addClass('signed-in');
                 $('#sign-in-link').addClass('hidden');
                 $('#my-account-link').removeClass('hidden');
                 $('#sign-in-modal').modal('hide');

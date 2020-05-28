@@ -7,13 +7,7 @@ class ListsController < ApplicationController
 	skip_before_action :verify_authenticity_token, only: [:add_items_form]
 
     def index
-		puts "email=" + current_or_guest_user.email
-		current_or_guest_user.api_key = "testing2"
-		current_or_guest_user.save
-	  @lists = available_collections()
-	  #@lc_user_api_key = create_library_cloud_user
-	  
-	  #@collection = create_collection('00a6d75b-f94c-4a17-bc98-54b655604016', 'MC Test12')
+		@lists = available_collections()
     end
 
 	def show

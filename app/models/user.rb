@@ -42,4 +42,9 @@ class User < ApplicationRecord
     result
   end
 
+  def self.update_user_api_key(email, api_key)
+    user = User.find_by(email: email)
+    user.api_key = api_key
+    user.save
+  end
 end

@@ -16,7 +16,11 @@ module Harvard::LibraryCloud::Collections
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
       faraday.headers['Content-Type'] = 'application/json'
-      faraday.headers['X-LibraryCloud-API-Key'] = ENV["LC_API_KEY"]
+      if current_or_guest_user.api_key.nil?
+        faraday.headers['X-LibraryCloud-API-Key'] = ENV["LC_API_KEY"]
+      else
+        faraday.headers['X-LibraryCloud-API-Key'] = current_or_guest_user.api_key
+      end
     end
 
     raw_response = begin
@@ -57,10 +61,28 @@ module Harvard::LibraryCloud::Collections
   # Helper method to get the collections that are available for adding an item to
   # This does not currently do any filtering by ownership, so it shows ALL collections
   def available_collections
+    #api = API.new
+    #params = {:limit => 9999, :preserve_original => true}
+    #response = api.send_and_receive('collections', {:params => params})
+    #response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
     api = API.new
-    params = {:limit => 9999, :preserve_original => true}
-    response = api.send_and_receive('collections', {:params => params})
-    response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
+    path = 'collections/'
+    if current_or_guest_user.api_key.nil?
+      user_key = ENV["LC_API_KEY"]
+    else
+      user_key = current_or_guest_user.api_key
+    end
+    raw_response = begin
+      response = Faraday.post(api.get_base_uri + path,
+        '{"limit": "9999"}',
+        "Content-Type" => "application/json",
+        "X-LibraryCloud-API-Key" => user_key
+       )
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+    raw_response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
   end
 
   def get_collection_by_id(systemId)
@@ -103,6 +125,5 @@ module Harvard::LibraryCloud::Collections
       rescue Errno::ECONNREFUSED, Faraday::Error => e
         raise RSolr::Error::Http.new(connection, e.response)
       end
-      #{"user_key" => user_key, "setName" => setName}
   end
 end

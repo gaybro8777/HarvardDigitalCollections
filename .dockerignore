@@ -15,8 +15,6 @@
 #Tests
 spec/
 
-#Solr
-solr/
 
 #tmp
 tmp/
@@ -38,6 +36,9 @@ package*.json
 deploy/
 
 Gemfile.lock
+
+webapp.conf.template
+env-example.txt
 
 # System Files
 .DS_Store

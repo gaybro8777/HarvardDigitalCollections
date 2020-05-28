@@ -1,10 +1,13 @@
 class ListsController < ApplicationController  
-    include Blacklight::SearchContext
+    before_action :authenticate_user!
+    skip_before_action :verify_authenticity_token, only: [:add_items_form]
+	include Blacklight::SearchContext
     include Blacklight::SearchHelper
     include Blacklight::TokenBasedUser
 	include Harvard::LibraryCloud::Collections
-	before_action :authenticate_user!
-	skip_before_action :verify_authenticity_token, only: [:add_items_form]
+	
+
+	require 'json'
 
     def index
 		@lists = available_collections()
@@ -50,10 +53,17 @@ class ListsController < ApplicationController
 
 	def create
 		@title = params[:title]
-
-		#render plain: "create list=" + @title
-		@lc_user_api_key = create_library_cloud_user
-        render json: @lc_user_api_key
+		#@thumbnailUrn = params[:thumbnailUrn]
+		@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
+		if current_or_guest_user.api_key.nil?
+		  @lc_user = create_library_cloud_user
+		  @lc_user_object = JSON.parse(@lc_user[:body])
+          @collection = create_collection(@lc_user_object['api-key'], @title, @thumbnailUrn)
+          User.update_user_api_key(current_or_guest_user.email, @lc_user_object['api-key'])
+		else
+          @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
+		end
+        render json: @collection
 	end
 
 	def update

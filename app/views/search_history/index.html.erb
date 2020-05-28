@@ -10,17 +10,21 @@ breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_
 		<h2 class='welcome-heading'><%=welcome_message%></h2>
 	
 		<div class="my-account-cta-list">
-			<a href="<%=blacklight.saved_searches_path%>" class="cta cta-saved-searches">
+			<a href="/lists" class="cta cta-lists">
 				<span class="fa fa-star" aria-hidden="true"></span>
+				<h3>My Lists</h3>
+				<p>Review and manage your lists.</p>
+			</a>
+			<a href="<%=blacklight.saved_searches_path%>" class="cta cta-saved-searches">
+				<span class="fa fa-search" aria-hidden="true"></span>
 				<h3>Saved Searches</h3>
 				<p>Use and manage your saved search terms.</p>
 			</a>
 			<a href="<%=edit_user_registration_path%>" class="cta cta-manage-account">
-				<span class="fa fa-search" aria-hidden="true"></span>
+				<span class="fa fa-cog" aria-hidden="true"></span>
 				<h3>Manage Account</h3>
 				<p>Edit your personal details or delete your account.</p>
 			</a>
-			<div class="placeholder"></div>
 		</div>
 
 		<div class="my-account-body">

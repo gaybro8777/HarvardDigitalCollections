@@ -1,0 +1,34 @@
+<% @page_title = 'Lists' %>
+<%
+  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'My Lists', :link_url => '/lists'}, {:link_text => @list['title'], :link_url => '/lists/' + @id.to_s}]
+%>
+<div id="content" class="col-md-12">
+  <div class="my-account-wrapper">
+	<%= render :partial => 'shared/breadcrumbs', locals: {links: @breadcrumb_links} %>
+
+	<h2 class='page-heading'>
+		<%=@list['title']%> 
+		<button class="edit-list" type="button" data-url="/lists/<%=@id%>/edit">
+			<span class="fa fa-pencil-alt" aria-hidden="true"></span>
+		</button>
+	</h2>
+    
+	<%- if @response.empty? %>
+	  <%= render "zero_results" %>
+	<%- elsif render_grouped_response? %>
+	  <%= render_grouped_document_index %>
+	<%- else %>
+	  <%= render_document_index %>
+	<%- end %>
+
+	<%= render partial: 'catalog/results_pagination' %>
+
+
+  </div>
+</div>
+<div id="manage-modal" class="reveal-modal modal my-account-modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>

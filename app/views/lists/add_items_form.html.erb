@@ -1,0 +1,32 @@
+<button type="button" class="manage-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+<div class="modal-content-inner">
+	<h3>Add This Item to a List</h3>
+  
+  <% if !@single_item.nil? %>
+    <div class="selected-document">
+      <%= render_document_partials @single_item, blacklight_config.view_config(document_index_view_type).partials, :document_counter => 1 %>
+    </div>
+    
+  <% else %>
+    <%= @item_ids.inspect() %>
+  <% end %>  
+	<%= form_tag("/lists/add_items", :method => :post, :class => "list-add-items my-account-form") do %>
+    <%= hidden_field_tag "item_ids", @item_ids %>
+    <div class="field">
+			<label>My Lists</label>
+      <select name="list">
+        <%@lists.each do |list| %>
+          <option value="<%=list['id']%>"><%=list['title']%></option>
+        <%end%>
+      </select>
+		</div>
+    <button type="submit" class="btn btn-large">Add</button>
+	<% end %>
+	<%= form_tag("/lists/", :method => :post, :class => "list-create my-account-form") do %>
+    <%= hidden_field_tag "item_ids", @item_ids %>
+    <div class="field">
+      <input type="text" name="title" required="required" />
+		</div>
+    <button type="submit" class="btn btn-large">Create</button>
+	<% end %>    
+</div>

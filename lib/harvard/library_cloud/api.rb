@@ -134,6 +134,7 @@ module Harvard::LibraryCloud
       results[:limit] = params[:rows] if params[:rows]
       results[:facets] = facet_params_to_lc(params['facet.field']) if params['facet.field']
       results[:recordIdentifier] = params['recordIdentifier'] if params['recordIdentifier']
+	  results[:setSpec] = params[:setSpec] if params[:setSpec]
       results.merge!(facet_query_params_to_lc(params[:fq])) if params[:fq]
       results
     end

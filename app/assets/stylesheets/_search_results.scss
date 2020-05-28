@@ -66,6 +66,34 @@
                 min-height: 100px;
                 padding: 20px 0;
 
+                .thumbnail-wrapper {
+                    position: relative;
+
+                    button {
+                        position: absolute;
+                        top: 2px;
+                        left: 2px;
+                        border: none;
+                        background: $search-bg-gray;
+                        border-radius: 4px;
+                        height: 36px;
+                        width: 36px;
+
+                        .fa {
+                            font-size: 16px;
+                            color: $medium-gray;
+                        }
+
+                        &:hover, &:focus, &:active {
+                            background: #FEF4D7;
+
+                            .fa {
+                                color: #f8c21c;
+                            }
+                        }
+                    }
+                }
+
                 img {
                     max-width: 90%;
 
@@ -252,4 +280,62 @@
       width: 100%;
     }
   }
+}
+
+.my-account-modal .modal-content-inner {
+    .selected-document {
+        position: relative;
+        padding-left: 200px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .document-thumbnail {
+        position: absolute;
+        left: 0;
+        top: auto;
+        width: 200px;
+        text-align: center;
+
+        .thumbnail-wrapper {
+            display: inline-block;
+
+            img {
+                max-width: 180px;
+            }
+        }
+
+        .add-to-list {
+            display: none;
+        }
+    }
+
+    .documentHeader {
+        h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            text-align: left;
+            text-transform: none;
+            letter-spacing: 1px;
+        }
+    }
+
+    dl {
+        dt {
+            display: none;
+        }
+
+        dd {
+            text-align: left;
+        }
+    }
+
+    .field {
+        select {
+            width: 400px;
+            border-radius: 4px;
+            border: 1px solid #AFAFAF;
+            padding: 13px;
+        }
+    }
 }

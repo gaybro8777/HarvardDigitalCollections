@@ -61,28 +61,23 @@ module Harvard::LibraryCloud::Collections
   # Helper method to get the collections that are available for adding an item to
   # This does not currently do any filtering by ownership, so it shows ALL collections
   def available_collections
-    #api = API.new
-    #params = {:limit => 9999, :preserve_original => true}
-    #response = api.send_and_receive('collections', {:params => params})
-    #response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
-    api = API.new
-    path = 'collections/'
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/user'
     if current_or_guest_user.api_key.nil?
       user_key = ENV["LC_API_KEY"]
     else
       user_key = current_or_guest_user.api_key
     end
     raw_response = begin
-      response = Faraday.post(api.get_base_uri + path,
-        '{"limit": "9999"}',
-        "Content-Type" => "application/json",
-        "X-LibraryCloud-API-Key" => user_key
-       )
-      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      response = Faraday.get(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
     rescue Errno::ECONNREFUSED, Faraday::Error => e
       raise RSolr::Error::Http.new(connection, e.response)
     end
-    raw_response.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}}
+    response_json = JSON.parse(response.body)
+    response_json.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "collectionSize" => n['collectionSize'], "last_updated" => n['modified']}}
   end
 
   def get_collection_by_id(systemId)
@@ -111,11 +106,10 @@ module Harvard::LibraryCloud::Collections
       end
   end
 
-  def create_collection (user_key, setName)
+  def create_collection (user_key, setName, thumbnailUrn)
       api = Harvard::LibraryCloud::API.new
       path = 'collections/'
       raw_response = begin
-      thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
         response = Faraday.post(api.get_base_uri + path,
         '{"setName": "' + setName + '","setDescription": "'+ setName +'","thumbnailUrn": "'+ thumbnailUrn +'"}',
         "Content-Type" => "application/json",

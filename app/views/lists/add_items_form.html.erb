@@ -11,51 +11,57 @@
     </div>
   <% else %>
     <h3>Add These Items to a List</h3>
-    <h4>You're adding <%=@item_count%> items to a list.</h4>
+    <h4 class="add-items-message">You're adding <%=@item_count%> items to a list.</h4>
     <!--<img src="<%=@thumbnail %>">-->
   <% end %>  
     <div class="my-lists">
 			<h4>My Lists</h4>
 
       <div class="list-selector">
-        <% if @lists.length > 0 %>
-          <div class="list-menu">
-            <button type="button" class="list-selector-toggle" aria-expanded="false" data-toggle="collapse" data-target="#list-options">
-              <span class="list-selector-toggle__text"><%=@lists[0]['title']%></span>
-              <span class="fa fa-caret-down" aria-hidden="true"></span>
-              <span class="fa fa-caret-up" aria-hidden="true"></span>
-            </button>
-            <ul id="list-options" class="collapse">
-              <% @lists.each do |list| %>
-                <li>
-                  <button type="button" class="list-option" data-listid="<%=list['id']%>">
-                    <%=list['title']%>
-                  </button>
-                </li>
+          <button type="button" class="list-selector-toggle" aria-expanded="false" data-toggle="collapse" data-target="#list-menu">
+            <span class="list-selector-toggle__text">
+              <%=@has_lists ? @lists[0]['title'] : "Add a new list"%>
+            </span>
+            <span class="fa fa-caret-down" aria-hidden="true"></span>
+            <span class="fa fa-caret-up" aria-hidden="true"></span>
+          </button>
+          <div id="list-menu" class="list-menu collapse">
+            <ul id="list-options">
+              <% if @has_lists %>
+                <% @lists.each do |list| %>
+                  <li>
+                    <button type="button" class="list-option" data-listid="<%=list['id']%>">
+                      <%=list['title']%>
+                    </button>
+                  </li>
+                <% end %>
               <% end %>
             </ul>
+            <%= form_tag("/lists/", :method => :post, :class => "list-create my-account-form") do %>
+              <%= hidden_field_tag "item_ids", @item_ids %>
+              <%= hidden_field_tag "thumbnail", @thumbnail %>
+              <button type="button" class="list-create__add <%= !@has_lists ? 'hidden' : '' %>" >
+                <span class="fa fa-plus" aria-hidden="true"></span>
+                Add a New List
+              </button>
+              <h4 class="list-create__heading <%= @has_lists ? 'hidden' : '' %>" >
+                Add a New List
+              </h4>                
+              <button type="button" class="list-create__close hidden">
+                <span class="fa fa-times" aria-hidden="true"></span>
+                <span class="sr-only">Close</span>
+              </button>
+              <div class="list-create__fields <%= @has_lists ? 'hidden' : '' %>">
+                <input type="text" name="title" required="required" />
+                <button type="submit" class="btn btn-medium">Create</button>
+              </div>
+            <% end %>  
           </div>            
-        <% end %>
-
-        <%= form_tag("/lists/", :method => :post, :class => "list-create my-account-form") do %>
-          <%= hidden_field_tag "item_ids", @item_ids %>
-          <%= hidden_field_tag "thumbnail", @thumbnail %>
-          <button type="button" class="list-create__add" >
-            <span class="fa fa-plus" aria-hidden="true"></span>
-            Add a New List
-          </button>
-          <button type="button" class="list-create__close hidden"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>  
-          <div class="list-create__fields hidden">
-            <input type="text" name="title" required="required" />
-            <button type="submit" class="btn btn-medium">Create</button>
-          </div>
-
-          <% end %>   
       </div>      
 		</div>   
   <%= form_tag("/lists/add_items", :method => :post, :class => "list-add-items my-account-form") do %>
     <%= hidden_field_tag "item_ids", @item_ids %>
     <%= hidden_field_tag "list_id", @default_list_id %>
-    <button type="submit" class="btn btn-large">Add</button>
+    <button type="submit" class="btn btn-large" <%=(@default_list_id.to_s == '') ? 'disabled' : '' %>>Add</button>
 	<% end %>
 </div>

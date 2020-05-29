@@ -297,6 +297,11 @@
 }
 
 .my-account-modal .modal-content-inner {
+    .add-items-message {
+        font-size: 24px;
+        margin: 0 0 40px 0;
+    }
+
     .selected-document {
         position: relative;
         max-width: 500px;
@@ -358,7 +363,21 @@
         margin-bottom: 48px;
         flex-grow: 1;
 
-        .list-selector-toggle {
+        > button, #list-options button {
+            background: transparent;
+            display: block;
+            width: 100%;
+            border: 0;
+            font-size: 16px;
+            line-height: 24px;
+            color: $medium-gray;
+            text-align: left;
+        }
+
+        button.list-selector-toggle {
+            margin: 0 13px;
+            width: calc(100% - 26px);
+
             .fa {
                 position: absolute;
                 transform: translate(4px, 4px);
@@ -379,24 +398,8 @@
             }
         }
 
-        .list-menu {
-            border-bottom: 1px solid #AFAFAF;
-            padding: 0 13px 13px 13px;
-
-            button {
-                background: transparent;
-                display: block;
-                width: 100%;
-                border: 0;
-                font-size: 16px;
-                line-height: 24px;
-                color: $medium-gray;
-                text-align: left;
-            }
-        }
-
         ul {
-            padding: 12px 0 0 0;
+            padding: 13px 13px 13px 13px;
         }
 
         li {
@@ -408,14 +411,17 @@
             padding: 12px 13px 0 13px;
             text-align: left;
             position: relative;
+            border-top: 1px solid #AFAFAF;
 
-            .list-create__add {
+            .list-create__add, .list-create__heading {
                 background: transparent;
                 border: 0;
                 font-size: 16px;
                 line-height: 24px;
                 font-weight: bold;
                 color: $breakthrough-blue;
+                padding: 1px 6px;
+                margin: 0;
 
                 .fa {
                     font-size: 10px;
@@ -437,6 +443,7 @@
                 opacity: 1;
                 padding: 0;
                 border: none;
+                text-align: center;
             }
 
             .list-create__fields {

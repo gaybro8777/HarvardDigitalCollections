@@ -207,12 +207,16 @@ $(document).on('turbolinks:load', function() {
 
     $('body').on('click', '.list-create__add', function (e) {
         e.preventDefault();
-        $('.list-create__fields,.list-create__close').removeClass('hidden');
+        $('.list-create__fields,.list-create__close,.list-create__heading').removeClass('hidden');
+        $('.list-create__fields [name="title"]').focus();
+        $('.list-create__add').addClass('hidden')
+        
     });
 
     $('body').on('click', '.list-create__close', function (e) {
         e.preventDefault();
-        $('.list-create__fields,.list-create__close').addClass('hidden');
+        $('.list-create__add').removeClass('hidden').focus();
+        $('.list-create__fields,.list-create__close,.list-create__heading').addClass('hidden');
     });
     
     //show delete list form
@@ -253,12 +257,37 @@ $(document).on('turbolinks:load', function() {
         });
     });
 
+    //create list ajax submit
+    $('body').on('submit', '.list-create', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('#list-menu').collapse('hide')
+                var $button = $('<button>').prop('type', 'button').addClass('list-option').data('listid', data.systemId).text(data.setName);
+                var $li = $('<li>').append($button);
+                $('#list-options').prepend($li);
+                $('.list-add-items [name="list_id"]').val(data.systemId);
+                $('.list-selector-toggle__text').text(data.setName);
+                $('.list-create__fields,.list-create__close,.list-create__heading').addClass('hidden');
+                $('.list-create__add').removeClass('hidden');
+                $('.list-add-items button[type="submit"]').prop('disabled', false).focus();
+            },
+        });
+    });
+    
     //add items list dropdown collapse
     $('body').on('click', '.list-selector .list-option', function () {
         $('.list-add-items [name="list_id"]').val($(this).data('listid'));
         $('.list-selector-toggle').trigger('click');
         $('.list-selector-toggle__text').text($(this).text());
+        $('.list-add-items button[type="submit"]').prop('disabled', false).focus();
     });
+
     $('#details dd.collapse').on('hide.bs.collapse', function () {
         $(this).prev().find('.field-toggle .fa').removeClass('fa-caret-up').addClass('fa-caret-down');
     });

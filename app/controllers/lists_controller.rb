@@ -10,7 +10,8 @@ class ListsController < ApplicationController
 	require 'json'
 
     def index
-		@lists = available_collections()
+	  set_user_api_key
+	  @lists = available_collections()
     end
 
 	def show
@@ -53,17 +54,12 @@ class ListsController < ApplicationController
 
 	def create
 		@title = params[:title]
-		#@thumbnailUrn = params[:thumbnailUrn]
-		@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
-		if current_or_guest_user.api_key.nil?
-		  @lc_user = create_library_cloud_user
-		  @lc_user_object = JSON.parse(@lc_user[:body])
-          @collection = create_collection(@lc_user_object['api-key'], @title, @thumbnailUrn)
-          User.update_user_api_key(current_or_guest_user.email, @lc_user_object['api-key'])
-		else
-          @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
-		end
-        render json: @collection
+		@thumbnailUrn = params[:thumbnail]
+		#@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
+		set_user_api_key
+        @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
+		
+        render json: @collection[:body]
 	end
 
 	def update
@@ -84,6 +80,7 @@ class ListsController < ApplicationController
 			redirect_to '/lists'
 			return
 		end
+		set_user_api_key
 		@item_ids = params[:item_ids]
 		@items = @item_ids.split(',')
 		@thumbnail = ''
@@ -111,9 +108,7 @@ class ListsController < ApplicationController
 			first_item_found = false
 			#items found aren't in the order we want, find the first item for the thumb
 			@items_found.each do |item|
-				puts 'checking=' + item[:identifier] + '==' + @items[0]
 				if item[:identifier] == @items[0]
-					puts 'thumb=' + item[:preview].to_s
 					first_item_found = true
 					if item[:preview].to_s != ""
 						@thumbnail = item[:preview]		
@@ -121,7 +116,6 @@ class ListsController < ApplicationController
 					elsif backup_thumbnail != ""
 						break
 					end
-					
 				elsif backup_thumbnail == "" && item[:preview].to_s != ""
 					backup_thumbnail = item[:preview]
 					if first_item_found 
@@ -137,8 +131,10 @@ class ListsController < ApplicationController
 		end
 
 		@lists = available_collections()
+		@has_lists = false
 		if !@lists.nil? && @lists.length > 0
 		  @default_list_id = @lists[0]['id']
+		  @has_lists = true
 		end
 		render layout: false
 	end
@@ -162,5 +158,16 @@ class ListsController < ApplicationController
 	  end
 
 	  render plain: "item_ids=" + @item_ids + " list=" + @list
+	end
+
+	private 
+	
+	def set_user_api_key
+	  if current_or_guest_user.api_key.nil?
+	    @lc_user = create_library_cloud_user
+	    @lc_user_object = JSON.parse(@lc_user[:body])
+        current_or_guest_user.api_key = @lc_user_object['api-key']
+		current_or_guest_user.save
+	  end
 	end
 end

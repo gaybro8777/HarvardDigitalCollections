@@ -279,6 +279,33 @@ $(document).on('turbolinks:load', function() {
             },
         });
     });
+
+    //add items ajax submit
+    $('body').on('submit', '.list-add-items', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        var list_id = $form.find('[name="list_id"]').val();
+        var item_ids = $form.find('[name="item_ids"]').val();
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('.add-items-confirmation').removeClass('hidden');
+                $('.add-items-wrapper').addClass('hidden');
+
+                $('.add-items-confirmation__link').prop('href', '/lists/' + list_id);
+                $('.add-items-confirmation__link').text(list_id);
+
+                if (item_ids.indexOf(',') > 0) {
+                    $('.add-items-confirmation__single').addClass('hidden');
+                } else {
+                    $('.add-items-confirmation__multiple').addClass('hidden');
+                }
+            },
+        });
+    });
     
     //add items list dropdown collapse
     $('body').on('click', '.list-selector .list-option', function () {

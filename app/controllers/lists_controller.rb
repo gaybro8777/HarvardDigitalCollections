@@ -141,12 +141,13 @@ class ListsController < ApplicationController
 
 	def add_items
 	  @item_ids = params[:item_ids]
-	  @list = params[:list]
+	  @list = params[:list_id]
 	  @lists = available_collections()
 
+	  #validate that user owns list
 	  list_found = false
 	  @lists.each do |x|
-		if x[:id] == @list
+		if x['id'].to_s == @list.to_s
 			list_found = true
 			break
 		end
@@ -157,7 +158,7 @@ class ListsController < ApplicationController
 		return
 	  end
 
-	  render plain: "item_ids=" + @item_ids + " list=" + @list
+	  render json: '{ "item_ids":"' + @item_ids + '", "list":"' + @list + '"}'
 	end
 
 	private 

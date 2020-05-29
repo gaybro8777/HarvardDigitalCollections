@@ -21,7 +21,7 @@
 						<span class="fa fa-pencil-alt" aria-hidden="true"></span>
 						</button>
 					</h4>
-					<p class="my-lists__item-count">0 items</p>
+					<p class="my-lists__item-count"><%=number_with_delimiter(list['collectionSize'], :delimiter => ',') %> items</p>
 					<p class="my-lists__last-updated">Last updated: <%=DateTime.parse(list['last_updated']).strftime("%B %d, %Y")%></p>
 				</div>
 			</a>

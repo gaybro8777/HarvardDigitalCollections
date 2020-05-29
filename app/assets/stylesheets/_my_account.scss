@@ -778,3 +778,25 @@ button.edit-list {
         text-align: center;
     }
 }
+
+.list-details {
+    .list-header {
+        border-bottom: 1px solid #D4D1D1;
+
+        h2.page-heading {
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+    }
+
+    .list-metadata {
+        padding-top: 25px;
+        span {
+            font-family: $font-family-sans-serif;
+            font-size: 15px;
+            line-height: 25px;
+            display: inline-block;
+            margin-right: 40px;
+        }
+    }
+}

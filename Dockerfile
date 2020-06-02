@@ -25,7 +25,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   gem update --system && \
   gem install bundler && \
   rm /etc/nginx/sites-enabled/default && \
-  #rm /home/app/webapp/db/migrate/* && \
+  #This removes the old migrations since the schema_migrations database seems skewed.
+  #Comment out if all migrations need to get run.
+  rm /home/app/webapp/db/migrate/201* && \
   chmod +x /home/app/webapp/bin/*.sh && \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
@@ -40,7 +42,6 @@ RUN bundle install && \
     printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
     openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Massachusetts/L=Cambridge/O=Library Technology Services/CN=*.lib.harvard.edu" -extensions SAN -reqexts SAN -config /etc/ssl/openssl.cnf -keyout /etc/ssl/certs/server.key -out /etc/ssl/certs/server.crt
 
-#Run the migrations if any exist
 ENTRYPOINT ["bin/migrations.sh"]
 
 USER root

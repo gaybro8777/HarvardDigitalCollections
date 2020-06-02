@@ -3,6 +3,6 @@
 
 set -e
 
-rake db:migrate
+bundle exec rake db:migrate
 
 exec "$@"

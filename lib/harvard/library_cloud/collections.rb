@@ -86,7 +86,7 @@ module Harvard::LibraryCloud::Collections
     response = api.send_and_receive('collections/' + systemId.to_s + '/', {:params => params})
     if response.length > 0
 		n = response[0]
-		{"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}
+		{"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "collectionSize" => n['collectionSize'], "last_updated" => n['modified']}
 	else
 		nil
 	end

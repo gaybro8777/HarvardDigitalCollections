@@ -176,7 +176,7 @@ $(document).on('turbolinks:load', function() {
             if (itemIds != '') {
                 itemIds += ',';
             }
-            itemIds += $(this).data('itemid');
+            itemIds += $(this).find('[name="item_id"]').val();
         });
         launchAddToList(itemIds);
     }
@@ -193,9 +193,9 @@ $(document).on('turbolinks:load', function() {
         }
     });
 
-    $('body').on('click', '.add-to-list', function (e) {
+    $('body').on('submit', '.add-to-list', function (e) {
         e.preventDefault();
-        var itemId = $(this).data('itemid');
+        var itemId = $(this).find('[name="item_id"]').val();
         if ($('body').hasClass('signed-out')) {
             launchSignInWithCallback(function () {
                 launchAddToList(itemId);

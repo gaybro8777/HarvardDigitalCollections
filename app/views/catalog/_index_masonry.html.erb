@@ -1,0 +1,11 @@
+<div class="masonry document col-xs-6 col-md-3">
+  <div class="thumbnail">
+    <div class="thumbnail-wrapper">
+      <%=render_thumbnail_tag(document, {}, :counter => document_counter_with_offset(document_counter)) %>
+      <%= render :partial => 'catalog/add_to_list_button', locals: {document: document} %>
+    </div>
+    <div class="caption">
+      <%= render_document_partials document, blacklight_config.view_config(:masonry).partials, :document_counter => document_counter %>
+    </div>
+  </div>
+</div>

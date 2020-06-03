@@ -147,10 +147,10 @@ class ListsController < ApplicationController
 	  #validate that user owns list
 	  list_found = false
 	  @lists.each do |x|
-		if x['id'].to_s == @list.to_s
-			list_found = true
-			break
-		end
+		  if x['id'].to_s == @list.to_s
+			  list_found = true
+			  break
+		  end
 	  end
 
 	  if !list_found
@@ -159,6 +159,28 @@ class ListsController < ApplicationController
 	  end
 
 	  render json: '{ "item_ids":"' + @item_ids + '", "list":"' + @list + '"}'
+	end
+
+  def remove_item
+	  @item_id = params[:item_id]
+	  @list_id = params[:list_id]
+	  #@lists = available_collections()
+    render json: '{ "item_id":"' + @item_id + '", "list":"' + @list_id + '"}'
+	  #validate that user owns list
+	  list_found = false
+	  #@lists.each do |x|
+		#  if x['id'].to_s == @list.to_s
+		#	  list_found = true
+		#	  break
+		#  end
+	  #end
+
+	  #if !list_found
+	  #	redirect_to '/lists'
+		#  return
+	  #end
+
+	  #redirect_to '/lists/' + @item_id
 	end
 
 	private 

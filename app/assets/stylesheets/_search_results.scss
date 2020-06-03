@@ -7,7 +7,12 @@
         color: $medium-gray;
     }
 
-    form input.save-search-button, .sign-in-and-save-search {
+    #save-search-form {
+        display: inline-block;
+        margin-left: 25px;
+    }
+
+    input.save-search-button, .add-all-to-list {
         padding: 0;
         background: transparent;
         border: 0;
@@ -17,9 +22,18 @@
         height: auto;
         font-size: 15px;
         font-weight: bold;
+
         &:focus {
             outline-width: 1px;
             outline-style: solid;
+        }
+    }
+
+    .add-all-to-list {
+        .fa {
+            font-size: 12px;
+            transform: translateY(-1px);
+            color: $star-yellow;
         }
     }
 }
@@ -88,7 +102,7 @@
                             background: #FEF4D7;
 
                             .fa {
-                                color: #f8c21c;
+                                color: $star-yellow;
                             }
                         }
                     }
@@ -283,31 +297,37 @@
 }
 
 .my-account-modal .modal-content-inner {
+    .add-items-message {
+        font-size: 24px;
+        margin: 0 0 40px 0;
+    }
+
     .selected-document {
         position: relative;
-        padding-left: 200px;
         max-width: 500px;
-        margin: 0 auto;
+        margin: 0 auto 45px auto;
+        display: flex;
+        justify-content: space-between;
     }
 
     .document-thumbnail {
-        position: absolute;
-        left: 0;
-        top: auto;
-        width: 200px;
+        flex-basis: 35%;
         text-align: center;
 
         .thumbnail-wrapper {
-            display: inline-block;
 
             img {
-                max-width: 180px;
+                max-width: 100%;
             }
         }
 
         .add-to-list {
             display: none;
         }
+    }
+
+    .document-data {
+        flex-basis: 60%
     }
 
     .documentHeader {
@@ -330,12 +350,123 @@
         }
     }
 
-    .field {
-        select {
-            width: 400px;
-            border-radius: 4px;
-            border: 1px solid #AFAFAF;
-            padding: 13px;
+    .my-lists {
+        max-width: 510px;
+        margin: 0 auto;
+    }
+
+    .list-selector {
+        max-width: 400px;
+        border-radius: 4px;
+        border: 1px solid #AFAFAF;
+        padding: 13px 0;
+        margin-bottom: 48px;
+        flex-grow: 1;
+
+        > button, #list-options button {
+            background: transparent;
+            display: block;
+            width: 100%;
+            border: 0;
+            font-size: 16px;
+            line-height: 24px;
+            color: $medium-gray;
+            text-align: left;
+        }
+
+        button.list-selector-toggle {
+            margin: 0 13px;
+            width: calc(100% - 26px);
+
+            .fa {
+                position: absolute;
+                transform: translate(4px, 4px);
+            }
+
+            .fa-caret-up {
+                display: none;
+            }
+
+            &[aria-expanded="true"] {
+                .fa-caret-up {
+                    display: inline-block;
+                }
+
+                .fa-caret-down {
+                    display: none;
+                }
+            }
+        }
+
+        ul {
+            padding: 13px 13px 13px 13px;
+        }
+
+        li {
+            list-style-type: none;
+            padding: 12px 0;
+        }
+
+        .list-create {
+            padding: 12px 13px 0 13px;
+            text-align: left;
+            position: relative;
+            border-top: 1px solid #AFAFAF;
+
+            .list-create__add, .list-create__heading {
+                background: transparent;
+                border: 0;
+                font-size: 16px;
+                line-height: 24px;
+                font-weight: bold;
+                color: $breakthrough-blue;
+                padding: 1px 6px;
+                margin: 0;
+
+                .fa {
+                    font-size: 10px;
+                    transform: translateY(-1px);
+                }
+            }
+
+            .list-create__close {
+                position: absolute;
+                right: 12px;
+                top: 13px;
+                color: #fff;
+                width: 16px;
+                height: 16px;
+                background: #6C6C6C;
+                border-radius: 50%;
+                font-size: 11px;
+                line-height: 1;
+                opacity: 1;
+                padding: 0;
+                border: none;
+                text-align: center;
+            }
+
+            .list-create__fields {
+                display: flex;
+                margin: 18px 0 0 0;
+                justify-content: space-between;
+
+                input[type="text"] {
+                    display: inline-block;
+                    width: 65%;
+                }
+
+                button {
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+
+    @media (min-width: 700px) {
+        .my-lists {
+            display: flex;
+            justify-content: space-between;
         }
     }
 }

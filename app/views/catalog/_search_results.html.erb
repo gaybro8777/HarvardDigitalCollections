@@ -1,4 +1,3 @@
-
 <row>
 <h2 class="sr-only top-content-title"><%= t('blacklight.search.search_results_header') %></h2>
 
@@ -16,9 +15,13 @@
 <h2 class="sr-only"><%= t('blacklight.search.search_results') %></h2>
 <%- if !@response.empty? %>
   <div class="search-actions">
+    <button type="button" class="add-all-to-list">
+      <span class="fa fa-star"></span>
+      Add these items to a list
+    </button>
     <%- if !@search_id.nil? && !@empty_search %>
       <div id="save-search-form" data-search-id="<%=@search_id%>">
-        <%= render :partial => 'shared/save_search_form', locals: {search_id: @search_id,search_is_saved: @search_is_saved} %>
+        <%= render :partial => 'save_search_form', locals: {search_id: @search_id,search_is_saved: @search_is_saved} %>
       </div>
     <%- end %>  
   </div>    

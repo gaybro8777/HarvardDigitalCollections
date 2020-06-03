@@ -1,7 +1,7 @@
 <div class="document-thumbnail clearfix">
   <div class="thumbnail-wrapper">
     <%=render_thumbnail_tag(document, {}, :counter => document_counter_with_offset(document_counter)) %>
-    <button class="<%=(user_signed_in?) ? 'add-to-list' : 'signin-and-add-to-list' %>" data-itemid="<%=document[:identifier]%>" type="button">
+    <button class="add-to-list" data-itemid="<%=document[:identifier]%>" type="button">
       <span class="sr-only">Add to list</span>
       <span class="fa fa-star" aria-hidden="true"></span>
     </button>

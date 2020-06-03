@@ -39,7 +39,7 @@ Rails.application.routes.draw do
   resources :lists, constraints: { id: /[^\/]+/ } do
     concerns :exportable
 	collection do
-		get 'add_items_form'
+		post 'add_items_form'
 		post 'add_items'
 	end 
   end

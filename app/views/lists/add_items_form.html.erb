@@ -1,32 +1,83 @@
-<button type="button" class="manage-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+<button type="button" class="manage-modal-close close" data-dismiss="modal"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
 <div class="modal-content-inner">
-	<h3>Add This Item to a List</h3>
-  
-  <% if !@single_item.nil? %>
+  <div class="add-items-wrapper">
+    <% if @item_count == 1 %>
+    <h3>Add This Item to a List</h3>
     <div class="selected-document">
-      <%= render_document_partials @single_item, blacklight_config.view_config(document_index_view_type).partials, :document_counter => 1 %>
+      <%= render :partial => 'catalog/thumbnail_default', locals: {document: @single_item, document_counter: 1} %>
+      <div class="document-data">
+        <%= render :partial => 'catalog/index_header_default', locals: {document: @single_item, document_counter: 1} %>
+        <%= render :partial => 'catalog/index_default', locals: {document: @single_item, document_counter: 1} %>
+      </div>
     </div>
+    <% else %>
+    <h3>Add These Items to a List</h3>
+    <h4 class="add-items-message">
+      You're adding <%=@item_count%> items to a list.
+    </h4>
+    <!--<img src="<%=@thumbnail %>">-->
+    <% end %>  
     
-  <% else %>
-    <%= @item_ids.inspect() %>
-  <% end %>  
-	<%= form_tag("/lists/add_items", :method => :post, :class => "list-add-items my-account-form") do %>
+    <div class="my-lists">
+      <h4>My Lists</h4>
+
+      <div class="list-selector">
+        <button type="button" class="list-selector-toggle" aria-expanded="false" data-toggle="collapse" data-target="#list-menu">
+          <span class="list-selector-toggle__text">
+            <%=@has_lists ? @lists[0]['title'] : "Add a new list"%>
+          </span>
+          <span class="fa fa-caret-down" aria-hidden="true"></span>
+          <span class="fa fa-caret-up" aria-hidden="true"></span>
+        </button>
+        <div id="list-menu" class="list-menu collapse">
+          <ul id="list-options">
+            <% if @has_lists %>
+            <% @lists.each do |list| %>
+            <li>
+              <button type="button" class="list-option" data-listid=""
+                <%=list['id']%>">
+                <%=list['title']%>
+              </button>
+            </li>
+            <% end %>
+            <% end %>
+          </ul>
+          <%= form_tag("/lists/", :method => :post, :class => "list-create my-account-form") do %>
+          <%= hidden_field_tag "item_ids", @item_ids %>
+          <%= hidden_field_tag "thumbnail", @thumbnail %>
+          <button type="button" class="list-create__add"
+            <%= !@has_lists ? 'hidden' : '' %>" >
+            <span class="fa fa-plus" aria-hidden="true"></span>
+            Add a New List
+          </button>
+          <h4 class="list-create__heading"
+            <%= @has_lists ? 'hidden' : '' %>" >
+            Add a New List
+          </h4>
+          <button type="button" class="list-create__close hidden">
+            <span class="fa fa-times" aria-hidden="true"></span>
+            <span class="sr-only">Close</span>
+          </button>
+          <div class="list-create__fields"
+            <%= @has_lists ? 'hidden' : '' %>">
+            <input type="text" name="title" required="required" />
+            <button type="submit" class="btn btn-medium">Create</button>
+          </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <%= form_tag("/lists/add_items", :method => :post, :class => "list-add-items my-account-form") do %>
     <%= hidden_field_tag "item_ids", @item_ids %>
-    <div class="field">
-			<label>My Lists</label>
-      <select name="list">
-        <%@lists.each do |list| %>
-          <option value="<%=list['id']%>"><%=list['title']%></option>
-        <%end%>
-      </select>
-		</div>
-    <button type="submit" class="btn btn-large">Add</button>
-	<% end %>
-	<%= form_tag("/lists/", :method => :post, :class => "list-create my-account-form") do %>
-    <%= hidden_field_tag "item_ids", @item_ids %>
-    <div class="field">
-      <input type="text" name="title" required="required" />
-		</div>
-    <button type="submit" class="btn btn-large">Create</button>
-	<% end %>    
+    <%= hidden_field_tag "list_id", @default_list_id %>
+    <button type="submit" class="btn btn-large"
+      <%=(@default_list_id.to_s == '') ? 'disabled' : '' %>>Add
+    </button>
+    <% end %>
+  </div>
+  <h3 class="add-items-confirmation hidden">
+    <span class="add-items-confirmation__single">This item has</span>
+    <span class="add-items-confirmation__multiple">These items have</span>
+    been added to <a class="add-items-confirmation__link"></a>
+  </h3>  
 </div>

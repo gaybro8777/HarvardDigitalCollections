@@ -1,13 +1,16 @@
 class ListsController < ApplicationController  
     before_action :authenticate_user!
-    include Blacklight::SearchContext
+    skip_before_action :verify_authenticity_token, only: [:add_items_form]
+	include Blacklight::SearchContext
     include Blacklight::SearchHelper
     include Blacklight::TokenBasedUser
 	include Harvard::LibraryCloud::Collections
+	
 
 	require 'json'
 
     def index
+	  set_user_api_key
 	  @lists = available_collections()
     end
 
@@ -51,17 +54,12 @@ class ListsController < ApplicationController
 
 	def create
 		@title = params[:title]
-		#@thumbnailUrn = params[:thumbnailUrn]
-		@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
-		if current_or_guest_user.api_key.nil?
-		  @lc_user = create_library_cloud_user
-		  @lc_user_object = JSON.parse(@lc_user[:body])
-          @collection = create_collection(@lc_user_object['api-key'], @title, @thumbnailUrn)
-          User.update_user_api_key(current_or_guest_user.email, @lc_user_object['api-key'])
-		else
-          @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
-		end
-        render json: @collection
+		@thumbnailUrn = params[:thumbnail]
+		#@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
+		set_user_api_key
+        @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
+		
+        render json: @collection[:body]
 	end
 
 	def update
@@ -82,11 +80,17 @@ class ListsController < ApplicationController
 			redirect_to '/lists'
 			return
 		end
+		set_user_api_key
 		@item_ids = params[:item_ids]
 		@items = @item_ids.split(',')
+		@thumbnail = ''
+		@default_list_id = ''
+
 		if @items.length == 1
+			#adding one item to list, lookup item
 			@response, @single_item = fetch(@items[0])
 		else
+			#adding multiple items
 			@response, @items_found = fetch(@items)
 		end
 
@@ -95,18 +99,55 @@ class ListsController < ApplicationController
 			return
 		end
 		
+		if !@single_item.nil?
+			@item_count = 1
+			@thumbnail = @single_item[:preview]
+		else
+			@item_count = @response[:pagination][:numFound]
+			backup_thumbnail = ''
+			first_item_found = false
+			#items found aren't in the order we want, find the first item for the thumb
+			@items_found.each do |item|
+				if item[:identifier] == @items[0]
+					first_item_found = true
+					if item[:preview].to_s != ""
+						@thumbnail = item[:preview]		
+						break
+					elsif backup_thumbnail != ""
+						break
+					end
+				elsif backup_thumbnail == "" && item[:preview].to_s != ""
+					backup_thumbnail = item[:preview]
+					if first_item_found 
+						break
+					end
+				end
+			end
+			
+			#if thumb is still empty use the first non-empty one
+			if @thumbnail == ""
+				@thumbnail = backup_thumbnail
+			end
+		end
+
 		@lists = available_collections()
+		@has_lists = false
+		if !@lists.nil? && @lists.length > 0
+		  @default_list_id = @lists[0]['id']
+		  @has_lists = true
+		end
 		render layout: false
 	end
 
 	def add_items
 	  @item_ids = params[:item_ids]
-	  @list = params[:list]
+	  @list = params[:list_id]
 	  @lists = available_collections()
 
+	  #validate that user owns list
 	  list_found = false
 	  @lists.each do |x|
-		if x[:id] == @list
+		if x['id'].to_s == @list.to_s
 			list_found = true
 			break
 		end
@@ -117,6 +158,17 @@ class ListsController < ApplicationController
 		return
 	  end
 
-	  render plain: "item_ids=" + @item_ids + " list=" + @list
+	  render json: '{ "item_ids":"' + @item_ids + '", "list":"' + @list + '"}'
+	end
+
+	private 
+	
+	def set_user_api_key
+	  if current_or_guest_user.api_key.nil?
+	    @lc_user = create_library_cloud_user
+	    @lc_user_object = JSON.parse(@lc_user[:body])
+        current_or_guest_user.api_key = @lc_user_object['api-key']
+		current_or_guest_user.save
+	  end
 	end
 end

@@ -41,6 +41,7 @@ Rails.application.routes.draw do
 	collection do
 		post 'add_items_form'
 		post 'add_items'
+    post 'remove_item'
 	end 
   end
   #get '/add_items_to_list', to: 'lists#add_items_to_list'

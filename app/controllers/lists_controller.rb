@@ -28,7 +28,7 @@ class ListsController < ApplicationController
 	  end
 	  
 	  search_params = {}
-	  search_params[:setSpec] = @list['setSpec']
+	  search_params[:setSpec] = @list[0]['setSpec']
 
 	  if !params[:page].nil? && !params[:page].to_s != ''
 		page_number = params[:page].to_i
@@ -71,8 +71,9 @@ class ListsController < ApplicationController
 
 	def destroy
 		@id = params[:id]
-	
-		render plain: "DELETE ID=" + @id
+	    @collection = destroy_collection(current_or_guest_user.api_key, @id)
+		#render plain: "DELETE ID=" + @id
+		render json: @collection[:body]
 	end
 
 	def add_items_form

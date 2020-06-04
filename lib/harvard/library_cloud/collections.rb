@@ -81,15 +81,23 @@ module Harvard::LibraryCloud::Collections
   end
 
   def get_collection_by_id(systemId)
-    api = API.new
-    params = {:limit => 9999, :preserve_original => true}
-    response = api.send_and_receive('collections/' + systemId.to_s + '/', {:params => params})
-    if response.length > 0
-		n = response[0]
-		{"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "last_updated" => n['modified']}
-	else
-		nil
-	end
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    if current_or_guest_user.api_key.nil?
+      user_key = ENV["LC_API_KEY"]
+    else
+      user_key = current_or_guest_user.api_key
+    end
+    raw_response = begin
+      response = Faraday.get(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+    response_json = JSON.parse(response.body)
+    response_json.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "collectionSize" => n['collectionSize'], "last_updated" => n['modified']}}
   end
   def create_library_cloud_user
       api = Harvard::LibraryCloud::API.new
@@ -119,5 +127,19 @@ module Harvard::LibraryCloud::Collections
       rescue Errno::ECONNREFUSED, Faraday::Error => e
         raise RSolr::Error::Http.new(connection, e.response)
       end
+  end
+
+  def destroy_collection(systemId)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    raw_response = begin
+      response = Faraday.delete(api.get_base_uri + path,
+      "Content-Type" => "application/json",
+      "X-LibraryCloud-API-Key" => user_key
+      )
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
   end
 end

@@ -252,7 +252,7 @@ $(document).on('turbolinks:load', function() {
             dataType: 'html',
             data: $form.serialize(),
             success: function (data) {
-                window.location = '/lists';
+                //window.location = '/lists';
             },
         });
     });

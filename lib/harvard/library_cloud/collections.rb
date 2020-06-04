@@ -129,7 +129,22 @@ module Harvard::LibraryCloud::Collections
       end
   end
 
-  def destroy_collection(systemId)
+  def update_collection(user_key, systemId, setName)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    raw_response = begin
+      response = Faraday.put(api.get_base_uri + path,
+      '{"setName": "' + setName + '"}',
+      "Content-Type" => "application/json",
+      "X-LibraryCloud-API-Key" => user_key
+      )
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def destroy_collection(user_key, systemId)
     api = Harvard::LibraryCloud::API.new
     path = 'collections/' + systemId.to_s
     raw_response = begin
@@ -137,7 +152,7 @@ module Harvard::LibraryCloud::Collections
       "Content-Type" => "application/json",
       "X-LibraryCloud-API-Key" => user_key
       )
-      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      { user_key: user_key, systemId: systemId, status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
     rescue Errno::ECONNREFUSED, Faraday::Error => e
       raise RSolr::Error::Http.new(connection, e.response)
     end

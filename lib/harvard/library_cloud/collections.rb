@@ -148,11 +148,51 @@ module Harvard::LibraryCloud::Collections
     api = Harvard::LibraryCloud::API.new
     path = 'collections/' + systemId.to_s
     raw_response = begin
-      response = Faraday.delete(api.get_base_uri + path,
-      "Content-Type" => "application/json",
-      "X-LibraryCloud-API-Key" => user_key
-      )
-      { user_key: user_key, systemId: systemId, status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      response = Faraday.delete(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def add_item_to_collection(user_key, listId, itemIds)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + listId.to_s
+    request_body = '['
+
+    items_array = itemIds.split(',')
+    items_array.each do |item|
+      if request_body.length > 1
+        request_body +=","
+      end
+      request_body += '{"item_id": "'+ item + '"}'
+    end
+    request_body += "]"
+
+    raw_response = begin
+      response = Faraday.post(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+        req.body = request_body
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def delete_item_from_collection(user_key, listId, itemId)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + listId.to_s + '/items/' + itemId.to_s
+    raw_response = begin
+      response = Faraday.delete(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
     rescue Errno::ECONNREFUSED, Faraday::Error => e
       raise RSolr::Error::Http.new(connection, e.response)
     end

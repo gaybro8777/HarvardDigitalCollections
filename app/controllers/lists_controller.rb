@@ -6,8 +6,16 @@ class ListsController < ApplicationController
     include Blacklight::TokenBasedUser
 	include Harvard::LibraryCloud::Collections
 
+	 before_action :set_cache_headers
+
 
 	require 'json'
+
+    def set_cache_headers
+      response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+      response.headers["Pragma"] = "no-cache"
+      response.headers["Expires"] = "-1"
+    end
 
     def index
 	  set_user_api_key
@@ -159,29 +167,32 @@ class ListsController < ApplicationController
 		return
 	  end
 
-	  render json: '{ "item_ids":"' + @item_ids + '", "list":"' + @list + '"}'
+      @added_items = add_item_to_collection(current_or_guest_user.api_key, @list, @item_ids)
+	  render plain:  @added_items.to_json
 	end
 
   def remove_item
 	  @item_id = params[:item_id]
 	  @list_id = params[:list_id]
-	  #@lists = available_collections()
-    render json: '{ "item_id":"' + @item_id + '", "list":"' + @list_id + '"}'
+	  @lists = available_collections()
+
 	  #validate that user owns list
 	  list_found = false
-	  #@lists.each do |x|
-		#  if x['id'].to_s == @list.to_s
-		#	  list_found = true
-		#	  break
-		#  end
-	  #end
+	  @lists.each do |x|
+		  if x['id'].to_s == @list_id.to_s
+			  list_found = true
+			  break
+		  end
+	  end
 
-	  #if !list_found
-	  #	redirect_to '/lists'
-		#  return
-	  #end
+	  if !list_found
+	  	redirect_to '/lists'
+		  return
+	  end
 
-	  #redirect_to '/lists/' + @item_id
+      @deleted_items = delete_item_from_collection(current_or_guest_user.api_key, @list_id, @item_id)
+
+	  redirect_to '/lists/' + @list_id
 	end
 
 	private

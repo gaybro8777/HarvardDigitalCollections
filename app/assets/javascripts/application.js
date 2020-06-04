@@ -296,7 +296,7 @@ $(document).on('turbolinks:load', function() {
                 $('.add-items-wrapper').addClass('hidden');
 
                 $('.add-items-confirmation__link').prop('href', '/lists/' + list_id);
-                $('.add-items-confirmation__link').text(list_id);
+                //$('.add-items-confirmation__link').text(list_id);
 
                 if (item_ids.indexOf(',') > 0) {
                     $('.add-items-confirmation__single').addClass('hidden');

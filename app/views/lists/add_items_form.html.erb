@@ -50,10 +50,10 @@
             <span class="fa fa-plus" aria-hidden="true"></span>
             Add a New List
           </button>
-          <h4 class="list-create__heading hidden"
-            <%= @has_lists ? 'hidden' : '' %>" >
+          <h4 class="list-create__heading <%= @has_lists ? 'hidden' : '' %>" >
             Add a New List
           </h4>
+
           <button type="button" class="list-create__close hidden">
             <span class="fa fa-times" aria-hidden="true"></span>
             <span class="sr-only">Close</span>
@@ -78,6 +78,6 @@
   <h3 class="add-items-confirmation hidden">
     <span class="add-items-confirmation__single">This item has</span>
     <span class="add-items-confirmation__multiple">These items have</span>
-    been added to <a class="add-items-confirmation__link"></a>
+    been added to <a class="add-items-confirmation__link">your list</a>
   </h3>  
 </div>

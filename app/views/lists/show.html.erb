@@ -1,6 +1,6 @@
 <% @page_title = 'Lists' %>
 <%
-  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'My Lists', :link_url => '/lists'}, {:link_text => @list['title'], :link_url => '/lists/' + @id.to_s}]
+  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'My Lists', :link_url => '/lists'}, {:link_text => @list[0]['title'], :link_url => '/lists/' + @id.to_s}]
 %>
 <div id="content" class="col-md-12">
   <div class="my-account-wrapper list-details">
@@ -8,15 +8,15 @@
 
 	<div class="list-header">
 		<h2 class='page-heading'>
-			<%=@list['title']%> 
+			<%=@list[0]['title']%>
 			<button class="edit-list" type="button" data-url="/lists/<%=@id%>/edit">
 				<span class="fa fa-pencil-alt" aria-hidden="true"></span>
 			</button>
 		</h2>
 	</div>
 	<div class="list-metadata">
-		<span><%=number_with_delimiter(@list['collectionSize'], :delimiter => ',') %> items</span>
-		<span>Last updated: <%=DateTime.parse(@list['last_updated']).strftime("%B %d, %Y")%></span>
+		<span><%=number_with_delimiter(@list[0]['collectionSize'], :delimiter => ',') %> items</span>
+		<span>Last updated: <%=DateTime.parse(@list[0]['last_updated']).strftime("%B %d, %Y")%></span>
 	</div>
     
 	<%- if @response.empty? %>

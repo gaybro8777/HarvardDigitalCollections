@@ -268,7 +268,7 @@ $(document).on('turbolinks:load', function() {
             data: $form.serialize(),
             success: function (data) {
                 $('#list-menu').collapse('hide')
-                var $button = $('<button>').prop('type', 'button').addClass('list-option').data('listid', data.systemId).text(data.setName);
+                var $button = $('<button>').prop('type', 'button').addClass('list-option').attr('data-listid', data.systemId).text(data.setName);
                 var $li = $('<li>').append($button);
                 $('#list-options').prepend($li);
                 $('.list-add-items [name="list_id"]').val(data.systemId);
@@ -307,7 +307,7 @@ $(document).on('turbolinks:load', function() {
         });
     });
     
-    //add items list dropdown collapse
+    //add items list select item
     $('body').on('click', '.list-selector .list-option', function () {
         $('.list-add-items [name="list_id"]').val($(this).data('listid'));
         $('.list-selector-toggle').trigger('click');

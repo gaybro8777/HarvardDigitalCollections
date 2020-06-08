@@ -9,10 +9,10 @@ Rails.application.routes.draw do
   resource :catalog, only: [:index], as: 'catalog', path: '/catalog', controller: 'catalog' do
     concerns :searchable
     concerns :range_searchable
-
+	get '/:id/save_search_form', to: 'catalog#save_search_form', as: 'catalog_save_search_form', constraints: { id: /[^\/]+/ }
   end
 
-  devise_for :users
+  devise_for :users, controllers: { registrations: 'registrations', sessions: 'sessions' }
   concern :exportable, Blacklight::Routes::Exportable.new
 
   resources :solr_documents, only: [:show], path: '/catalog', controller: 'catalog', constraints: { id: /[^\/]+/ } do
@@ -36,6 +36,15 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :lists, constraints: { id: /[^\/]+/ } do
+    concerns :exportable
+	collection do
+		post 'add_items_form'
+		post 'add_items'
+    post 'remove_item'
+	end 
+  end
+  #get '/add_items_to_list', to: 'lists#add_items_to_list'
   get '/rawtext/*path', to: 'fulltexts#index'
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

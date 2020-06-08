@@ -1,0 +1,7 @@
+<%
+	save_button_classes = 'save-search-button'
+%>
+<span class="form-confirmation <%=!search_is_saved ? "hidden" : "" %>">Search saved</span>  
+<%- if !search_is_saved %>
+	<%= button_to t('blacklight.search.save_this_search'), blacklight.save_search_path(search_id), :method => :put, :class => save_button_classes %>
+<%- end %>

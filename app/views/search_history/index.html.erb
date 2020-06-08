@@ -1,0 +1,73 @@
+<% @page_title = t('blacklight.search_history.page_title', :application_name => application_name) %>
+<%
+welcome_message = "Welcome"
+
+breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}]
+%>
+<div id="content" class="col-md-12">
+	<div class="my-account-wrapper">
+		<%= render :partial => 'shared/breadcrumbs', locals: {links: breadcrumb_links} %>
+		<h2 class='welcome-heading'><%=welcome_message%></h2>
+	
+		<div class="my-account-cta-list">
+			<a href="/lists" class="cta cta-lists">
+				<span class="fa fa-star" aria-hidden="true"></span>
+				<h3>My Lists</h3>
+				<p>Review and manage your lists.</p>
+			</a>
+			<a href="<%=blacklight.saved_searches_path%>" class="cta cta-saved-searches">
+				<span class="fa fa-search" aria-hidden="true"></span>
+				<h3>Saved Searches</h3>
+				<p>Use and manage your saved search terms.</p>
+			</a>
+			<a href="<%=edit_user_registration_path%>" class="cta cta-manage-account">
+				<span class="fa fa-cog" aria-hidden="true"></span>
+				<h3>Manage Account</h3>
+				<p>Edit your personal details or delete your account.</p>
+			</a>
+		</div>
+
+		<div class="my-account-body">
+			<%- if !@searches.blank? -%>
+				<button type="button" class="btn btn-danger pull-right" data-toggle="modal" data-target="#delete-modal"><%=t('blacklight.search_history.clear.action_title')%></button>
+			<%- end -%>
+
+			<h3><%=t('blacklight.search_history.title')%></h3>
+
+			<%- if @searches.blank? -%>
+			  <h3 class='section-heading'><%=t('blacklight.search_history.no_history')%></h3>
+			<%- else -%>
+			  <table class="table search_history">
+				<%-  @searches.each_with_index do |search,index| -%>
+				<%= content_tag :tr, :id => "document_#{index + 1}" do %>
+				  <td class="query"><%= link_to_previous_search(search_state.reset(search.query_params).to_hash) %></td>
+				  <%- if has_user_authentication_provider? -%>
+					<td class="actions">
+					  <%- if current_or_guest_user && search.saved? -%>
+						<span class="confirm">Saved!</span>
+					  <%- else -%>
+						<%= button_to t('blacklight.search_history.save'), blacklight.save_search_path(search.id), :method => :put, :class => 'btn btn-default' %>
+					  <%- end -%>
+					</td>
+				  <%- end -%>
+				<% end #content_tag %>
+			  <%- end -%>
+			  </table>
+			<%- end -%>
+		</div>
+	</div>
+</div>
+<div id="delete-modal" class="reveal-modal modal my-account-modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+		<button type="button" class="delete-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+		<div class="modal-content-inner">
+			<h3>Delete Search History</h3>
+			<p>Are you sure you want to delete your search history?<br/>
+				This cannot be undone.
+			</p>
+			<%= link_to 'Yes, Delete', blacklight.clear_search_history_path, :method => :delete, :class => 'btn btn-large' %>
+		</div>
+    </div>
+  </div>
+</div>

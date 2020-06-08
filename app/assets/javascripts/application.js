@@ -79,6 +79,308 @@ $(document).on('turbolinks:load', function() {
         $(this).children('.fa').removeClass('fa-caret-down').addClass('fa-caret-up');
       }
     });
+    
+    //launch sign-in modal
+    $('body').on('click', '#sign-in-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal').modal('show');
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    //launch sign-up modal
+    $('body').on('click', '#sign-in-modal .sign-up-link', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('href'),
+            success: function (response) {
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    });
+
+    function launchSignInWithCallback(callback) {
+        $('#sign-in-link').trigger('click');
+        //on sign-in, perform callback
+        $(document).on('sign_in', function (e) {
+            callback();
+            $(document).off('sign_in');
+        });
+    }
+
+    //launch list edit modal
+    $('body').on('click', '.edit-list', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).data('url'),
+            success: function (response) {
+                $('#manage-modal').modal('show');
+                $('#manage-modal .modal-content').html(response);
+            }
+        });
+    });
+    
+    //save search ajax submit
+    $('body').on('submit', '#save-search-form .button_to', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        if ($('body').hasClass('signed-out')) {
+            //on sign-in reload the save search form and submit
+            launchSignInWithCallback(function () {
+                $.ajax({
+                    url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
+                    success: function (response) {
+                        $('#save-search-form').html(response);
+                        $('#save-search-form').find('form').submit();
+                    }
+                });
+            });
+        }
+        else {
+            $.ajax({
+                url: $form.attr('action'),
+                type: $form.attr('method'),
+                dataType: 'html',
+                data: $form.serialize(),
+                success: function (data) {
+                    $form.addClass('hidden');
+                    $form.siblings('.form-confirmation').removeClass('hidden');
+                },
+            });
+        }
+    });
+    
+    function launchAddToList(itemIds) {
+        $.ajax({
+            url: '/lists/add_items_form',
+            method: 'POST',
+            data: { 'item_ids': itemIds },
+            headers: {
+                Accept: "text/html; charset=utf-8",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            success: function (response) {
+                $('#sign-in-modal').modal('show');
+                $('#sign-in-modal .modal-content').html(response);
+            }
+        });
+    }
+
+    function launchAddAllToList() {
+        var itemIds = '';
+        $('.add-to-list').each(function () {
+            if (itemIds != '') {
+                itemIds += ',';
+            }
+            itemIds += $(this).find('[name="item_id"]').val();
+        });
+        launchAddToList(itemIds);
+    }
+
+    //launch list edit modal
+    $('body').on('click', '.add-all-to-list', function (e) {
+        e.preventDefault();
+        if ($('body').hasClass('signed-out')) {
+            launchSignInWithCallback(function () {
+                launchAddAllToList();
+            });
+        } else {
+            launchAddAllToList();
+        }
+    });
+
+    $('body').on('submit', '.add-to-list', function (e) {
+        e.preventDefault();
+        var itemId = $(this).find('[name="item_id"]').val();
+        if ($('body').hasClass('signed-out')) {
+            launchSignInWithCallback(function () {
+                launchAddToList(itemId);
+            });
+        } else {
+            launchAddToList(itemId);
+        }
+    });
+
+    $('body').on('click', '.list-create__add', function (e) {
+        e.preventDefault();
+        $('.list-create__fields,.list-create__close,.list-create__heading').removeClass('hidden');
+        $('.list-create__fields [name="title"]').focus();
+        $('.list-create__add').addClass('hidden')
+        
+    });
+
+    $('body').on('click', '.list-create__close', function (e) {
+        e.preventDefault();
+        $('.list-create__add').removeClass('hidden').focus();
+        $('.list-create__fields,.list-create__close,.list-create__heading').addClass('hidden');
+    });
+    
+    //show delete list form
+    $('body').on('click', '.btn-delete-list', function (e) {
+        e.preventDefault();
+        $(this).parent().addClass('hidden');
+        $(this).parent().siblings('.hidden').removeClass('hidden');
+    });
+    
+
+    //update list ajax submit
+    $('body').on('submit', '.list-update', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'html',
+            data: $form.serialize(),
+            success: function (data) {
+                window.location.reload();
+            },
+        });
+    });
+
+    //delete list ajax submit
+    $('body').on('submit', '.list-delete', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'html',
+            data: $form.serialize(),
+            success: function (data) {
+                window.location = '/lists';
+            },
+        });
+    });
+
+    //create list ajax submit
+    $('body').on('submit', '.list-create', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('#list-menu').collapse('hide')
+                var $button = $('<button>').prop('type', 'button').addClass('list-option').attr('data-listid', data.systemId).text(data.setName);
+                var $li = $('<li>').append($button);
+                $('#list-options').prepend($li);
+                $('.list-add-items [name="list_id"]').val(data.systemId);
+                $('.list-selector-toggle__text').text(data.setName);
+                $('.list-create__fields,.list-create__close,.list-create__heading').addClass('hidden');
+                $('.list-create__add').removeClass('hidden');
+                $('.list-add-items button[type="submit"]').prop('disabled', false).focus();
+            },
+        });
+    });
+
+    //add items ajax submit
+    $('body').on('submit', '.list-add-items', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        var list_id = $form.find('[name="list_id"]').val();
+        var item_ids = $form.find('[name="item_ids"]').val();
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('.add-items-confirmation').removeClass('hidden');
+                $('.add-items-wrapper').addClass('hidden');
+
+                $('.add-items-confirmation__link').prop('href', '/lists/' + list_id);
+                //$('.add-items-confirmation__link').text(list_id);
+
+                if (item_ids.indexOf(',') > 0) {
+                    $('.add-items-confirmation__single').addClass('hidden');
+                } else {
+                    $('.add-items-confirmation__multiple').addClass('hidden');
+                }
+            },
+        });
+    });
+    
+    //add items list select item
+    $('body').on('click', '.list-selector .list-option', function () {
+        $('.list-add-items [name="list_id"]').val($(this).data('listid'));
+        $('.list-selector-toggle').trigger('click');
+        $('.list-selector-toggle__text').text($(this).text());
+        $('.list-add-items button[type="submit"]').prop('disabled', false).focus();
+    });
+
+    $('#details dd.collapse').on('hide.bs.collapse', function () {
+        $(this).prev().find('.field-toggle .fa').removeClass('fa-caret-up').addClass('fa-caret-down');
+    });
+
+    //sign in form ajax submit
+    $('body').on('submit', '#sign-in-modal form.user-sign-in', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $form.find('.alert').remove()
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('body').removeClass('signed-out').addClass('signed-in');
+                $('#sign-in-link').addClass('hidden');
+                $('#my-account-link').removeClass('hidden');
+                $('#sign-in-modal').modal('hide');
+                $(document).trigger('sign_in');
+            },
+            error: function (data) {
+                var errorMessage = 'Invalid login';
+                if (data.responseJSON !== undefined && data.responseJSON.error !== undefined) {
+                    errorMessage = data.responseJSON.error;
+                }
+                $form.prepend('<div class="alert alert-warning">' + errorMessage + '</div>');
+                $form.find('[type="submit"]').removeAttr('disabled');
+            },
+        });
+    });
+
+    //sign up form ajax submit
+    $('body').on('submit', '#sign-in-modal form.user-sign-up', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        $form.find('.alert').remove()
+        $.ajax({
+            url: $form.attr('action'),
+            type: $form.attr('method'),
+            dataType: 'json',
+            data: $form.serialize(),
+            success: function (data) {
+                $('#sign-in-link').addClass('hidden');
+                $('#my-account-link').removeClass('hidden');
+                $('#sign-in-modal').modal('hide');
+                $(document).trigger('sign_in');
+            },
+            error: function (data) {
+                var errorMessage = 'There was an error with your submission.';
+                if (data.responseJSON !== undefined && data.responseJSON.errors !== undefined) {
+                    if (data.responseJSON.errors.email !== undefined) {
+                        errorMessage += '<br/>Email ' + data.responseJSON.errors.email.join(',');
+                    }
+                    if (data.responseJSON.errors.password !== undefined) {
+                        errorMessage += '<br/>Password ' + data.responseJSON.errors.password.join(',');
+                    }
+                    if (data.responseJSON.errors.password_confirmation !== undefined) {
+                        errorMessage += '<br/>Password Confirmation ' + data.responseJSON.errors.password_confirmation.join(',');
+                    }
+                }
+                $form.prepend('<div class="alert alert-warning">' + errorMessage + '</div>');
+                $form.find('[type="submit"]').removeAttr('disabled');
+            },
+        });
+    });
 
     $('form.range_limit input.form-control').attr('placeholder', 'YYYY');
 

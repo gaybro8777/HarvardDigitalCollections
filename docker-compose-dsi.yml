@@ -1,0 +1,12 @@
+# Build all images and run all containers
+# `docker-compose -f docker-compose-dsi.yml build`
+
+version: '3.7'
+
+services:
+  app:
+   image: registry.lts.harvard.edu/lts/hdc-dsi:0.0.9
+   build:
+     context: .
+     dockerfile: DockerfileDsi
+

@@ -1,0 +1,64 @@
+<% @page_title = 'Lists' %>
+<%
+  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'My Lists', :link_url => '/lists'}]
+%>
+<div id="content" class="col-md-12">
+  <div class="my-account-wrapper">
+	<%= render :partial => 'shared/breadcrumbs', locals: {links: @breadcrumb_links} %>
+	<h2 class='page-heading'>My Lists</h2>
+
+	<ul class="my-lists">
+		<%- @lists.each do |list| -%>
+		<li>
+			<a href="/lists/<%=list['id']%>">
+				<div class="my-lists__thumbnail">
+					<img src="<%=list['thumbnail']%>" />
+				</div>
+				<div class="my-lists__info">
+					<h4>
+						<%=list['title']%>
+						<button class="edit-list" type="button" data-url="/lists/<%=list['id']%>/edit">
+						<span class="fa fa-pencil-alt" aria-hidden="true"></span>
+						</button>
+					</h4>
+					<p class="my-lists__item-count"><%=number_with_delimiter(list['collectionSize'], :delimiter => ',') %> items</p>
+					<p class="my-lists__last-updated">Last updated: <%=DateTime.parse(list['last_updated']).strftime("%B %d, %Y")%></p>
+				</div>
+			</a>
+		</li>
+		<%- end -%>
+	</ul>
+
+	<div class="create-list-instructions">
+		<h3>
+			<span class="fa fa-star" aria-hidden="true"></span>
+			Want to Create a List?
+		</h3>
+
+		<p>
+			Use the star icon on search results and item records
+			to add items to your lists.
+		</p>
+	</div>
+  </div>
+</div>
+<div id="manage-modal" class="reveal-modal modal my-account-modal" data-reveal tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+		<button type="button" class="manage-modal-close close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times" aria-hidden="true"></span><span class="sr-only">Close</span></button>
+		<div class="modal-content-inner">
+			<h3>Manage List</h3>
+			<form class="list-update" method="post" action="">
+				<label>Edit list name</label>
+				<input type="text" />
+				<button type="submit">Update</button>
+			</form>
+			<form class="list-update" method="post" action="">
+				<span>Delete this list</span>
+				<p>Are you </p>
+				<button type="submit">Yes, Delete</button>
+			</form>
+		</div>
+    </div>
+  </div>
+</div>

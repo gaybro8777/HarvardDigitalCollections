@@ -26,7 +26,6 @@
 /.idea
 /.project
 .editorconfig
-config/database.yml
-config/database.yml
 stlee_dev
-stlee_dev
+/.env
+/webapp.conf

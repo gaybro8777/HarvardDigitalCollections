@@ -5,8 +5,17 @@ module Harvard::LibraryCloud
 
   class API
 
-    def initialize base_uri = 'https://api.lib.harvard.edu/v2/'
-      @base_uri = base_uri
+    def initialize
+      case ENV["LC_ENV"]
+      when 'development'
+        @base_uri = 'https://api-dev.lib.harvard.edu/v2/'
+      when 'qa'
+        @base_uri = 'https://api-qa.lib.harvard.edu/v2/'
+      when 'production'
+        @base_uri = 'https://api.lib.harvard.edu/v2/'
+      else
+        @base_uri = 'https://api.lib.harvard.edu/v2/'
+      end
     end
 
     def get_base_uri
@@ -125,6 +134,7 @@ module Harvard::LibraryCloud
       results[:limit] = params[:rows] if params[:rows]
       results[:facets] = facet_params_to_lc(params['facet.field']) if params['facet.field']
       results[:recordIdentifier] = params['recordIdentifier'] if params['recordIdentifier']
+	  results[:setSpec] = params[:setSpec] if params[:setSpec]
       results.merge!(facet_query_params_to_lc(params[:fq])) if params[:fq]
       results
     end

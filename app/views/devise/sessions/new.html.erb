@@ -1,0 +1,40 @@
+<% if @is_ajax %>
+  <button type="button" class="sign-in-close close" data-dismiss="modal" aria-hidden="true">
+    <span class="fa fa-times" aria-hidden="true"></span>
+    <span class="sr-only">Close</span>
+  </button>
+  <div class="modal-content-inner">
+    <h3><%= t('blacklight.sign_in.title') %></h3>
+<% else %>
+    <div id="content" class="col-md-12">
+      <h2><%= t('blacklight.sign_in.title') %></h2>
+<% end %>
+
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "my-account-form user-sign-in" }) do |f| %>
+  <div class="field">
+    <%= f.label :email %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password %>
+    <%= f.password_field :password, autocomplete: "current-password" %>
+    <div class="forgot-password">
+      <%= link_to "Forgot Password", new_password_path(resource_name) %>
+    </div>
+  </div>
+
+  <div class="actions">
+    <%= f.submit t('blacklight.sign_in.button') %>
+  </div>
+
+  <p class="sign-up-cta">
+    New user? <a href="<%=new_registration_path(resource_name)%>" class="sign-up-link">Create your Digital Collections account</a>
+    
+  </p>
+<% end %>
+
+
+</div>
+ 

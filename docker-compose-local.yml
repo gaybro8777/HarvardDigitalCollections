@@ -1,0 +1,46 @@
+# Build all images and run all containers
+# `docker-compose -f docker-compose-local.yml up -d --build --force-recreate`
+
+version: '3.7'
+
+services:
+  app:
+   container_name: hdc
+   build:
+     context: .
+     dockerfile: DockerfileLocal
+   command: passenger start --ssl --ssl-port 3001 --ssl-certificate /etc/ssl/certs/server.crt --ssl-certificate-key /etc/ssl/certs/server.key
+   tty: true
+   volumes:
+     - './log:/home/app/webapp/log'
+   env_file:
+      - './.env'
+   environment:
+      RAILS_ENV: $RAILS_ENV
+   depends_on:
+     - mysql
+   ports:
+     - "3001:3001"
+
+  mysql:
+    container_name: hdc_mysql
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: $DATABASE_NAME
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: $DATABASE_USER
+      # You can use whatever password you like
+      MYSQL_PASSWORD: $DATABASE_PASSWORD
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - $DATABASE_PORT
+      # Where our data will be persisted
+    volumes:
+      - db-data:/var/lib/mysql
+      
+# Names our volume
+volumes:
+  db-data:
+    driver: local

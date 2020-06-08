@@ -16,7 +16,11 @@ module Harvard::LibraryCloud::Collections
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
       faraday.headers['Content-Type'] = 'application/json'
-      faraday.headers['X-LibraryCloud-API-Key'] = ENV["LC_API_KEY"]
+      if current_or_guest_user.api_key.nil?
+        faraday.headers['X-LibraryCloud-API-Key'] = ENV["LC_API_KEY"]
+      else
+        faraday.headers['X-LibraryCloud-API-Key'] = current_or_guest_user.api_key
+      end
     end
 
     raw_response = begin
@@ -57,10 +61,140 @@ module Harvard::LibraryCloud::Collections
   # Helper method to get the collections that are available for adding an item to
   # This does not currently do any filtering by ownership, so it shows ALL collections
   def available_collections
-    api = API.new
-    params = {:limit => 9999, :preserve_original => true}
-    response = api.send_and_receive('collections', {:params => params})
-    response.map {|n| [n['title'], n['identifier']]}
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/user'
+    if current_or_guest_user.api_key.nil?
+      user_key = ENV["LC_API_KEY"]
+    else
+      user_key = current_or_guest_user.api_key
+    end
+    raw_response = begin
+      response = Faraday.get(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+    response_json = JSON.parse(response.body)
+    response_json.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "collectionSize" => n['collectionSize'], "last_updated" => n['modified']}}
   end
 
+  def get_collection_by_id(systemId)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    if current_or_guest_user.api_key.nil?
+      user_key = ENV["LC_API_KEY"]
+    else
+      user_key = current_or_guest_user.api_key
+    end
+    raw_response = begin
+      response = Faraday.get(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+    response_json = JSON.parse(response.body)
+    response_json.map {|n| {"id" => n['systemId'], "title" => n['setName'], "setSpec" => n['setSpec'], "thumbnail" => n['thumbnailUrn'], "collectionSize" => n['collectionSize'], "last_updated" => n['modified']}}
+  end
+  def create_library_cloud_user
+      api = Harvard::LibraryCloud::API.new
+      path = 'collections/users/'
+      raw_response = begin
+        response = Faraday.post(api.get_base_uri + path,
+        '{"email": "' + current_or_guest_user.email + '","usertype-name":"HDC"}',
+        "Content-Type" => "application/json",
+        "X-LibraryCloud-API-Key" => ENV["LC_API_KEY"]
+        )
+        { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      rescue Errno::ECONNREFUSED, Faraday::Error => e
+        raise RSolr::Error::Http.new(connection, e.response)
+      end
+  end
+
+  def create_collection (user_key, setName, thumbnailUrn)
+      api = Harvard::LibraryCloud::API.new
+      path = 'collections/'
+      raw_response = begin
+        response = Faraday.post(api.get_base_uri + path,
+        '{"setName": "' + setName + '","setDescription": "'+ setName +'","thumbnailUrn": "'+ thumbnailUrn +'"}',
+        "Content-Type" => "application/json",
+        "X-LibraryCloud-API-Key" => user_key
+        )
+        { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      rescue Errno::ECONNREFUSED, Faraday::Error => e
+        raise RSolr::Error::Http.new(connection, e.response)
+      end
+  end
+
+  def update_collection(user_key, systemId, setName)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    raw_response = begin
+      response = Faraday.put(api.get_base_uri + path,
+      '{"setName": "' + setName + '"}',
+      "Content-Type" => "application/json",
+      "X-LibraryCloud-API-Key" => user_key
+      )
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def destroy_collection(user_key, systemId)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + systemId.to_s
+    raw_response = begin
+      response = Faraday.delete(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def add_item_to_collection(user_key, listId, itemIds)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + listId.to_s
+    request_body = '['
+
+    items_array = itemIds.split(',')
+    items_array.each do |item|
+      if request_body.length > 1
+        request_body +=","
+      end
+      request_body += '{"item_id": "'+ item + '"}'
+    end
+    request_body += "]"
+
+    raw_response = begin
+      response = Faraday.post(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+        req.body = request_body
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
+
+  def delete_item_from_collection(user_key, listId, itemId)
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/' + listId.to_s + '/items/' + itemId.to_s
+    raw_response = begin
+      response = Faraday.delete(api.get_base_uri + path) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.headers['X-LibraryCloud-API-Key'] = user_key
+      end
+      { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+    rescue Errno::ECONNREFUSED, Faraday::Error => e
+      raise RSolr::Error::Http.new(connection, e.response)
+    end
+  end
 end

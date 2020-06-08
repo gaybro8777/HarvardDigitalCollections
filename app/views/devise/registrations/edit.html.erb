@@ -1,0 +1,78 @@
+<%
+  @breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_history_path}, {:link_text => 'Manage Account', :link_url => '/users/edit'}]
+%>
+<div id="content" class="col-md-9">
+  <div class="my-account-wrapper">
+    <%= render :partial => 'shared/breadcrumbs', locals: {links: @breadcrumb_links} %>
+
+
+    <h2>
+      Manage Account
+    </h2>
+    
+    <h3>Edit Account Details</h3>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "my-account-form", method: :put }) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
+
+    <div class="field">
+      <label for="user_email">Email Address</label>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+    </div>
+
+    <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+    <div>
+      Currently waiting confirmation for: <%= resource.unconfirmed_email %>
+    </div>
+    <% end %>
+
+  <div class="field">
+      <label for="user_password">Password</label>
+      <%= f.password_field :password, autocomplete: "new-password" %>
+      <% if @minimum_password_length %>
+      <% end %>
+    </div>
+
+    <div class="field">
+      <label for="user_current_password">Repeat Password</label>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+    </div>
+<!--
+    <div class="field">
+      <%= f.label :current_password %>
+      <%= f.password_field :current_password %>
+    </div>
+-->
+    <div class="actions">
+      <%= f.submit "Update" %>
+    </div>
+    <% end %>
+    
+    <div class="delete-account-wrapper">
+      <h3>Delete Account</h3>
+
+      <div class="actions">
+        <button type="button" class="btn btn-large" data-toggle="modal" data-target="#delete-modal">
+          Delete My Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="delete-modal" class="reveal-modal modal my-account-modal" data-reveal="" tabindex="-1" role="dialog" aria-labelledby="modal menu" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <button type="button" class="delete-modal-close close" data-dismiss="modal" aria-hidden="true">
+        <span class="fa fa-times" aria-hidden="true"></span>
+        <span class="sr-only">Close</span>
+      </button>
+      <div class="modal-content-inner">
+        <h3>Delete Account</h3>
+        <p>
+          Are you sure you want to delete your account?<br/>
+          This cannot be undone.
+        </p>
+        <%= link_to 'Yes, Delete', registration_path(resource_name), :method => :delete, :class => 'btn btn-large' %>
+        </div>
+    </div>
+  </div>
+</div>  

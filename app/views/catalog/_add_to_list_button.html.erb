@@ -1,0 +1,26 @@
+<%
+item_in_list = false
+list_id = nil
+
+if controller_name == "lists" && action_name == "show"
+  item_in_list = true
+  list_id = params[:id]
+end
+%>
+<%= form_tag(item_in_list ? '/lists/remove_item' : '/lists/add_items_form', :method => :post, :class => item_in_list ? 'remove-from-list' : 'add-to-list') do %>
+  <%= hidden_field_tag "item_id", document[:identifier] %>
+  <%if !list_id.nil? %>
+    <%= hidden_field_tag "list_id", list_id %>
+  <% end %>
+  <button type="submit" class="<%=item_in_list ? 'remove-button' : 'add-button' %>">
+    <span class="sr-only"><%=item_in_list ? 'Remove from list' : 'Add to list' %></span>
+    <span class="fa fa-star" aria-hidden="true"></span>
+    <% if item_in_list %>
+      <span class="remove-icon" aria-hidden="true">
+          <span class="fa fa-times"></span>
+      </span>
+    <% end %>
+  </button>
+<% end %>    
+        
+    

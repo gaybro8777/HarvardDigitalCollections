@@ -1,3 +1,6 @@
 <div class="document-thumbnail clearfix">
-  <%=render_thumbnail_tag(document, {}, :counter => document_counter_with_offset(document_counter)) %>
+  <div class="thumbnail-wrapper">
+      <%=render_thumbnail_tag(document, {}, :counter => document_counter_with_offset(document_counter)) %>
+      <%= render :partial => 'catalog/add_to_list_button', locals: {document: document} %>
+  </div>  
 </div>

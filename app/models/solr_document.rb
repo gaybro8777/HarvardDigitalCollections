@@ -858,7 +858,7 @@ class SolrDocument
   end
 
   def link_tag_for_facet facet_value, facet_field
-    url = '/catalog?f%5B' + URI::escape(facet_field) + '%5D%5B%5D=' + URI::escape(facet_value)
+    url = '/catalog?f%5B' + CGI.escape(facet_field) + '%5D%5B%5D=' + CGI.escape(facet_value)
     link_tag_for_url url, facet_value, false
   end
 

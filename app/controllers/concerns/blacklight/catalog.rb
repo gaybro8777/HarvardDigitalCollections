@@ -107,11 +107,10 @@ module Blacklight::Catalog
 	    @search_is_saved = false
 	    saved_search = Search.where(["id = :search_id and (user_id = :user_id or user_id is NULL)", {search_id: @search_id, user_id: current_or_guest_user.id}])
 	    if saved_search.empty?
-		  render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false, :content_type => 'text/html'
-		  return
+	  	  render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false, :content_type => 'text/html'
+  		  return
 	    end
-	    puts saved_search.inspect()
-	    puts saved_search.first.id
+
 	    @search_is_saved = (user_signed_in? && saved_search.first.user_id == current_or_guest_user.id)
 	    render layout: false	
     end

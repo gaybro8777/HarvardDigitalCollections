@@ -79,6 +79,22 @@ $(document).on('turbolinks:load', function() {
         $(this).children('.fa').removeClass('fa-caret-down').addClass('fa-caret-up');
       }
     });
+
+    function launchUserModal(signedInCallback, signedOutCallback) {
+      $.ajax({
+        url: '/catalog/user_status',
+        dataType: 'json',
+        success: function (response) {
+          if (response.signed_in) {
+            $('body').addClass('signed-in').removeClass('signed-out')
+            signedInCallback();
+          } else {
+            $('body').addClass('signed-out').removeClass('signed-in')
+            launchSignInWithCallback(signedOutCallback)
+          }
+        }
+      });
+    }
     
     //launch sign-in modal
     $('body').on('click', '#sign-in-link', function (e) {
@@ -128,30 +144,28 @@ $(document).on('turbolinks:load', function() {
     $('body').on('submit', '#save-search-form .button_to', function (e) {
         e.preventDefault();
         var $form = $(this);
-        if ($('body').hasClass('signed-out')) {
-            //on sign-in reload the save search form and submit
-            launchSignInWithCallback(function () {
-                $.ajax({
-                    url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
-                    success: function (response) {
-                        $('#save-search-form').html(response);
-                        $('#save-search-form').find('form').submit();
-                    }
-                });
-            });
-        }
-        else {
+        launchUserModal(function () {
             $.ajax({
-                url: $form.attr('action'),
-                type: $form.attr('method'),
-                dataType: 'html',
-                data: $form.serialize(),
-                success: function (data) {
-                    $form.addClass('hidden');
-                    $form.siblings('.form-confirmation').removeClass('hidden');
-                },
+              url: $form.attr('action'),
+              type: $form.attr('method'),
+              dataType: 'html',
+              data: $form.serialize(),
+              success: function (data) {
+                $form.addClass('hidden');
+                $form.siblings('.form-confirmation').removeClass('hidden');
+              },
             });
-        }
+          }, 
+          function () {
+            //on sign-in reload the save search form and submit
+            $.ajax({
+              url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
+              success: function (response) {
+                $('#save-search-form').html(response);
+                $('#save-search-form').find('form').submit();
+              }
+            });
+        });
     });
     
     function launchAddToList(itemIds) {
@@ -183,26 +197,15 @@ $(document).on('turbolinks:load', function() {
 
     //launch list edit modal
     $('body').on('click', '.add-all-to-list', function (e) {
-        e.preventDefault();
-        if ($('body').hasClass('signed-out')) {
-            launchSignInWithCallback(function () {
-                launchAddAllToList();
-            });
-        } else {
-            launchAddAllToList();
-        }
+      e.preventDefault();
+      launchUserModal(launchAddAllToList, launchAddAllToList);
     });
 
     $('body').on('submit', '.add-to-list', function (e) {
         e.preventDefault();
         var itemId = $(this).find('[name="item_id"]').val();
-        if ($('body').hasClass('signed-out')) {
-            launchSignInWithCallback(function () {
-                launchAddToList(itemId);
-            });
-        } else {
-            launchAddToList(itemId);
-        }
+        launchUserModal(function () { launchAddToList(itemId); },
+          function () { launchAddToList(itemId); });
     });
 
     $('body').on('click', '.list-create__add', function (e) {

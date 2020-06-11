@@ -9,10 +9,12 @@ Rails.application.routes.draw do
   resource :catalog, only: [:index], as: 'catalog', path: '/catalog', controller: 'catalog' do
     concerns :searchable
     concerns :range_searchable
-	get '/:id/save_search_form', to: 'catalog#save_search_form', as: 'catalog_save_search_form', constraints: { id: /[^\/]+/ }
+	  get '/:id/save_search_form', to: 'catalog#save_search_form', as: 'catalog_save_search_form', constraints: { id: /[^\/]+/ }
+    get '/user_status', to: "catalog#user_status"
   end
 
   devise_for :users, controllers: { registrations: 'registrations', sessions: 'sessions' }
+  
   concern :exportable, Blacklight::Routes::Exportable.new
 
   resources :solr_documents, only: [:show], path: '/catalog', controller: 'catalog', constraints: { id: /[^\/]+/ } do

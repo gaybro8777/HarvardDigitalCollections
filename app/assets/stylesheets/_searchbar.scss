@@ -38,6 +38,18 @@
   }
 }
 
+body.signed-in {
+  #sign-in-link {
+    display: none;
+  }
+}
+
+body.signed-out {
+  #my-account-link {
+    display: none;
+  }
+}
+
 .searchbar__wrapper .row {
   margin: 0;
 }

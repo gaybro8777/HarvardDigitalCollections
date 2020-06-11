@@ -23,3 +23,27 @@
 .hidden {
     display: none;
 }
+
+@mixin link-button {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: $breakthrough-blue;
+  display: inline;
+  cursor: pointer;
+  height: auto;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: $font-family-sans-serif;
+
+  &:focus {
+    outline-width: 1px;
+    outline-style: solid;
+  }
+
+  .fa-star {
+    font-size: 12px;
+    transform: translateY(-1px);
+    color: $star-yellow;
+  }
+}

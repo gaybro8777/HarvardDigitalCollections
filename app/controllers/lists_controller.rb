@@ -1,13 +1,21 @@
-class ListsController < ApplicationController  
+class ListsController < ApplicationController
     before_action :authenticate_user!
     skip_before_action :verify_authenticity_token, only: [:add_items_form]
 	include Blacklight::SearchContext
     include Blacklight::SearchHelper
     include Blacklight::TokenBasedUser
 	include Harvard::LibraryCloud::Collections
-	
+
+	 before_action :set_cache_headers
+
 
 	require 'json'
+
+    def set_cache_headers
+      response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+      response.headers["Pragma"] = "no-cache"
+      response.headers["Expires"] = "-1"
+    end
 
     def index
 	  set_user_api_key
@@ -16,8 +24,8 @@ class ListsController < ApplicationController
 
 	def show
 	  @id = params[:id]
-	  
-	  begin 
+
+	  begin
 		@list = get_collection_by_id(@id)
 	  rescue JSON::ParserError
 		@list = nil
@@ -26,27 +34,27 @@ class ListsController < ApplicationController
 	  if @list.nil?
 		redirect_to '/lists'
 	  end
-	  
+
 	  search_params = {}
 	  search_params[:setSpec] = @list[0]['setSpec']
 
 	  if !params[:page].nil? && !params[:page].to_s != ''
 		page_number = params[:page].to_i
-		
+
 		if page_number > 0
 			search_params[:page] = params[:page]
 		end
 	  end
 
 	  (@response, @document_list) = search_results(search_params)
-	end 
-		
+	end
+
 	def edit
 	  @id = params[:id]
 	  @list = get_collection_by_id(@id)
 	  rescue JSON::ParserError
 		@list = nil
-	  		
+
 	  if @list.nil?
 		redirect_to '/lists'
 	  end
@@ -58,14 +66,14 @@ class ListsController < ApplicationController
 		#@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
 		set_user_api_key
         @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
-		
+
         render json: @collection[:body]
 	end
 
 	def update
 		@id = params[:id]
 		@title = params[:title]
-
+        @collection = update_collection(current_or_guest_user.api_key, @id, @title)
 		render plain: "ID=" + @id + " title=" + @title
 	end
 
@@ -73,7 +81,7 @@ class ListsController < ApplicationController
 		@id = params[:id]
 	    @collection = destroy_collection(current_or_guest_user.api_key, @id)
 		#render plain: "DELETE ID=" + @id
-		render json: @collection[:body]
+		render plain: @collection
 	end
 
 	def add_items_form
@@ -84,6 +92,7 @@ class ListsController < ApplicationController
 		set_user_api_key
 		@item_ids = params[:item_ids]
 		@items = @item_ids.split(',')
+    @items = @items.uniq
 		@thumbnail = ''
 		@default_list_id = ''
 
@@ -99,7 +108,7 @@ class ListsController < ApplicationController
 			redirect_to '/lists'
 			return
 		end
-		
+
 		if !@single_item.nil?
 			@item_count = 1
 			@thumbnail = @single_item[:preview]
@@ -112,19 +121,19 @@ class ListsController < ApplicationController
 				if item[:identifier] == @items[0]
 					first_item_found = true
 					if item[:preview].to_s != ""
-						@thumbnail = item[:preview]		
+						@thumbnail = item[:preview]
 						break
 					elsif backup_thumbnail != ""
 						break
 					end
 				elsif backup_thumbnail == "" && item[:preview].to_s != ""
 					backup_thumbnail = item[:preview]
-					if first_item_found 
+					if first_item_found
 						break
 					end
 				end
 			end
-			
+
 			#if thumb is still empty use the first non-empty one
 			if @thumbnail == ""
 				@thumbnail = backup_thumbnail
@@ -159,33 +168,36 @@ class ListsController < ApplicationController
 		return
 	  end
 
-	  render json: '{ "item_ids":"' + @item_ids + '", "list":"' + @list + '"}'
+      @added_items = add_item_to_collection(current_or_guest_user.api_key, @list, @item_ids)
+	  render plain:  @added_items.to_json
 	end
 
   def remove_item
 	  @item_id = params[:item_id]
 	  @list_id = params[:list_id]
-	  #@lists = available_collections()
-    render json: '{ "item_id":"' + @item_id + '", "list":"' + @list_id + '"}'
+	  @lists = available_collections()
+
 	  #validate that user owns list
 	  list_found = false
-	  #@lists.each do |x|
-		#  if x['id'].to_s == @list.to_s
-		#	  list_found = true
-		#	  break
-		#  end
-	  #end
+	  @lists.each do |x|
+		  if x['id'].to_s == @list_id.to_s
+			  list_found = true
+			  break
+		  end
+	  end
 
-	  #if !list_found
-	  #	redirect_to '/lists'
-		#  return
-	  #end
+	  if !list_found
+	  	redirect_to '/lists'
+		  return
+	  end
 
-	  #redirect_to '/lists/' + @item_id
+      @deleted_items = delete_item_from_collection(current_or_guest_user.api_key, @list_id, @item_id)
+
+	  redirect_to '/lists/' + @list_id
 	end
 
-	private 
-	
+	private
+
 	def set_user_api_key
 	  if current_or_guest_user.api_key.nil?
 	    @lc_user = create_library_cloud_user

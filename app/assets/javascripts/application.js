@@ -79,32 +79,60 @@ $(document).on('turbolinks:load', function() {
         $(this).children('.fa').removeClass('fa-caret-down').addClass('fa-caret-up');
       }
     });
-    
-    //launch sign-in modal
-    $('body').on('click', '#sign-in-link', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: $(this).attr('href'),
-            success: function (response) {
-                $('#sign-in-modal').modal('show');
-                $('#sign-in-modal .modal-content').html(response);
-            }
-        });
-    });
 
-    //launch sign-up modal
+    function launchUserModal(signedInCallback, signedOutCallback) {
+      $.ajax({
+        url: '/catalog/user_status',
+        dataType: 'json',
+        success: function (response) {
+          if (response.signed_in) {
+            $('body').addClass('signed-in').removeClass('signed-out')
+            signedInCallback();
+          } else {
+            $('body').addClass('signed-out').removeClass('signed-in')
+            signedOutCallback();
+          }
+        }
+      });
+    }
+
+    function launchSignInModal() {
+      $.ajax({
+        url: $('#sign-in-link').attr('href'),
+        success: function (response) {
+          $('#sign-in-modal').modal('show');
+          $('#sign-in-modal .modal-content').html(response);
+        }
+      });
+    }
+
+    function launchSignUpModal() {
+      $.ajax({
+        url: $('#sign-in-modal .sign-up-link').attr('href'),
+        success: function (response) {
+          $('#sign-in-modal .modal-content').html(response);
+        }
+      });
+    }
+
+    function loadMyAccount() {
+      window.location.href = '/search_history';
+    }
+    
+    //open sign-in modal
+    $('body').on('click', '#sign-in-link', function (e) {
+      e.preventDefault();
+      launchUserModal(loadMyAccount, launchSignInModal);
+    });
+  
+    //open sign-up modal
     $('body').on('click', '#sign-in-modal .sign-up-link', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: $(this).attr('href'),
-            success: function (response) {
-                $('#sign-in-modal .modal-content').html(response);
-            }
-        });
+      e.preventDefault();
+      launchUserModal(loadMyAccount, launchSignUpModal);
     });
 
     function launchSignInWithCallback(callback) {
-        $('#sign-in-link').trigger('click');
+        launchSignInModal();
         //on sign-in, perform callback
         $(document).on('sign_in', function (e) {
             callback();
@@ -123,35 +151,43 @@ $(document).on('turbolinks:load', function() {
             }
         });
     });
+
+    function reloadSaveSearchForm(callback) {
+      $.ajax({
+        url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
+        success: function (response) {
+          $('#save-search-form').html(response);
+          callback();
+        }
+      });
+    }
+
+    function submitSaveSearchForm() {
+      reloadSaveSearchForm(function () {
+        var $form = $('#save-search-form form');
+        $.ajax({
+          url: $form.attr('action'),
+          type: $form.attr('method'),
+          dataType: 'html',
+          data: $form.serialize(),
+          success: function (data) {
+            $form.addClass('hidden');
+            $form.siblings('.form-confirmation').removeClass('hidden');
+          },
+        });
+      });
+    }
+
     
     //save search ajax submit
     $('body').on('submit', '#save-search-form .button_to', function (e) {
         e.preventDefault();
         var $form = $(this);
-        if ($('body').hasClass('signed-out')) {
+        launchUserModal(submitSaveSearchForm, 
+          function () {
             //on sign-in reload the save search form and submit
-            launchSignInWithCallback(function () {
-                $.ajax({
-                    url: '/catalog/' + $('#save-search-form').data('search-id') + '/save_search_form',
-                    success: function (response) {
-                        $('#save-search-form').html(response);
-                        $('#save-search-form').find('form').submit();
-                    }
-                });
-            });
-        }
-        else {
-            $.ajax({
-                url: $form.attr('action'),
-                type: $form.attr('method'),
-                dataType: 'html',
-                data: $form.serialize(),
-                success: function (data) {
-                    $form.addClass('hidden');
-                    $form.siblings('.form-confirmation').removeClass('hidden');
-                },
-            });
-        }
+            launchSignInWithCallback(submitSaveSearchForm);
+        });
     });
     
     function launchAddToList(itemIds) {
@@ -171,38 +207,30 @@ $(document).on('turbolinks:load', function() {
     }
 
     function launchAddAllToList() {
-        var itemIds = '';
+        var items = [];
         $('.add-to-list').each(function () {
-            if (itemIds != '') {
-                itemIds += ',';
-            }
-            itemIds += $(this).find('[name="item_id"]').val();
+          var itemId = $(this).find('[name="item_id"]').val();
+          if (!items.includes(itemId)) {
+            items.push(itemId);
+          }
         });
+        var itemIds = items.join(',');
         launchAddToList(itemIds);
     }
 
     //launch list edit modal
     $('body').on('click', '.add-all-to-list', function (e) {
-        e.preventDefault();
-        if ($('body').hasClass('signed-out')) {
-            launchSignInWithCallback(function () {
-                launchAddAllToList();
-            });
-        } else {
-            launchAddAllToList();
-        }
+      e.preventDefault();
+      launchUserModal(launchAddAllToList, function () {
+        launchSignInWithCallback(launchAddAllToList);
+      });
     });
 
     $('body').on('submit', '.add-to-list', function (e) {
         e.preventDefault();
         var itemId = $(this).find('[name="item_id"]').val();
-        if ($('body').hasClass('signed-out')) {
-            launchSignInWithCallback(function () {
-                launchAddToList(itemId);
-            });
-        } else {
-            launchAddToList(itemId);
-        }
+        launchUserModal(function () { launchAddToList(itemId); },
+          function () { launchSignInWithCallback(function () { launchAddToList(itemId); }) });
     });
 
     $('body').on('click', '.list-create__add', function (e) {
@@ -268,12 +296,13 @@ $(document).on('turbolinks:load', function() {
             data: $form.serialize(),
             success: function (data) {
                 $('#list-menu').collapse('hide')
-                var $button = $('<button>').prop('type', 'button').addClass('list-option').data('listid', data.systemId).text(data.setName);
+                var $button = $('<button>').prop('type', 'button').addClass('list-option').attr('data-listid', data.systemId).text(data.setName);
                 var $li = $('<li>').append($button);
                 $('#list-options').prepend($li);
                 $('.list-add-items [name="list_id"]').val(data.systemId);
                 $('.list-selector-toggle__text').text(data.setName);
                 $('.list-create__fields,.list-create__close,.list-create__heading').addClass('hidden');
+                $('.list-create__fields [name="title"]').val('');
                 $('.list-create__add').removeClass('hidden');
                 $('.list-add-items button[type="submit"]').prop('disabled', false).focus();
             },
@@ -296,7 +325,7 @@ $(document).on('turbolinks:load', function() {
                 $('.add-items-wrapper').addClass('hidden');
 
                 $('.add-items-confirmation__link').prop('href', '/lists/' + list_id);
-                $('.add-items-confirmation__link').text(list_id);
+                //$('.add-items-confirmation__link').text(list_id);
 
                 if (item_ids.indexOf(',') > 0) {
                     $('.add-items-confirmation__single').addClass('hidden');
@@ -307,7 +336,7 @@ $(document).on('turbolinks:load', function() {
         });
     });
     
-    //add items list dropdown collapse
+    //add items list select item
     $('body').on('click', '.list-selector .list-option', function () {
         $('.list-add-items [name="list_id"]').val($(this).data('listid'));
         $('.list-selector-toggle').trigger('click');

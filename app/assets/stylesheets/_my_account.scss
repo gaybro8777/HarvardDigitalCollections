@@ -193,9 +193,27 @@
 }
 
 .my-account-wrapper {
-    @media(max-width: 699px) {
-        margin-top: 20px;
+  #sign-out-link {
+    border-bottom: 3px solid transparent;
+    color: $breakthrough-blue;
+    padding-top: 9px;
+    font-size: 15px;
+    font-weight: 700;
+    transition: border 0.28s cubic-bezier(0.28,1.08,1,0.96);
+
+    &:hover, &:focus {
+      border-color: rgba(5, 121, 184, 0.3);
+      text-decoration: none;
     }
+
+    .account-link__logout {
+      padding-right: 0;
+    }
+  }
+
+  @media(max-width: 699px) {
+      margin-top: 20px;
+  }
 }
 
 .my-account-body {

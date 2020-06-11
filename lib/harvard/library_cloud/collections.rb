@@ -117,7 +117,7 @@ module Harvard::LibraryCloud::Collections
     api = Harvard::LibraryCloud::API.new
     path = 'collections/users'
     user_key = current_or_guest_user.api_key
-    unless user_key.empty?
+    unless user_key.nil?
       raw_response = begin
         response = Faraday.delete(api.get_base_uri + path) do |req|
           req.headers['Content-Type'] = 'application/json'

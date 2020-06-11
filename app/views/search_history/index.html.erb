@@ -7,9 +7,11 @@ breadcrumb_links = [{:link_text => 'My Account', :link_url => blacklight.search_
 <div id="content" class="col-md-12">
 	<div class="my-account-wrapper">
 		<%= render :partial => 'shared/breadcrumbs', locals: {links: breadcrumb_links} %>
-		<a id="sign-out-link" class="account-link pull-right" href="/users/sign_out">
-			<span class="account-link__logout">Log Out</span>
-		</a>
+		<% if user_signed_in? %>
+			<a id="sign-out-link" class="account-link pull-right" href="/users/sign_out">
+				<span class="account-link__logout">Log Out</span>
+			</a>
+		<% end %>
 		<h2 class='welcome-heading'><%=welcome_message%></h2>
 
 		<div class="my-account-cta-list">

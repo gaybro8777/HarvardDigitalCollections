@@ -1,4 +1,5 @@
 @import "settings";
+@import "util";
 
 .search-actions {
     .form-confirmation {
@@ -13,28 +14,7 @@
     }
 
     input.save-search-button, .add-all-to-list {
-        padding: 0;
-        background: transparent;
-        border: 0;
-        color: $breakthrough-blue;
-        display: inline;
-        cursor: pointer;
-        height: auto;
-        font-size: 15px;
-        font-weight: bold;
-
-        &:focus {
-            outline-width: 1px;
-            outline-style: solid;
-        }
-    }
-
-    .add-all-to-list {
-        .fa {
-            font-size: 12px;
-            transform: translateY(-1px);
-            color: $star-yellow;
-        }
+        @include link-button();
     }
 }
 

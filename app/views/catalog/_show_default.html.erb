@@ -199,7 +199,14 @@
                 <%end%>
             </div>
           <%end%>
-        <%= render :partial => "bookmark_control", :locals => {:document => document } %>
+        <%= form_tag('/lists/add_items_form', :method => :post, :class => 'add-to-list') do %>
+          <%= hidden_field_tag "item_id", document[:identifier] %>
+
+          <button type="submit" class="add-button">
+            <span class="fa fa-star" aria-hidden="true"></span>
+            &nbsp;Add to a List
+          </button>
+        <% end %> 
         <%
         if !document[:permalink].nil? && document[:permalink].kind_of?(String) && document[:permalink] != ''
           %>

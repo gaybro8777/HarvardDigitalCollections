@@ -102,18 +102,23 @@ module Blacklight::Catalog
       end
     end
 
-	def save_search_form
+	  def save_search_form
       @search_id = params[:id]
-	  @search_is_saved = false
-	  saved_search = Search.where(["id = :search_id and (user_id = :user_id or user_id is NULL)", {search_id: @search_id, user_id: current_or_guest_user.id}])
-	  if saved_search.empty?
-		render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false, :content_type => 'text/html'
-		return
-	  end
-	  puts saved_search.inspect()
-	  puts saved_search.first.id
-	  @search_is_saved = (user_signed_in? && saved_search.first.user_id == current_or_guest_user.id)
-	  render layout: false	
+	    @search_is_saved = false
+	    saved_search = Search.where(["id = :search_id and (user_id = :user_id or user_id is NULL)", {search_id: @search_id, user_id: current_or_guest_user.id}])
+	    if saved_search.empty?
+	  	  render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false, :content_type => 'text/html'
+  		  return
+	    end
+
+	    @search_is_saved = (user_signed_in? && saved_search.first.user_id == current_or_guest_user.id)
+	    render layout: false	
+    end
+
+    def user_status
+      response = '{"signed_in": ' + ((user_signed_in?) ? 'true' : 'false') + '}'
+      puts current_or_guest_user.inspect
+      render json: response
     end
 
     # method to serve up XML OpenSearch description and JSON autocomplete response

@@ -292,7 +292,7 @@ body.blacklight-catalog-show #document h1 {
     text-transform: uppercase;
 
     &:focus {
-        outline: 1px solid rgb(229, 151, 0);
+      outline: 1px solid rgb(229, 151, 0);
     }
 
     .caret {
@@ -313,14 +313,14 @@ body.blacklight-catalog-show #document h1 {
     transition: opacity 0.28s 0.1s;
 
     a {
-        color: #333;
-        text-decoration: none;
-        padding: 8px 20px 6px;
-        -webkit-transition: background 0.28s ease;
-        transition: background 0.28s ease;
+      color: #333;
+      text-decoration: none;
+      padding: 8px 20px 6px;
+      -webkit-transition: background 0.28s ease;
+      transition: background 0.28s ease;
 
-        &:hover {
-          border-color: transparent;
+      &:hover {
+        border-color: transparent;
       }
     }
 
@@ -407,12 +407,20 @@ body.blacklight-catalog-show #document h1 {
   }
 
   form input.toggle_bookmark {
-      height: 28px;
-    }
+    height: 28px;
+  }
 
+  .add-to-list { 
+    margin-top: 20px;
+    .add-button {
+      @include link-button();
+      font-weight: normal;
+    }
+  }
+  
   .permalink {
     clear: both;
-    padding: 20px 0 0px;
+    padding: 10px 0 0px;
   }
 
   .fulltext {
@@ -428,7 +436,6 @@ body.blacklight-catalog-show #document h1 {
     height: 20px;
     opacity: 0.7;
   }
-
 }
 
 #feedback {

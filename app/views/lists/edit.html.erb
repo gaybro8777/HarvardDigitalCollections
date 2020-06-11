@@ -15,7 +15,7 @@
     <div class="field field__with-button hidden">
 			<span class="field-label">Delete this list</span>
 			<p class="delete-warning">Are you sure you want to delete this list, 
-			<strong><%=@list[0]['title']%></strong> which has 0 items?</p>
+			<strong><%=@list[0]['title']%></strong> which has <%=@list[0]['collectionSize']%> items?</p>
 			<button type="submit" class="btn btn-medium">Yes, Delete</button>
 		</div>
   <% end %>

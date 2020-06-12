@@ -15,3 +15,7 @@ DATABASE_HOST=<db_hostname>
 # LibraryCloud API
 LC_API_KEY=<key>
 LC_ENV=<apienv>
+
+EMAIL_HOST=mailhub.harvard.edu
+EMAIL_PORT=25
+EMAIL_FROM=<reply-to email>

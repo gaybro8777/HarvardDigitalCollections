@@ -92,6 +92,7 @@ class ListsController < ApplicationController
 		set_user_api_key
 		@item_ids = params[:item_ids]
 		@items = @item_ids.split(',')
+    @items = @items.uniq
 		@thumbnail = ''
 		@default_list_id = ''
 

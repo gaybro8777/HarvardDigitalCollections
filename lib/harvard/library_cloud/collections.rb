@@ -113,7 +113,22 @@ module Harvard::LibraryCloud::Collections
         raise RSolr::Error::Http.new(connection, e.response)
       end
   end
-
+  def delete_library_cloud_user
+    api = Harvard::LibraryCloud::API.new
+    path = 'collections/users'
+    user_key = current_or_guest_user.api_key
+    unless user_key.nil?
+      raw_response = begin
+        response = Faraday.delete(api.get_base_uri + path) do |req|
+          req.headers['Content-Type'] = 'application/json'
+          req.headers['X-LibraryCloud-API-Key'] = user_key
+        end
+        { status: response.status.to_i, headers: response.headers, body: response.body.force_encoding('utf-8') }
+      rescue Errno::ECONNREFUSED, Faraday::Error => e
+        raise RSolr::Error::Http.new(connection, e.response)
+      end
+    end
+  end
   def create_collection (user_key, setName, thumbnailUrn)
       api = Harvard::LibraryCloud::API.new
       path = 'collections/'

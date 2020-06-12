@@ -26,6 +26,10 @@
       display: none;
     }
 
+    &:hover {
+      text-decoration: none;
+    }
+
     @media (min-width: 768px) {
       right: 10%;
       top: 30px;

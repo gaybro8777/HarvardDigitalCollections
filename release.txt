@@ -1,3 +1,30 @@
+7.7.0-lts-1 PP/MC/ED/VC/MF
+-- Upgraded to Blacklight 7.7.0
+-- Dockerized HDC application
+-- Re-added favicon
+-- Added ability to switch the HDC application between different Library Cloud environments
+-- Added "Log In" link to search header
+-- Added "Log Out" link to the search history page
+-- Added CTAs for "My Lists", "Saved Searches" and "My Account" to search history page
+-- Added "save this search" link on search results
+-- Added "related items" to item detail page, based on recent search
+-- Updated HDC fallback homepage to more closely align with HDC Drupal homepage
+-- Login link now opens in modal window
+-- Login modal window links to new create new account modal window
+-- Create new account modal window includes benefits of having an account
+-- Added api-key field to blacklight database so individual users can interact with Library Cloud collections
+-- Created "my lists" page that interacts with Library Cloud collections
+-- Added the ability to rename and delete existing lists that interacts with Library Cloud collections
+-- Added the ability to remove items from a list that interacts with Library Cloud collections
+-- Added "add to a list" star on items in search results that interacts with Library Cloud collections
+-- Added "add to list" star on item detail page that interacts with Library Cloud collections
+-- Added "add these items to a list" link on search results that interacts with Library Cloud collections
+-- Created "add to list" modal window that interacts with Library Cloud collections
+-- Creates a Library Cloud user when a HDC user creates a list for the first time
+-- Deletes a Library Cloud user when a HDC user is deleted
+-- UI Improvements to My Account and Saved Searches pages
+-- Design improvements to status bar presentation
+
 6.20.0-lts-4 PP/MC/ED
 -- Modified Language facet value to "No language provided"
 -- Updated placeholder and masonry icons
@@ -69,11 +96,11 @@
 --Added search input validation to handle special characters
 --Added new option to Download feature to account for PDS sequenced objects
 --Description field's "materials/techniques" sub-label enhanced with additional types
---Added a Feedback component to the Item Detail 
+--Added a Feedback component to the Item Detail
 --Numerous spacing and layout refinements to Item Detail page styles
 --Fixed displayLabel attribute value display
 --Updated options for alternate title displays
---Enhanced sublabel displays for the Description field 
+--Enhanced sublabel displays for the Description field
 
 6.11.2-lts-2 (5/28/2019) PP/MC/ED/CV
 --Updated item detail metadata layout for mobile

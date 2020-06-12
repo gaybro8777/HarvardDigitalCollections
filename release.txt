@@ -1,4 +1,4 @@
-7.7.0-lts-1 PP/MC/ED/VC/MV
+7.7.0-lts-1 PP/MC/ED/VC/MF
 -- Upgraded to Blacklight 7.7.0
 -- Dockerized HDC application
 -- Re-added favicon
@@ -10,9 +10,12 @@
 -- Added "related items" to item detail page, based on recent search
 -- Updated HDC fallback homepage to more closely align with HDC Drupal homepage
 -- Login link now opens in modal window
--- Login modal window includes benefits on having an account and links to create new account
+-- Login modal window links to new create new account modal window
+-- Create new account modal window includes benefits of having an account
 -- Added api-key field to blacklight database so individual users can interact with Library Cloud collections
 -- Created "my lists" page that interacts with Library Cloud collections
+-- Added the ability to rename and delete existing lists that interacts with Library Cloud collections
+-- Added the ability to remove items from a list that interacts with Library Cloud collections
 -- Added "add to a list" star on items in search results that interacts with Library Cloud collections
 -- Added "add to list" star on item detail page that interacts with Library Cloud collections
 -- Added "add these items to a list" link on search results that interacts with Library Cloud collections

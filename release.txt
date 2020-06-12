@@ -23,6 +23,7 @@
 -- Creates a Library Cloud user when a HDC user creates a list for the first time
 -- Deletes a Library Cloud user when a HDC user is deleted
 -- UI Improvements to My Account and Saved Searches pages
+-- Design improvements to status bar presentation
 
 6.20.0-lts-4 PP/MC/ED
 -- Modified Language facet value to "No language provided"

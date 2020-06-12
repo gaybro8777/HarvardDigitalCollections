@@ -360,8 +360,6 @@ $(document).on('turbolinks:load', function() {
             data: $form.serialize(),
             success: function (data) {
                 $('body').removeClass('signed-out').addClass('signed-in');
-                $('#sign-in-link').addClass('hidden');
-                $('#my-account-link').removeClass('hidden');
                 $('#sign-in-modal').modal('hide');
                 $(document).trigger('sign_in');
             },
@@ -387,8 +385,7 @@ $(document).on('turbolinks:load', function() {
             dataType: 'json',
             data: $form.serialize(),
             success: function (data) {
-                $('#sign-in-link').addClass('hidden');
-                $('#my-account-link').removeClass('hidden');
+                $('body').removeClass('signed-out').addClass('signed-in');
                 $('#sign-in-modal').modal('hide');
                 $(document).trigger('sign_in');
             },

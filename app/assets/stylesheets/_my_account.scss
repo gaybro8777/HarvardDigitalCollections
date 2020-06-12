@@ -186,16 +186,32 @@
 
 .breadcrumb {
     background: transparent;
+    font-family: $font-family-sans-serif;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 600;
     color: $dark-gray;
+    line-height: 32px;
     padding: 0;
+
+    a {
+        border-bottom: 3px solid transparent;
+        color: $breakthrough-blue;
+        -webkit-transition: $link-fade;
+        transition: $link-fade;
+
+        &:hover {
+            border-bottom: 3px solid rgba(5,121,184,0.3);
+            color: $breakthrough-blue;
+            text-decoration: none;    
+        }
+    }
 }
 
 .my-account-wrapper {
   #sign-out-link {
     border-bottom: 3px solid transparent;
     color: $breakthrough-blue;
+    font-family: $font-family-sans-serif;
     padding-top: 9px;
     font-size: 15px;
     font-weight: 700;
@@ -329,6 +345,8 @@
 }
 
 .my-account-form, .delete-account-wrapper {
+    padding: 20px 0 40px;
+
     .field {
         label, .field-label {
             font-size: 18px;
@@ -420,6 +438,13 @@
                 color: $breakthrough-blue;
                 font-weight: bold;
                 float: right;
+                border-bottom: 3px solid transparent;
+                -webkit-transition: $link-fade;
+                transition: $link-fade;
+                &:hover {
+                    border-bottom: 3px solid rgba(5,121,184,0.3);
+                    text-decoration: none;
+                }
             }
         }
     }
@@ -459,8 +484,16 @@
         font-family: $font-family-serif;
 
         a {
+            font-family: $font-family-sans-serif;
             font-weight: bold;
             color: $breakthrough-blue;
+            border-bottom: 3px solid transparent;
+            -webkit-transition: $link-fade;
+            transition: $link-fade;
+            &:hover {
+                border-bottom: 3px solid rgba(5,121,184,0.3);
+                text-decoration: none;
+            }
         }
     }
 
@@ -523,7 +556,7 @@
 
     .modal-content-inner {
         text-align: center;
-        margin: 80px auto;
+        margin: 80px auto 40px;
         padding: 0 20px;
 
         h3 {
@@ -704,6 +737,7 @@
         }
 
         h4 {
+            font-family: $font-family-sans-serif;
             font-size: 26px;
             font-weight: bold;
             text-transform: uppercase;

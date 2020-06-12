@@ -4,6 +4,7 @@ class ListsController < ApplicationController
 	include Blacklight::SearchContext
     include Blacklight::SearchHelper
     include Blacklight::TokenBasedUser
+  include Harvard::LibraryCloud
 	include Harvard::LibraryCloud::Collections
 
 	 before_action :set_cache_headers
@@ -45,6 +46,9 @@ class ListsController < ApplicationController
 			search_params[:page] = params[:page]
 		end
 	  end
+
+    api = Harvard::LibraryCloud::API.new
+    @export_list_url = api.get_base_uri + 'items.csv?setSpec=' + @list[0]['setSpec']
 
 	  (@response, @document_list) = search_results(search_params)
 	end

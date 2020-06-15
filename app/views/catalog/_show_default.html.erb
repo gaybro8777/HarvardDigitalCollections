@@ -52,7 +52,7 @@
       <h2 class="clearfix">Tools &amp; Related Links</h2>
         <div id="no-dl-button">Download currently unavailable.<br>Check back soon.</div>
             <%if document[:delivery_service] == 'ids' or document[:delivery_service] == 'pds'%>
-            <div class="btn-group" id='dl-dropdown'>
+            <div class="btn-group" id='idsDropdown'>
               <button type="button" class="btn btn-dark dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                  Download This Item <span class="caret"></span>
                </button>
@@ -90,19 +90,7 @@
                   #in the case of a pds content, we need a different behavior for the download button.
                   manifest_url = 'https://iiif.lib.harvard.edu/manifests/drs:'+document[:drs_file_id]
                   manifest_json = retrieve_still_image_json_metadata manifest_url
-                  if manifest_json
-              number_of_pages = manifest_json['sequences'][0]['canvases'].length
-                  else#below is an easy way to "remove" the download button if there is no manifest retrieved.%>
-                    <style type="text/css">
-                      #dl-dropdown{
-                        display:none;
-                      }
-                      #no-dl-button{
-                        display:block;
-                      }
-                    </style>
-                  <%
-                  end
+                  number_of_pages = manifest_json['sequences'][0]['canvases'].length
                 %>
                 <div class="dropdown-menu sequence-options">
                   <div id="incorrect_page_range" style = "display:none" value='<%=number_of_pages%>'>
@@ -119,7 +107,7 @@
 
                   <script>
                     // this prevents the dropdown menu for pds content from closing when clicking something within it.
-                    $('#dl-dropdown .dropdown-menu').on({
+                    $('#idsDropdown .dropdown-menu').on({
                       "click":function(e){
                           e.stopPropagation();
                         }
@@ -206,17 +194,14 @@
             <span class="fa fa-star" aria-hidden="true"></span>
             &nbsp;Add to a List
           </button>
-        <% end %> 
+        <% end %>
+        <%if !@transcript_link.nil? -%>
+          <div class="transcript-link"><span class="fa fa-file-alt"></span> &nbsp;<a href="<%= @transcript_link %>" rel="noopener noreferrer" target="_blank">Transcript</a></div>
+        <% end %>
         <%
         if !document[:permalink].nil? && document[:permalink].kind_of?(String) && document[:permalink] != ''
           %>
             <div class="permalink"><span class="fa fa-link"></span> &nbsp;<a href="<%=document[:permalink]%>">Permalink</a></div>
-          <%
-        end
-
-        if document[:delivery_service] == 'pds' and retrieve_hasocr_info document[:drs_file_id]
-          %>
-            <div class="fulltext"><span class="fa"> T </span><a id="open-full-text" href="<%=full_text_href document[:drs_file_id], params[:id]%>" target="_blank"> Raw Text</a></div>
           <%
         end
         %>

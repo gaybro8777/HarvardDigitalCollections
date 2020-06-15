@@ -206,17 +206,14 @@
             <span class="fa fa-star" aria-hidden="true"></span>
             &nbsp;Add to a List
           </button>
-        <% end %> 
+        <% end %>
+        <%if !@transcript_link.nil? -%>
+          <div class="transcript-link"><span class="fa fa-file-alt"></span> &nbsp;<a href="<%= @transcript_link %>" rel="noopener noreferrer" target="_blank">Transcript</a></div>
+        <% end %>
         <%
         if !document[:permalink].nil? && document[:permalink].kind_of?(String) && document[:permalink] != ''
           %>
             <div class="permalink"><span class="fa fa-link"></span> &nbsp;<a href="<%=document[:permalink]%>">Permalink</a></div>
-          <%
-        end
-
-        if document[:delivery_service] == 'pds' and retrieve_hasocr_info document[:drs_file_id]
-          %>
-            <div class="fulltext"><span class="fa"> T </span><a id="open-full-text" href="<%=full_text_href document[:drs_file_id], params[:id]%>" target="_blank"> Raw Text</a></div>
           <%
         end
         %>

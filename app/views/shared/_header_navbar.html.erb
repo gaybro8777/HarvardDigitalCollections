@@ -15,21 +15,18 @@
       </div>
     </a>
   </div>
+  <div class="searchbar__wrapper">
+    <%= render_search_bar  %>
 
-  <%if controller_name != 'fulltexts'%>
-    <div class="searchbar__wrapper">
-      <%= render_search_bar  %>    
+    <a id="my-account-link" class="account-link" href="<%=blacklight.search_history_path%>">
+      <span class="fa fa-user" aria-hidden="true"></span>
+      <span class="account-link__text">My Account</span>
+    </a>
 
-      <a id="my-account-link" class="account-link" href="<%=blacklight.search_history_path%>">
-        <span class="fa fa-user" aria-hidden="true"></span>
-        <span class="account-link__text">My Account</span>
-      </a>
-      
-      <a id="sign-in-link" class="account-link" href="/users/sign_in">
-        <span class="fa fa-user" aria-hidden="true"></span>
-        <span class="account-link__text">Log In</span>
-      </a>
-    </div>
-  <%end%>
+    <a id="sign-in-link" class="account-link" href="/users/sign_in">
+      <span class="fa fa-user" aria-hidden="true"></span>
+      <span class="account-link__text">Log In</span>
+    </a>
+  </div>
 </header>
 

@@ -179,24 +179,21 @@ class ListsController < ApplicationController
   def remove_item
 	  @item_id = params[:item_id]
 	  @list_id = params[:list_id]
-	  @lists = available_collections()
+	  
+    @list = get_collection_by_id(@list_id)
 
 	  #validate that user owns list
-	  list_found = false
-	  @lists.each do |x|
-		  if x['id'].to_s == @list_id.to_s
-			  list_found = true
-			  break
-		  end
-	  end
-
-	  if !list_found
+	  if @list.nil? || @list.count == 0
 	  	redirect_to '/lists'
 		  return
 	  end
 
-      @deleted_items = delete_item_from_collection(current_or_guest_user.api_key, @list_id, @item_id)
-
+    @deleted_items = delete_item_from_collection(current_or_guest_user.api_key, @list_id, @item_id)
+    
+    #perform search on the list to get latest results on next load
+    search_params = {}
+	  search_params[:setSpec] = @list[0]['setSpec']
+    (@response, @document_list) = search_results(search_params)
 	  redirect_to '/lists/' + @list_id
 	end
 

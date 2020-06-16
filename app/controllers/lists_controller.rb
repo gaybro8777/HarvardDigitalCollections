@@ -12,39 +12,40 @@ class ListsController < ApplicationController
 
 	require 'json'
 
-    def set_cache_headers
-      response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
-      response.headers["Pragma"] = "no-cache"
-      response.headers["Expires"] = "-1"
-    end
+  def set_cache_headers
+    response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "-1"
+  end
 
-    def index
+  def index
 	  set_user_api_key
 	  @lists = available_collections()
-    end
+  end
 
 	def show
 	  @id = params[:id]
 
 	  begin
-		@list = get_collection_by_id(@id)
+		  @list = get_collection_by_id(@id)
 	  rescue JSON::ParserError
-		@list = nil
+		  @list = nil
 	  end
 
-	  if @list.nil?
-		redirect_to '/lists'
+	  if @list.nil? || @list[0].nil?
+		  redirect_to '/lists'
+      return
 	  end
 
 	  search_params = {}
 	  search_params[:setSpec] = @list[0]['setSpec']
 
 	  if !params[:page].nil? && !params[:page].to_s != ''
-		page_number = params[:page].to_i
+		  page_number = params[:page].to_i
 
-		if page_number > 0
-			search_params[:page] = params[:page]
-		end
+		  if page_number > 0
+			  search_params[:page] = params[:page]
+		  end
 	  end
 
     api = Harvard::LibraryCloud::API.new
@@ -59,8 +60,9 @@ class ListsController < ApplicationController
 	  rescue JSON::ParserError
 		@list = nil
 
-	  if @list.nil?
-		redirect_to '/lists'
+	  if @list.nil? || @list[0].nil?
+		  redirect_to '/lists'
+      return
 	  end
 	end
 
@@ -69,21 +71,21 @@ class ListsController < ApplicationController
 		@thumbnailUrn = params[:thumbnail]
 		#@thumbnailUrn = 'https://nrs.harvard.edu/urn-3:FHCL:14220361?width=150&height=150'
 		set_user_api_key
-        @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
+    @collection = create_collection(current_or_guest_user.api_key, @title, @thumbnailUrn)
 
-        render json: @collection[:body]
+    render json: @collection[:body]
 	end
 
 	def update
 		@id = params[:id]
 		@title = params[:title]
-        @collection = update_collection(current_or_guest_user.api_key, @id, @title)
+    @collection = update_collection(current_or_guest_user.api_key, @id, @title)
 		render plain: "ID=" + @id + " title=" + @title
 	end
 
 	def destroy
 		@id = params[:id]
-	    @collection = destroy_collection(current_or_guest_user.api_key, @id)
+	  @collection = destroy_collection(current_or_guest_user.api_key, @id)
 		#render plain: "DELETE ID=" + @id
 		render plain: @collection
 	end
@@ -155,24 +157,17 @@ class ListsController < ApplicationController
 
 	def add_items
 	  @item_ids = params[:item_ids]
-	  @list = params[:list_id]
-	  @lists = available_collections()
-
+	  @list_id = params[:list_id]
+	  
 	  #validate that user owns list
-	  list_found = false
-	  @lists.each do |x|
-		  if x['id'].to_s == @list.to_s
-			  list_found = true
-			  break
-		  end
+	  @list = get_collection_by_id(@list_id)
+    
+	  if @list.nil? || @list[0].nil?
+		  redirect_to '/lists'
+      return
 	  end
 
-	  if !list_found
-	  	redirect_to '/lists'
-		return
-	  end
-
-      @added_items = add_item_to_collection(current_or_guest_user.api_key, @list, @item_ids)
+    @added_items = add_item_to_collection(current_or_guest_user.api_key, @list_id, @item_ids)
 	  render plain:  @added_items.to_json
 	end
 
@@ -183,9 +178,9 @@ class ListsController < ApplicationController
     @list = get_collection_by_id(@list_id)
 
 	  #validate that user owns list
-	  if @list.nil? || @list.count == 0
-	  	redirect_to '/lists'
-		  return
+	  if @list.nil? || @list[0].nil?
+		  redirect_to '/lists'
+      return
 	  end
 
     @deleted_items = delete_item_from_collection(current_or_guest_user.api_key, @list_id, @item_id)

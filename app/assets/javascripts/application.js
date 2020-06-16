@@ -132,6 +132,7 @@ $(document).on('turbolinks:load', function() {
     });
 
     function launchSignInWithCallback(callback) {
+        $(document).off('sign_in');
         launchSignInModal();
         //on sign-in, perform callback
         $(document).on('sign_in', function (e) {

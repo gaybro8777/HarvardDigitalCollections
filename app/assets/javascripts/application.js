@@ -349,6 +349,11 @@ $(document).on('turbolinks:load', function() {
         $(this).prev().find('.field-toggle .fa').removeClass('fa-caret-up').addClass('fa-caret-down');
     });
 
+    function displayFlashMessage(message) {
+      var messageHtml = '<div class="alert alert-info">' + message + '<a class="close" data-dismiss="alert" href="#">&times;</a></div>';
+      $('#main-flashes .flash_messages').html(messageHtml);
+    }
+
     //sign in form ajax submit
     $('body').on('submit', '#sign-in-modal form.user-sign-in', function (e) {
         e.preventDefault();
@@ -360,9 +365,10 @@ $(document).on('turbolinks:load', function() {
             dataType: 'json',
             data: $form.serialize(),
             success: function (data) {
-                $('body').removeClass('signed-out').addClass('signed-in');
-                $('#sign-in-modal').modal('hide');
-                $(document).trigger('sign_in');
+              displayFlashMessage('Signed in successfully');
+              $('body').removeClass('signed-out').addClass('signed-in');
+              $('#sign-in-modal').modal('hide');
+              $(document).trigger('sign_in');
             },
             error: function (data) {
                 var errorMessage = 'Invalid login';
@@ -386,9 +392,10 @@ $(document).on('turbolinks:load', function() {
             dataType: 'json',
             data: $form.serialize(),
             success: function (data) {
-                $('body').removeClass('signed-out').addClass('signed-in');
-                $('#sign-in-modal').modal('hide');
-                $(document).trigger('sign_in');
+              displayFlashMessage('Account created successfully');
+              $('body').removeClass('signed-out').addClass('signed-in');
+              $('#sign-in-modal').modal('hide');
+              $(document).trigger('sign_in');
             },
             error: function (data) {
                 var errorMessage = 'There was an error with your submission.';

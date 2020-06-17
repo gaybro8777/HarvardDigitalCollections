@@ -1,15 +1,13 @@
 class ListsController < ApplicationController
-    before_action :authenticate_user!
-    skip_before_action :verify_authenticity_token, only: [:add_items_form]
+  before_action :authenticate_user!
+  before_action :set_cache_headers
+  skip_before_action :verify_authenticity_token, only: [:add_items_form]
 	include Blacklight::SearchContext
-    include Blacklight::SearchHelper
-    include Blacklight::TokenBasedUser
+  include Blacklight::SearchHelper
+  include Blacklight::TokenBasedUser
   include Harvard::LibraryCloud
 	include Harvard::LibraryCloud::Collections
-
-	 before_action :set_cache_headers
-
-
+  require 'faraday'  
 	require 'json'
 
   def set_cache_headers
@@ -47,10 +45,8 @@ class ListsController < ApplicationController
 			  search_params[:page] = params[:page]
 		  end
 	  end
-
-    api = Harvard::LibraryCloud::API.new
-    @export_list_url = api.get_base_uri + 'items.csv?setSpec=' + @list[0]['setSpec']
-
+    session[:preferred_view] = 'list'
+    @export_list_url = get_export_link_for_list(@list[0]['setSpec'])
 	  (@response, @document_list) = search_results(search_params)
 	end
 
@@ -202,4 +198,15 @@ class ListsController < ApplicationController
 		current_or_guest_user.save
 	  end
 	end
+
+  def get_export_link_for_list(setSpec)
+    api = Harvard::LibraryCloud::API.new
+    check_link = api.get_base_uri + 'items.csv?setSpec=' + setSpec 
+    
+    if Faraday.head(check_link).status == 200
+      link = check_link
+    else
+      link = nil
+    end
+  end
 end

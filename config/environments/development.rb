@@ -27,11 +27,17 @@ Rails.application.configure do
   end
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.perform_caching = false
 
-  config.action_mailer.default_url_options = { host: ENV["EMAIL_HOST"], port: ENV["EMAIL_PORT"], from: ENV["EMAIL_FROM"] }
+  config.action_mailer.default_url_options = { host: ENV["EMAIL_LINK_DOMAIN"], port: ENV["EMAIL_LINK_PORT"] }
+  config.action_mailer.smtp_settings = {
+    :enable_starttls_auto => false,  
+    :address            => ENV["EMAIL_HOST"],
+    :port               => ENV["EMAIL_PORT"],
+    :tls                  => false
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

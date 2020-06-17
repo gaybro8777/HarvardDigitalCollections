@@ -5,6 +5,7 @@ module Blacklight::Catalog
   include Blacklight::Base
   include Blacklight::DefaultComponentConfiguration
   include Blacklight::Facet
+  require 'faraday'
 
   # The following code is executed when someone includes blacklight::catalog in their
   # own controller.
@@ -54,13 +55,15 @@ module Blacklight::Catalog
     def show
       @response, @document = fetch params[:id]
       @number_of_related_items = 4
+      @transcript_link = get_transcript_link(params[:id])
       setup_next_and_previous_documents
       if search_session['counter'] and current_search_session
         index = search_session['counter'].to_i - 1
         total_items = search_session['total'].to_i
-        
+
         (@start, @related_documents) = get_related_items_for_search(index, total_items, @number_of_related_items)
         @counter = @start
+
       end
       respond_to do |format|
         format.html { }
@@ -117,8 +120,8 @@ module Blacklight::Catalog
           session[:history].unshift(@search_id.to_i)
         end
       end
-	    
-	    render layout: false	
+
+	    render layout: false
     end
 
     def user_status
@@ -311,5 +314,14 @@ module Blacklight::Catalog
 
     def start_new_search_session?
       action_name == "index"
+    end
+
+    def get_transcript_link(id)
+      check_link = 'https://harvard-library-digital-collections-transcript-pilot.s3.amazonaws.com/'+id+'.txt'
+      if Faraday.head(check_link).status == 200
+        link = check_link
+      else
+        link = nil
+      end
     end
 end

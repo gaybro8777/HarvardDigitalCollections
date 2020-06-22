@@ -81,5 +81,17 @@ RSpec.describe "catalog/_show_tools.html.erb" do
         expect(rendered).to be_blank
       end
     end
+
+    context 'without any document actions defined' do
+      before do
+        document_actions.clear
+      end
+
+      it 'does not display the tools' do
+        render partial: 'catalog/show_tools'
+
+        expect(rendered).to be_blank
+      end
+    end
   end
 end

@@ -1,10 +1,10 @@
 default: &default
   adapter: mysql2
-  user: hdc
-  port: 3306
-  database: hdc_dev
-  password: hdcinth3pl4c3tob3
-  host: localhost
+  user: <%= ENV['DATABASE_USER'] %>
+  port: <%= ENV['DATABASE_PORT'] %>
+  database: <%= ENV['DATABASE_NAME'] %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
+  host: <%= ENV['DATABASE_HOST'] %>
   
 development:
   <<: *default

@@ -46,7 +46,8 @@ class ListsController < ApplicationController
 		  end
 	  end
     session[:preferred_view] = 'list'
-    @export_list_url = get_export_link_for_list(@list[0]['setSpec'])
+    #@export_list_url = get_export_link_for_list(@list[0]['setSpec'])
+    @export_list_url = ''
 	  (@response, @document_list) = search_results(search_params)
 	end
 
@@ -201,6 +202,7 @@ class ListsController < ApplicationController
 
   def get_export_link_for_list(setSpec)
     api = Harvard::LibraryCloud::API.new
+    puts api.get_base_uri + 'items.csv?setSpec=' + setSpec 
     check_link = api.get_base_uri + 'items.csv?setSpec=' + setSpec 
     
     if Faraday.head(check_link).status == 200

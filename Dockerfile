@@ -39,7 +39,7 @@ WORKDIR /home/app/webapp
 
 RUN bundle install && \
     bundle exec rake assets:precompile && \
-    printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
+    printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lib.harvard.edu" >> /etc/ssl/openssl.cnf && \
     openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Massachusetts/L=Cambridge/O=Library Technology Services/CN=*.lib.harvard.edu" -extensions SAN -reqexts SAN -config /etc/ssl/openssl.cnf -keyout /etc/ssl/certs/server.key -out /etc/ssl/certs/server.crt
 
 ENTRYPOINT ["bin/migrations.sh"]

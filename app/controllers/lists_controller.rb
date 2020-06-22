@@ -46,7 +46,6 @@ class ListsController < ApplicationController
 		  end
 	  end
     session[:preferred_view] = 'list'
-    @export_list_url = get_export_link_for_list(@list[0]['setSpec'])
 	  (@response, @document_list) = search_results(search_params)
 	end
 

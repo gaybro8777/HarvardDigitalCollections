@@ -82,7 +82,27 @@ module Harvard::LibraryCloud
       # Don't support sort parameters for now
       # results[:sort] = sort_params_to_lc(params[:sort]) if params[:sort]
       
+      all_fields_search = false
+
+      #most searches will be on all fields
       if params[:search_field] == 'all_fields'
+        all_fields_search = true
+      else
+        if params[:q]
+          #check if this is a recordIdentifier request
+          m = /\{\!lucene\}identifier:(.*)$/.match(params[:q])
+          if m
+            results[:recordIdentifier] = m[1].gsub('"', '') 
+          elsif params[:search_field].nil?
+            #if no search_field, default to all fields
+            all_fields_search = true    
+          else
+            results[params[:search_field]] = params[:q]
+          end 
+        end
+      end
+
+      if all_fields_search
         search_term = params[:q].to_s
 
         #escape special characters in search_term for LC API
@@ -92,17 +112,6 @@ module Harvard::LibraryCloud
         search_term = search_term.gsub(/ +/, " ").gsub(/&+/, "&").gsub(/\|+/, "|")
         
         results[:q] = search_term if search_term && search_term.length > 0
-      else
-        if params[:q]
-          #check if this is a recordIdentifier request
-          m = /\{\!lucene\}identifier:(.*)$/.match(params[:q])
-          if m
-		        results[:recordIdentifier] = m[1].gsub('"', '') 
-          else
-            results[params[:search_field]] = params[:q]
-          end
-          
-        end
       end
       
       #add date start/end params

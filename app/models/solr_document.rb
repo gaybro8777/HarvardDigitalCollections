@@ -758,7 +758,12 @@ class SolrDocument
     raw_object = ''
 
     raw_object = JsonPath.new('$..location..url[?(@["@access"] == "raw object")]["#text"]').first(doc)
-    raw_object = fetch_ids_uri(raw_object)
+    ids_object = fetch_ids_uri(raw_object)
+    
+    if !ids_object.nil?
+      raw_object = ids_object
+    end
+        
     raw_object = raw_object.gsub(/http:/,'https:') 
     if (raw_object.include?('https://ids') && !raw_object.include?('?buttons=y'))
       separator = raw_object.include?('?') ? '&' : '?'
@@ -873,7 +878,15 @@ class SolrDocument
 
   def fetch_ids_uri(uri_str)
     if (uri_str =~ /urn-3/)
-      response = Net::HTTP.get_response(URI.parse(uri_str))['location']
+      begin
+        response = Net::HTTP.get_response(URI.parse(uri_str))['location']
+        if response.nil?
+          return uri_str
+        end
+      rescue
+        return uri_str
+      end
+      response
     elsif (uri_str.include?('?'))
       uri_str = uri_str.slice(0..(uri_str.index('?')-1))
     else

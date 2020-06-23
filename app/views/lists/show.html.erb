@@ -15,9 +15,6 @@
 		</h2>
 	</div>
 	<div class="list-metadata">
-    <% if @export_list_url.to_s != "" %>
-      <a href="<%=@export_list_url%>" target="_blank" class="export-list"><span class="fa fa-file-export" aria-hidden="true"></span> Export List</a>
-		<% end %>
     <span><%=number_with_delimiter(@list[0]['collectionSize'], :delimiter => ',') %> items</span>
 		<span>Last updated: <%=DateTime.parse(@list[0]['last_updated']).strftime("%B %d, %Y")%></span>
 	</div>

@@ -18,6 +18,6 @@ LC_ENV=<apienv>
 
 EMAIL_HOST=mailhub.harvard.edu
 EMAIL_PORT=25
-EMAIL_FROM=hdc@noreply.com
+EMAIL_FROM=hdcnoreply@harvard.edu
 EMAIL_LINK_DOMAIN=digitalcollections.library.harvard.edu
 EMAIL_LINK_PORT=80

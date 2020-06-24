@@ -21,3 +21,5 @@ EMAIL_PORT=25
 EMAIL_FROM=hdcnoreply@harvard.edu
 EMAIL_LINK_DOMAIN=digitalcollections.library.harvard.edu
 EMAIL_LINK_PORT=80
+
+LOG_LEVEL=warn

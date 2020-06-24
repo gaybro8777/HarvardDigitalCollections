@@ -12,7 +12,10 @@ services:
    command: passenger start --ssl --ssl-port 3001 --ssl-certificate /etc/ssl/certs/server.crt --ssl-certificate-key /etc/ssl/certs/server.key
    tty: true
    volumes:
-     - './log:/home/app/webapp/log'
+      # App files to work locally
+      - './app:/home/app/webapp/app'
+      # Logs
+      - './log:/home/app/webapp/log'
    env_file:
       - './.env'
    environment:

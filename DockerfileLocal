@@ -45,6 +45,8 @@ USER root
 # Expose ports
 EXPOSE 3001
 
+USER app
+
 # Use baseimage-docker's init process.
 CMD ["/sbin/my_init"]
 

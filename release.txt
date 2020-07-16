@@ -1,3 +1,9 @@
+7.7.0-lts-2 VC (7/16/2020)
+-- Changed the user ID for the container's 'app' user to match that of the hdcadm user on the servers
+   to allow for log writing
+-- Changed the container to run as the 'app' user instead of as the root user.
+
+
 7.7.0-lts-1 PP/MC/ED/VC/MF
 -- Upgraded to Blacklight 7.7.0
 -- Dockerized HDC application

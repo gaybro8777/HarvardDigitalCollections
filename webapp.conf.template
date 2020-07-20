@@ -11,8 +11,8 @@ server {
     passenger_user app;
     passenger_app_env development;
 
-    # For Ruby 2.5
-    passenger_ruby /usr/bin/ruby2.6;
+    # For Ruby 2.7
+    passenger_ruby /usr/bin/ruby2.7;
     
     ssl_certificate     /etc/ssl/certs/server.crt;
 	ssl_certificate_key /etc/ssl/certs/server.key;

@@ -1,7 +1,7 @@
 ### Local development only ###
 
 #https://github.com/phusion/passenger-docker
-FROM phusion/passenger-ruby26
+FROM phusion/passenger-ruby27
 
 # Set correct environment variables.
 ENV DEBIAN_FRONTEND noninteractive
@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
   gem update --system && \
   gem install bundler && \
-  rm /etc/nginx/sites-enabled/default && \
+  rm -f /etc/nginx/sites-enabled/default && \
+  rm -f /etc/service/nginx/down && \
   chmod +x /home/app/webapp/bin/*.sh && \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
@@ -44,8 +45,6 @@ USER root
 
 # Expose ports
 EXPOSE 3001
-
-USER app
 
 # Use baseimage-docker's init process.
 CMD ["/sbin/my_init"]

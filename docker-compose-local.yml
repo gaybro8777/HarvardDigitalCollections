@@ -12,9 +12,10 @@ services:
    tty: true
    volumes:
       # App files to work locally
-      - './app:/home/app/webapp/app'
+      #- './app:/home/app/webapp/app'
       # Logs
       - './log:/home/app/webapp/log'
+      - './webapp.conf:/etc/nginx/sites-enabled/webapp.conf'
    env_file:
       - './.env'
    environment:

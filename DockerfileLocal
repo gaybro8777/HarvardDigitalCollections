@@ -26,8 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   chown app /etc/ssl/certs && \
   chown app /etc/ssl/openssl.cnf
 
-COPY webapp.conf /etc/nginx/sites-enabled/webapp.conf
-  
+ 
 USER app 
 
 RUN printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lts.harvard.edu" >> /etc/ssl/openssl.cnf && \
@@ -39,7 +38,8 @@ WORKDIR /home/app/webapp
 
 RUN bundle install
 
-ENTRYPOINT ["bin/localdb.sh"]
+#Runs some important commands including chmod and migrations
+ENTRYPOINT ["bin/localentrypoint.sh"]
 
 USER root
 

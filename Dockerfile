@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 #Change the user ID to 130 because that is also the hdcadm user
 #This allows log file writing.
-RUN usermod -u 130 app
+RUN usermod -u 130 app && groupmod -g 199 app
 
 #From the docs: The image has an app user and home directory 
 # /home/app. Your application is supposed to run as this user.
@@ -48,8 +48,8 @@ RUN bundle install && \
     printf "[SAN]\nsubjectAltName=DNS:*.hul.harvard.edu,DNS:*.lib.harvard.edu" >> /etc/ssl/openssl.cnf && \
     openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -subj "/C=US/ST=Massachusetts/L=Cambridge/O=Library Technology Services/CN=*.lib.harvard.edu" -extensions SAN -reqexts SAN -config /etc/ssl/openssl.cnf -keyout /etc/ssl/certs/server.key -out /etc/ssl/certs/server.crt
 
-#Uncomment this if there is a migration to run in this image
-ENTRYPOINT ["bin/migrations.sh"]
+#Runs some important commands including chmod and migrations
+ENTRYPOINT ["bin/entrypoint.sh"]
 
 USER root
 
